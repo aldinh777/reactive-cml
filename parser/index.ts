@@ -134,7 +134,7 @@ export function parseReactiveCML(source: string): string {
 
     const result =
           `import { state, observe, observeAll } from '@aldinh777/reactive'\n`
-        + `import { stateList } from '@aldinh777/reactive/collection'\n`
+        + `import { stateList, stateMap } from '@aldinh777/reactive/collection'\n`
         + `import { intoDom } from '@aldinh777/reactive-cml'\n`
         + `${imports}\n`
         + `export default function(props) {\n`

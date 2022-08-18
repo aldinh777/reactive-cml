@@ -1,5 +1,5 @@
 import { CMLTree } from '@aldinh777/cml-parser';
-import { StateList } from '@aldinh777/reactive/collection';
+import { StateList, StateMap } from '@aldinh777/reactive/collection';
 import { observe, observeAll, State } from '@aldinh777/reactive';
 import { undupe } from '../util';
 
@@ -135,7 +135,7 @@ function processElementProperties(elem: HTMLElement, props: Properties, params: 
     }
 }
 
-function cloneObjWithAlias(params: object, aliases: PropAlias[], obj: Properties): Properties {
+function cloneObjWithAlias(params: Properties, aliases: PropAlias[], obj: Properties): Properties {
     const ob: Properties = Object.assign({}, params);
     for (const { alias, prop } of aliases) {
         ob[alias] = obj[prop];
@@ -143,13 +143,36 @@ function cloneObjWithAlias(params: object, aliases: PropAlias[], obj: Properties
     return ob;
 }
 
-function cloneObjWithValue(params: object, name: string, value: any): Properties {
+function cloneMapWithAlias(params: Properties, aliases: PropAlias[], map: Map<string, any>): Properties {
+    const ob: Properties = Object.assign({}, params);
+    for (const { alias, prop } of aliases) {
+        ob[alias] = map.get(prop);
+    }
+    return ob;
+}
+
+function cloneObjWithValue(params: Properties, name: string, value: any): Properties {
     const ob: Properties = Object.assign({}, params);
     ob[name] = value;
     return ob;
 }
 
-function createFlatListElement(params: object, alias: string, items: any[], children: CMLTree): NodeComponent[] {
+function isReactive(item: any) {
+    return item instanceof State || item instanceof StateList || item instanceof StateMap;
+}
+
+function statifyObj(obj: Properties, aliases: PropAlias[]): Properties {
+    const ob: Properties = Object.assign({}, obj);
+    for (const { alias, prop } of aliases) {
+        const item = obj[prop];
+        if (!isReactive(item)) {
+            ob[alias] = new State(obj[prop]);
+        }
+    }
+    return ob;
+}
+
+function createFlatListElement(params: Properties, alias: string, items: any[], children: CMLTree): NodeComponent[] {
     const elements: NodeComponent[] = [];
     for (const item of items) {
         const localParams: Properties = Object.assign({}, params);
@@ -161,18 +184,194 @@ function createFlatListElement(params: object, alias: string, items: any[], chil
     return elements;
 }
 
-function createListElement(params: object, alias: string, items: any[], children: CMLTree): NodeComponent[][] {
+function createListElement(params: Properties, alias: string, items: any[], children: CMLTree): NodeComponent[][] {
     const result: NodeComponent[][] = [];
     for (const item of items) {
-        const elements: NodeComponent[] = [];
-        const localParams: Properties = Object.assign({}, params);
-        localParams[alias] = item;
-        for (const elem of intoDom(children, localParams)) {
-            elements.push(elem);
-        }
-        result.push(elements);
+        const localParams: Properties = cloneObjWithValue(params, alias, item);
+        result.push(intoDom(children, localParams));
     }
     return result;
+}
+
+function componentControl(condition: State<any>, children: CMLTree, params: Properties): ControlComponent {
+    const hide = document.createElement('div');
+    const marker = document.createTextNode('');
+    const elements = intoDom(children, params);
+    const component: ControlComponent = {
+        elems: [],
+        marker: marker
+    };
+    if (condition.getValue()) {
+        component.elems = elements;
+    } else {
+        appendItems(hide, elements);
+    }
+    observe(condition, append => {
+        const { parentNode } = marker;
+        if (!parentNode) {
+            return;
+        }
+        if (append) {
+            removeItems(hide, elements);
+            insertItemsBefore(parentNode, marker, elements);
+            component.elems = elements;
+        } else {
+            removeItems(parentNode, elements);
+            appendItems(hide, elements);
+            component.elems = [];
+        }
+    })
+    return component;
+}
+
+function componentLoopState(list: State<any[]>, alias: string, children: CMLTree, params: Properties): ControlComponent {
+    const listComponent: ControlComponent = {
+        elems: createFlatListElement(params, alias, list.getValue(), children),
+        marker: document.createTextNode('')
+    };
+    observe(list, items => {
+        const { elems, marker } = listComponent;
+        const { parentNode } = marker;
+        if (!parentNode) {
+            return;
+        }
+        const newListElements: NodeComponent[] = createFlatListElement(
+            params, alias, items, children
+        );
+        removeItems(parentNode, elems);
+        insertItemsBefore(parentNode, marker, newListElements);
+        listComponent.elems = newListElements;
+    });
+    return listComponent;
+}
+
+function componentLoopList(list: StateList<any>, alias: string, children: CMLTree, params: Properties): ControlComponent {
+    const listMarker = document.createTextNode('');
+    const listElementEach = createListElement(params, alias, list.toArray(), children);
+    const mirrorList: MirrorElement[] = listElementEach.map(elems => ({
+        startMarker: document.createTextNode(''),
+        endMarker: document.createTextNode(''),
+        elems: elems
+    }));
+    const listComponent: ControlComponent = {
+        elems: mirrorList.map(m => [
+            m.startMarker,
+            ...m.elems,
+            m.endMarker
+        ]).flat(),
+        marker: listMarker
+    };
+    list.onUpdate((index, next) => {
+        const { startMarker, endMarker, elems: oldElems } = mirrorList[index];
+        const { parentNode } = endMarker;
+        if (!parentNode) {
+            return;
+        }
+        const newElems = intoDom(children, cloneObjWithValue(params, alias, next));
+        removeItems(parentNode, oldElems);
+        insertItemsBefore(parentNode, endMarker, newElems);
+        mirrorList[index].elems = newElems;
+        const elementIndex = listComponent.elems.indexOf(startMarker);
+        listComponent.elems.splice(elementIndex + 1, oldElems.length, ...newElems);
+    });
+    list.onDelete((index) => {
+        const { startMarker, endMarker, elems } = mirrorList[index];
+        const { parentNode } = endMarker;
+        if (!parentNode) {
+            return;
+        }
+        removeItems(parentNode, elems);
+        parentNode.removeChild(startMarker);
+        parentNode.removeChild(endMarker);
+        mirrorList.splice(index, 1);
+        const elementIndex = listComponent.elems.indexOf(startMarker);
+        listComponent.elems.splice(elementIndex, elems.length + 2);
+    });
+    list.onInsert((index, inserted) => {
+        const nextMirror = mirrorList[index];
+        let nextMarker = listMarker;
+        if (nextMirror) {
+            nextMarker = nextMirror.startMarker;
+        }
+        const { parentNode } = nextMarker;
+        if (!parentNode) {
+            return;
+        }
+        const startMarker = document.createTextNode('');
+        const endMarker = document.createTextNode('');
+        const newElems = intoDom(children, cloneObjWithValue(params, alias, inserted));
+        const mirror = {
+            startMarker: startMarker,
+            endMarker: endMarker,
+            elems: newElems
+        };
+        const flatNewElems = [startMarker, ...newElems, endMarker];
+        insertItemsBefore(parentNode, nextMarker, flatNewElems);
+        parentNode.insertBefore(startMarker, nextMarker);
+        if (nextMarker === listMarker) {
+            mirrorList.push(mirror);
+            listComponent.elems.push(...flatNewElems);
+        } else {
+            mirrorList.splice(index, 0, mirror);
+            const elementIndex = listComponent.elems.indexOf(nextMarker);
+            listComponent.elems.splice(elementIndex, 0, ...flatNewElems);
+        }
+    });
+    return listComponent;
+}
+
+function componentDestructState(obj: State<any>, aliases: PropAlias[], children: CMLTree, params: Properties): ControlComponent {
+    const destructParams = cloneObjWithAlias(params, aliases, obj.getValue());
+    const destructComponent: ControlComponent = {
+        elems: intoDom(children, destructParams),
+        marker: document.createTextNode('')
+    };
+    observe(obj, ob => {
+        const { elems, marker } = destructComponent;
+        const { parentNode } = marker;
+        if (!parentNode) {
+            return;
+        }
+        removeItems(parentNode, elems);
+        const destructParams = cloneObjWithAlias(params, aliases, ob);
+        const destructElements = intoDom(children, destructParams)
+        insertItemsBefore(parentNode, marker, destructElements);
+        destructComponent.elems = destructElements;
+    });
+    return destructComponent;
+}
+
+function componentDestructMap(map: StateMap<any>, aliases: PropAlias[], children: CMLTree, params: Properties): ControlComponent {
+    const destructMarker = document.createTextNode('');
+    const destructParams = cloneMapWithAlias(params, aliases, map.getRawMap());
+    const statifiedParams = statifyObj(destructParams, aliases);
+    const destructComponent: ControlComponent = {
+        elems: intoDom(children, statifiedParams),
+        marker: destructMarker
+    };
+    map.onUpdate((key, value) => {
+        const param = statifiedParams[key];
+        if (param instanceof State) {
+            param.setValue(value);
+        } else {
+            if (isReactive(value)) {
+                statifiedParams[key] = value;
+            } else {
+                statifiedParams[key] = new State(value);
+            }
+        }
+    });
+    map.onDelete((key) => {
+        delete statifiedParams[key];
+    });
+    map.onInsert((key, value) => {
+        if (isReactive(value)) {
+            statifiedParams[key] = value;
+        } else {
+            statifiedParams[key] = new State(value);
+        }
+    });
+    return destructComponent;
 }
 
 export function intoDom(items: CMLTree, params: Properties): NodeComponent[] {
@@ -188,34 +387,7 @@ export function intoDom(items: CMLTree, params: Properties): NodeComponent[] {
                     const ifKey: string = props['condition'];
                     const ifCondition: boolean | State<boolean> = params[ifKey];
                     if (ifCondition instanceof State) {
-                        const ifHideout = document.createElement('div');
-                        const ifMarker = document.createTextNode('');
-                        const ifElements = intoDom(children, params);
-                        const ifComponent: ControlComponent = {
-                            elems: [],
-                            marker: ifMarker
-                        };
-                        if (ifCondition.getValue()) {
-                            ifComponent.elems = ifElements;
-                        } else {
-                            appendItems(ifHideout, ifElements);
-                        }
-                        result.push(ifComponent);
-                        observe(ifCondition, append => {
-                            const { parentNode } = ifMarker;
-                            if (!parentNode) {
-                                return;
-                            }
-                            if (append) {
-                                removeItems(ifHideout, ifElements);
-                                insertItemsBefore(parentNode, ifMarker, ifElements);
-                                ifComponent.elems = ifElements;
-                            } else {
-                                removeItems(parentNode, ifElements);
-                                appendItems(ifHideout, ifElements);
-                                ifComponent.elems = [];
-                            }
-                        })
+                        result.push(componentControl(ifCondition, children, params));
                     } else if (ifCondition) {
                         for (const elem of intoDom(children, params)) {
                             result.push(elem);
@@ -227,34 +399,9 @@ export function intoDom(items: CMLTree, params: Properties): NodeComponent[] {
                     const unlessKey: string = props['condition'];
                     const unlessCondition: boolean | State<boolean> = params[unlessKey];
                     if (unlessCondition instanceof State) {
-                        const unlessHideout = document.createElement('div');
-                        const unlessMarker = document.createTextNode('');
-                        const unlessElements = intoDom(children, params);
-                        const unlessComponent: ControlComponent = {
-                            elems: [],
-                            marker: unlessMarker
-                        };
-                        if (unlessCondition.getValue()) {
-                            appendItems(unlessHideout, unlessElements);
-                        } else {
-                            unlessComponent.elems = unlessElements.concat(unlessMarker);
-                        }
-                        result.push(unlessComponent);
-                        observe(unlessCondition, remove => {
-                            const { parentNode } = unlessMarker;
-                            if (!parentNode) {
-                                return;
-                            }
-                            if (remove) {
-                                removeItems(parentNode, unlessElements);
-                                appendItems(unlessHideout, unlessElements);
-                                unlessComponent.elems = [unlessMarker];
-                            } else {
-                                removeItems(unlessHideout, unlessElements);
-                                insertItemsBefore(parentNode, unlessMarker, unlessElements);
-                                unlessComponent.elems = unlessElements.concat(unlessMarker);
-                            }
-                        })
+                        const rev = new State(unlessCondition.getValue());
+                        unlessCondition.onChange(condition => rev.setValue(!condition));
+                        result.push(componentControl(rev, children, params));
                     } else if (!unlessCondition) {
                         for (const elem of intoDom(children, params)) {
                             result.push(elem);
@@ -267,97 +414,9 @@ export function intoDom(items: CMLTree, params: Properties): NodeComponent[] {
                     const listAlias: string = props['as'];
                     const list: any[] | State<any[]> | StateList<any> = params[listName];
                     if (list instanceof State) {
-                        const listComponent: ControlComponent = {
-                            elems: createFlatListElement(params, listAlias, list.getValue(), children),
-                            marker: document.createTextNode('')
-                        };
-                        result.push(listComponent);
-                        observe(list, items => {
-                            const { elems, marker } = listComponent;
-                            const { parentNode } = marker;
-                            if (!parentNode) {
-                                return;
-                            }
-                            const newListElements: NodeComponent[] = createFlatListElement(
-                                params, listAlias, items, children
-                            );
-                            removeItems(parentNode, elems);
-                            insertItemsBefore(parentNode, marker, newListElements);
-                            listComponent.elems = newListElements;
-                        });
+                        result.push(componentLoopState(list, listAlias, children, params));
                     } else if (list instanceof StateList) {
-                        const listMarker = document.createTextNode('');
-                        const listElementEach = createListElement(params, listAlias, list.toArray(), children);
-                        const mirrorList: MirrorElement[] = listElementEach.map(elems => ({
-                            startMarker: document.createTextNode(''),
-                            endMarker: document.createTextNode(''),
-                            elems: elems
-                        }));
-                        const listComponent: ControlComponent = {
-                            elems: mirrorList.map(m => [
-                                m.startMarker,
-                                ...m.elems,
-                                m.endMarker
-                            ]).flat(),
-                            marker: listMarker
-                        };
-                        result.push(listComponent);
-                        list.onUpdate((index, next) => {
-                            const { startMarker, endMarker, elems: oldElems } = mirrorList[index];
-                            const { parentNode } = endMarker;
-                            if (!parentNode) {
-                                return;
-                            }
-                            const newElems = intoDom(children, cloneObjWithValue(params, listAlias, next));
-                            removeItems(parentNode, oldElems);
-                            insertItemsBefore(parentNode, endMarker, newElems);
-                            mirrorList[index].elems = newElems;
-                            const elementIndex = listComponent.elems.indexOf(startMarker);
-                            listComponent.elems.splice(elementIndex + 1, oldElems.length, ...newElems);
-                        });
-                        list.onDelete((index) => {
-                            const { startMarker, endMarker, elems } = mirrorList[index];
-                            const { parentNode } = endMarker;
-                            if (!parentNode) {
-                                return;
-                            }
-                            removeItems(parentNode, elems);
-                            parentNode.removeChild(startMarker);
-                            parentNode.removeChild(endMarker);
-                            mirrorList.splice(index, 1);
-                            const elementIndex = listComponent.elems.indexOf(startMarker);
-                            listComponent.elems.splice(elementIndex, elems.length + 2);
-                        });
-                        list.onInsert((index, inserted) => {
-                            const nextMirror = mirrorList[index];
-                            let nextMarker = listMarker;
-                            if (nextMirror) {
-                                nextMarker = nextMirror.startMarker;
-                            }
-                            const { parentNode } = nextMarker;
-                            if (!parentNode) {
-                                return;
-                            }
-                            const startMarker = document.createTextNode('');
-                            const endMarker = document.createTextNode('');
-                            const newElems = intoDom(children, cloneObjWithValue(params, listAlias, inserted));
-                            const mirror = {
-                                startMarker: startMarker,
-                                endMarker: endMarker,
-                                elems: newElems
-                            };
-                            const flatNewElems = [startMarker, ...newElems, endMarker];
-                            insertItemsBefore(parentNode, nextMarker, flatNewElems);
-                            parentNode.insertBefore(startMarker, nextMarker);
-                            if (nextMarker === listMarker) {
-                                mirrorList.push(mirror);
-                                listComponent.elems.push(...flatNewElems);
-                            } else {
-                                mirrorList.splice(index, 0, mirror);
-                                const elementIndex = listComponent.elems.indexOf(nextMarker);
-                                listComponent.elems.splice(elementIndex, 0, ...flatNewElems);
-                            }
-                        });
+                        result.push(componentLoopList(list, listAlias, children, params));
                     } else {
                         for (const item of list) {
                             const localParams = cloneObjWithValue(params, listAlias, item);
@@ -371,7 +430,7 @@ export function intoDom(items: CMLTree, params: Properties): NodeComponent[] {
                 case 'destruct':
                     const objKey: string = props['object'];
                     const propQuery: string = props['as'];
-                    const obj: object | State<object> = params[objKey];
+                    const obj: any = params[objKey];
                     const propNames: PropAlias[] = propQuery.split(/\s+/).map(query => {
                         const matches = query.match(/(.+):(.+)/);
                         if (matches) {
@@ -382,24 +441,14 @@ export function intoDom(items: CMLTree, params: Properties): NodeComponent[] {
                         }
                     });
                     if (obj instanceof State) {
-                        const destructParams = cloneObjWithAlias(params, propNames, obj.getValue());
-                        const destructComponent: ControlComponent = {
-                            elems: intoDom(children, destructParams),
-                            marker: document.createTextNode('')
-                        };
-                        result.push(destructComponent);
-                        observe(obj, ob => {
-                            const { elems, marker } = destructComponent;
-                            const { parentNode } = marker;
-                            if (!parentNode) {
-                                return;
-                            }
-                            removeItems(parentNode, elems);
-                            const destructParams = cloneObjWithAlias(params, propNames, ob);
-                            const destructElements = intoDom(children, destructParams)
-                            insertItemsBefore(parentNode, marker, destructElements);
-                            destructComponent.elems = destructElements;
-                        });
+                        result.push(componentDestructState(obj, propNames, children, params));
+                    } else if (obj instanceof StateMap) {
+                        result.push(componentDestructMap(obj, propNames, children, params));
+                    } else if (obj instanceof Map) {
+                        const destructParams = cloneMapWithAlias(params, propNames, obj);
+                        for (const elem of intoDom(children, destructParams)) {
+                            result.push(elem);
+                        }
                     } else {
                         const destructParams = cloneObjWithAlias(params, propNames, obj);
                         for (const elem of intoDom(children, destructParams)) {
