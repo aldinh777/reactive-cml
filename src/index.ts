@@ -102,11 +102,13 @@ function processComponentProperties(props: Properties, params: Properties): Prop
     return properties;
 }
 
-function setElementProperty(elem: HTMLElement, attr: string, value: any) {
-    if (attr === 'class') {
-        elem.className = attr;
+function setElementAttribute(elem: HTMLElement, attr: string, value: any) {
+    if (elem.hasAttribute(attr)) {
+        elem.setAttribute(attr, value);
     } else {
-        Reflect.set(elem, attr, value);
+        const att = document.createAttribute(attr);
+        att.value = value;
+        elem.setAttributeNode(att);
     }
 }
 
@@ -122,13 +124,13 @@ function processElementProperties(elem: HTMLElement, props: Properties, params: 
             } else if (type === 'bind') {
                 const state = params[value];
                 if (state instanceof State) {
-                    observe(state, value => setElementProperty(elem, attr, value));
+                    observe(state, value => setElementAttribute(elem, attr, value));
                 } else {
-                    setElementProperty(elem, attr, value);
+                    setElementAttribute(elem, attr, value);
                 }
             }
         } else {
-            setElementProperty(elem, key, value);
+            setElementAttribute(elem, key, value);
         }
     }
 }
