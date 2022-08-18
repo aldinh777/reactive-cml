@@ -102,6 +102,14 @@ function processComponentProperties(props: Properties, params: Properties): Prop
     return properties;
 }
 
+function setElementProperty(elem: HTMLElement, attr: string, value: any) {
+    if (elem.hasAttribute(attr)) {
+        elem.setAttribute(attr, value);
+    } else {
+        Reflect.set(elem, attr, value);
+    }
+}
+
 function processElementProperties(elem: HTMLElement, props: Properties, params: Properties) {
     for (const key in props) {
         const value = props[key];
@@ -114,13 +122,13 @@ function processElementProperties(elem: HTMLElement, props: Properties, params: 
             } else if (type === 'bind') {
                 const state = params[value];
                 if (state instanceof State) {
-                    observe(state, value => Reflect.set(elem, attr, value));
+                    observe(state, value => setElementProperty(elem, attr, value));
                 } else {
-                    Reflect.set(elem, attr, state);
+                    setElementProperty(elem, attr, value);
                 }
             }
         } else {
-            Reflect.set(elem, key, value);
+            setElementProperty(elem, key, value);
         }
     }
 }
