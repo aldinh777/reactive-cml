@@ -1,20 +1,21 @@
 import { CMLTree } from '@aldinh777/cml-parser';
 import { StateList, StateMap } from '@aldinh777/reactive/collection';
 import { observe, observeAll, State } from '@aldinh777/reactive';
-import { undupe } from '../util';
+import { Properties, PropAlias } from '../types';
+import {
+    cloneMapWithAlias,
+    cloneObjWithAlias,
+    cloneObjWithValue,
+    isReactive,
+    statifyObj,
+    undupe
+} from '../util';
 
 type NodeComponent = Node | ControlComponent;
 
-interface Properties {
-    [key: string]: any;
-}
 interface ControlComponent {
     elems: NodeComponent[];
     marker: Node;
-}
-interface PropAlias {
-    alias: string;
-    prop: string;
 }
 interface MirrorElement {
     startMarker: Text;
@@ -133,43 +134,6 @@ function processElementProperties(elem: HTMLElement, props: Properties, params: 
             setElementAttribute(elem, key, value);
         }
     }
-}
-
-function cloneObjWithAlias(params: Properties, aliases: PropAlias[], obj: Properties): Properties {
-    const ob: Properties = Object.assign({}, params);
-    for (const { alias, prop } of aliases) {
-        ob[alias] = obj[prop];
-    }
-    return ob;
-}
-
-function cloneMapWithAlias(params: Properties, aliases: PropAlias[], map: Map<string, any>): Properties {
-    const ob: Properties = Object.assign({}, params);
-    for (const { alias, prop } of aliases) {
-        ob[alias] = map.get(prop);
-    }
-    return ob;
-}
-
-function cloneObjWithValue(params: Properties, name: string, value: any): Properties {
-    const ob: Properties = Object.assign({}, params);
-    ob[name] = value;
-    return ob;
-}
-
-function isReactive(item: any) {
-    return item instanceof State || item instanceof StateList || item instanceof StateMap;
-}
-
-function statifyObj(obj: Properties, aliases: PropAlias[]): Properties {
-    const ob: Properties = Object.assign({}, obj);
-    for (const { alias, prop } of aliases) {
-        const item = obj[prop];
-        if (!isReactive(item)) {
-            ob[alias] = new State(obj[prop]);
-        }
-    }
-    return ob;
 }
 
 function createFlatListElement(params: Properties, alias: string, items: any[], children: CMLTree): NodeComponent[] {
