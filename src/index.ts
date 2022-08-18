@@ -103,8 +103,8 @@ function processComponentProperties(props: Properties, params: Properties): Prop
 }
 
 function setElementProperty(elem: HTMLElement, attr: string, value: any) {
-    if (elem.hasAttribute(attr)) {
-        elem.setAttribute(attr, value);
+    if (attr === 'class') {
+        elem.className = attr;
     } else {
         Reflect.set(elem, attr, value);
     }
