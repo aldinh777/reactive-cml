@@ -1,7 +1,7 @@
 import { CMLTree, parseCML } from '@aldinh777/cml-parser';
 import { undupe } from '../util';
 
-type ImportFlag = 'import'|'from'|'end';
+type ImportFlag = 'import' | 'from' | 'end';
 
 interface ExtractedParams {
     dependencies: string[];
@@ -74,15 +74,17 @@ function extractParams(items: CMLTree, blacklist = new Set()): ExtractedParams {
                 case 'destruct':
                     const obj = props['object'];
                     const localPropQuery = props['as'];
-                    const localPropNames = localPropQuery.split(/\s+/).map((s: string) => {
-                        const matches = s.match(/(.+):(.+)/);
-                        if (matches) {
-                            const [_, alias] = matches;
-                            return alias;
-                        } else {
-                            return s;
-                        }
-                    });
+                    const localPropNames = localPropQuery
+                        .split(/\s+/)
+                        .map((s: string) => {
+                            const matches = s.match(/(.+):(.+)/);
+                            if (matches) {
+                                const [_, alias] = matches;
+                                return alias;
+                            } else {
+                                return s;
+                            }
+                        });
                     for (const prop of localPropNames) {
                         localBlacklist.add(prop);
                     }
@@ -98,20 +100,26 @@ function extractParams(items: CMLTree, blacklist = new Set()): ExtractedParams {
                     }
                     break;
             }
-            const { dependencies, params } = extractParams(children, localBlacklist);
+            const { dependencies, params } = extractParams(
+                children,
+                localBlacklist
+            );
             dep = dep.concat(dependencies);
             par = par.concat(params);
         }
     }
     dep = undupe(dep);
-    par = undupe(par).filter(param => !blacklist.has(param));
+    par = undupe(par).filter((param) => !blacklist.has(param));
     return {
         dependencies: dep,
         params: par
     };
 }
 
-export function parseReactiveCML(source: string): string {
+export function parseReactiveCML(
+    source: string,
+    mode: 'import' | 'require' = 'import'
+): string {
     const importIndex = extractImportsIndex(source);
     let separatorIndex: number = source.length;
     const matchResult = source.match(/(div|span)(\s+.*=".*")*\s*</);
@@ -132,14 +140,27 @@ export function parseReactiveCML(source: string): string {
 
     const { dependencies, params } = extractParams(cmlTree);
 
-    const result =
-          `import { state, observe, observeAll } from '@aldinh777/reactive'\n`
-        + `import { stateList, stateMap } from '@aldinh777/reactive/collection'\n`
-        + `import { intoDom } from '@aldinh777/reactive-cml'\n`
-        + `${imports}\n`
-        + `export default function(props) {\n`
-        + `${script}`
-        + `return intoDom(${cmlJson}, `
-        + `{${params.concat(dependencies).join()}})}`;
-    return result;
+    if (mode === 'import') {
+        return (
+            `import { state, observe, observeAll } from '@aldinh777/reactive'\n` +
+            `import { stateList, stateMap } from '@aldinh777/reactive/collection'\n` +
+            `import { intoDom } from '@aldinh777/reactive-cml'\n` +
+            `${imports}\n` +
+            `export default function(props={}, children={structure: [], superProps: {}}) {\n` +
+            `${script}` +
+            `return intoDom(${cmlJson}, ` +
+            `{${params.concat(dependencies).join()}}, children)}`
+        );
+    } else {
+        return (
+            `const { state, observe, observeAll } = require('@aldinh777/reactive')\n` +
+            `const { stateList, stateMap } = require('@aldinh777/reactive/collection')\n` +
+            `const { intoDom } = require('@aldinh777/reactive-cml')\n` +
+            `${imports}\n` +
+            `module.exports = function(props={}, children={structure: [], superProps: {}}) {\n` +
+            `${script}` +
+            `return intoDom(${cmlJson}, ` +
+            `{${params.concat(dependencies).join()}}, children)}`
+        );
+    }
 }
