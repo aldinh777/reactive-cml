@@ -1,6 +1,14 @@
 import { State } from '@aldinh777/reactive';
 import { StateList, StateMap } from '@aldinh777/reactive/collection';
-import { Properties, PropAlias } from './types';
+
+export interface Properties {
+    [key: string]: any;
+}
+
+export interface PropAlias {
+    alias: string;
+    prop: string;
+}
 
 export function undupe<T>(array: T[]): T[] {
     return Array.from(new Set(array));

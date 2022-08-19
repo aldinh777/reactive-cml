@@ -1,8 +1,9 @@
 import { CMLTree } from '@aldinh777/cml-parser';
 import { StateList, StateMap } from '@aldinh777/reactive/collection';
 import { observe, observeAll, State } from '@aldinh777/reactive';
-import { Properties, PropAlias } from '../types';
 import {
+    PropAlias,
+    Properties,
     cloneMapWithAlias,
     cloneObjWithAlias,
     cloneObjWithValue,
