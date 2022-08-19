@@ -349,10 +349,17 @@ function componentLoopList(
     compChildren: ComponentChildren
 ): ControlComponent {
     const listMarker = document.createTextNode('');
+    const statifiedList = list.toArray().map((item) => {
+        if (isReactive(item)) {
+            return item;
+        } else {
+            return new State(item);
+        }
+    });
     const listElementEach = createListElement(
         params,
         alias,
-        list.toArray(),
+        statifiedList,
         children,
         compChildren
     );
@@ -368,25 +375,35 @@ function componentLoopList(
         marker: listMarker
     };
     list.onUpdate((index, next) => {
+        const item = statifiedList[index];
         const { startMarker, endMarker, elems: oldElems } = mirrorList[index];
         const { parentNode } = endMarker;
         if (!parentNode) {
             return;
         }
-        const newElems = intoDom(
-            children,
-            cloneObjWithValue(params, alias, next),
-            compChildren
-        );
-        removeItems(parentNode, oldElems);
-        insertItemsBefore(parentNode, endMarker, newElems);
-        mirrorList[index].elems = newElems;
-        const elementIndex = listComponent.elems.indexOf(startMarker);
-        listComponent.elems.splice(
-            elementIndex + 1,
-            oldElems.length,
-            ...newElems
-        );
+        if (item instanceof State) {
+            item.setValue(next);
+        } else {
+            let nextItem = next;
+            if (isReactive(next)) {
+                nextItem = new State(next);
+            }
+            statifiedList[index] = nextItem;
+            const newElems = intoDom(
+                children,
+                cloneObjWithValue(params, alias, nextItem),
+                compChildren
+            );
+            removeItems(parentNode, oldElems);
+            insertItemsBefore(parentNode, endMarker, newElems);
+            mirrorList[index].elems = newElems;
+            const elementIndex = listComponent.elems.indexOf(startMarker);
+            listComponent.elems.splice(
+                elementIndex + 1,
+                oldElems.length,
+                ...newElems
+            );
+        }
     });
     list.onDelete((index) => {
         const { startMarker, endMarker, elems } = mirrorList[index];
