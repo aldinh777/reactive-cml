@@ -1,6 +1,6 @@
 import { CMLTree } from '@aldinh777/cml-parser';
 import { StateList, StateMap } from '@aldinh777/reactive/collection';
-import { observe, observeAll, State } from '@aldinh777/reactive';
+import { observe, State } from '@aldinh777/reactive';
 import {
     PropAlias,
     Properties,
@@ -8,8 +8,7 @@ import {
     cloneObjWithAlias,
     cloneObjWithValue,
     isReactive,
-    statifyObj,
-    undupe
+    statifyObj
 } from '../util';
 
 type NodeComponent = Node | ControlComponent;
@@ -69,37 +68,108 @@ export function insertItemsBefore(
     }
 }
 
-function processTextNode(item: string, params: Properties): Text {
-    const matches = item.matchAll(/\{\s*(.*?)\s*?\}/g);
-    const matchesState = undupe(Array.from(matches).map((m) => m[1]));
-    const literalKeys = matchesState.filter(
-        (key) => !(params[key] instanceof State)
-    );
-    const stateKeys = matchesState.filter(
-        (key) => params[key] instanceof State
-    );
-    let text = item;
-    for (const key of literalKeys) {
-        const value = params[key];
-        text = text.replace(RegExp(`\\{\\s*${key}\\s*?}`, 'g'), value);
-    }
-    const elem = document.createTextNode(text);
-    if (stateKeys.length > 0) {
-        const states: State<any>[] = stateKeys.map((key) => params[key]);
-        observeAll(states, (values) => {
-            let replacedText = text;
-            for (let i = 0; i < values.length; i++) {
-                const value = values[i];
-                const key = stateKeys[i];
-                replacedText = replacedText.replace(
-                    RegExp(`\\{\\s*${key}\\s*?}`, 'g'),
-                    value.toString()
-                );
+function processTextNode(text: string, params: Properties): Text[] {
+    const streamResult = [];
+    let stream = '';
+    let propName = '';
+    let propFlag = false;
+    let propNameFlag = false;
+    let propSpaceLeftFlag = false;
+    for (let i = 0; i < text.length; i++) {
+        const c = text[i];
+        if (propFlag) {
+            if (propSpaceLeftFlag) {
+                if (c === '{') {
+                    stream += '{' + propName;
+                    propName = '';
+                } else if (c === '}') {
+                    propFlag = false;
+                    propSpaceLeftFlag = false;
+                    stream += '{' + propName + '}';
+                } else if (c.match(/[^\s]/)) {
+                    propSpaceLeftFlag = false;
+                    propNameFlag = true;
+                    propName += c;
+                } else {
+                    propName += c;
+                }
+            } else if (propNameFlag) {
+                if (c === '{') {
+                    propNameFlag = false;
+                    propSpaceLeftFlag = true;
+                    stream += '{' + propName;
+                    propName = '';
+                } else if (
+                    c === '}' &&
+                    propName.match(/^\s*[\$_A-Za-z][\$_\w]*/)
+                ) {
+                    propFlag = false;
+                    const t = params[propName.trim()];
+                    if (t instanceof State) {
+                        const rawText = document.createTextNode(stream);
+                        const stateText = document.createTextNode('');
+                        observe(t, (text) => (stateText.textContent = text));
+                        streamResult.push(rawText, stateText);
+                        stream = '';
+                        propName = '';
+                    } else {
+                        stream += t;
+                        propName = '';
+                    }
+                } else if (c.match(/\s/)) {
+                    propNameFlag = false;
+                    propName += c;
+                } else if (c.match(/[\$_\w]/)) {
+                    propName += c;
+                } else {
+                    propNameFlag = false;
+                    propFlag = false;
+                    stream += '{' + propName + c;
+                    propName = '';
+                }
+            } else {
+                if (c === '}' && propName.match(/^\s*[\$_A-Za-z][\$_\w]*/)) {
+                    propFlag = false;
+                    const t = params[propName.trim()];
+                    if (t instanceof State) {
+                        const rawText = document.createTextNode(stream);
+                        const stateText = document.createTextNode('');
+                        observe(t, (text) => (stateText.textContent = text));
+                        streamResult.push(rawText, stateText);
+                        stream = '';
+                        propName = '';
+                    } else {
+                        stream += t;
+                        propName = '';
+                    }
+                } else if (c.match(/\s/)) {
+                    propName += c;
+                } else {
+                    propFlag = false;
+                    stream += '{' + propName + c;
+                    propName = '';
+                }
             }
-            elem.textContent = replacedText;
-        });
+        } else {
+            if (c === '\\' && text[i + 1] === '{') {
+                stream += '\\{';
+                i++;
+                continue;
+            } else if (c === '{') {
+                propFlag = true;
+                propSpaceLeftFlag = true;
+            } else {
+                stream += c;
+            }
+        }
     }
-    return elem;
+    if (propFlag) {
+        stream += '{' + propName;
+    }
+    if (stream) {
+        streamResult.push(document.createTextNode(stream));
+    }
+    return streamResult;
 }
 
 function processComponentProperties(
@@ -449,8 +519,10 @@ export function intoDom(
     const result: NodeComponent[] = [];
     for (const item of items) {
         if (typeof item === 'string') {
-            const text = processTextNode(item, params);
-            result.push(text);
+            const texts = processTextNode(item, params);
+            for (const text of texts) {
+                result.push(text);
+            }
         } else {
             const { tag, props, children } = item;
             switch (tag) {
@@ -492,8 +564,8 @@ export function intoDom(
                     const unlessCondition: boolean | State<boolean> =
                         params[unlessKey];
                     if (unlessCondition instanceof State) {
-                        const rev = new State(unlessCondition.getValue());
-                        unlessCondition.onChange((condition) =>
+                        const rev = new State(!unlessCondition.getValue());
+                        observe(unlessCondition, (condition) =>
                             rev.setValue(!condition)
                         );
                         result.push(
