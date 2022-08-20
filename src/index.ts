@@ -416,6 +416,7 @@ function componentLoopList(
         parentNode.removeChild(endMarker);
         mirrorList.splice(index, 1);
         const elementIndex = listComponent.elems.indexOf(startMarker);
+        statifiedList.splice(index, 1);
         listComponent.elems.splice(elementIndex, elems.length + 2);
     });
     list.onInsert((index, inserted) => {
@@ -428,11 +429,15 @@ function componentLoopList(
         if (!parentNode) {
             return;
         }
+        let insertedItem = inserted;
+        if (isReactive(inserted)) {
+            insertedItem = new State(inserted);
+        }
         const startMarker = document.createTextNode('');
         const endMarker = document.createTextNode('');
         const newElems = intoDom(
             children,
-            cloneObjWithValue(params, alias, inserted),
+            cloneObjWithValue(params, alias, insertedItem),
             compChildren
         );
         const mirror = {
@@ -446,10 +451,12 @@ function componentLoopList(
         if (nextMarker === listMarker) {
             mirrorList.push(mirror);
             listComponent.elems.push(...flatNewElems);
+            statifiedList.push(insertedItem);
         } else {
             mirrorList.splice(index, 0, mirror);
             const elementIndex = listComponent.elems.indexOf(nextMarker);
             listComponent.elems.splice(elementIndex, 0, ...flatNewElems);
+            statifiedList.splice(index, 0, insertedItem);
         }
     });
     return listComponent;
