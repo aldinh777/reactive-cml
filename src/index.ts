@@ -463,11 +463,11 @@ function componentLoopList(
             removeItems(parentNode, elems);
             parentNode.removeChild(startMarker);
             parentNode.removeChild(endMarker);
-            mirrorList.splice(index, 1);
             const elementIndex = listComponent.elems.indexOf(startMarker);
-            statifiedList.splice(index, 1);
             listComponent.elems.splice(elementIndex, elems.length + 2);
         }
+        mirrorList.splice(index, 1);
+        statifiedList.splice(index, 1);
     });
     list.onInsert((index, inserted) => {
         const nextMirror = mirrorList[index];
