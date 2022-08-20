@@ -4,8 +4,7 @@
   "description": "Adding Reactivity to CML",
   "main": "src/index.js",
   "scripts": {
-    "build": "tsc",
-    "prepublish": "tsc"
+    "build": "tsc"
   },
   "author": "aldinh777",
   "license": "ISC",
