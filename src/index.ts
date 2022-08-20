@@ -363,27 +363,25 @@ function componentLoopList(
         children,
         compChildren
     );
-    const mirrorList: MirrorElement[] = listElementEach.map((elems) => ({
-        startMarker: document.createTextNode(''),
-        endMarker: document.createTextNode(''),
-        elems: elems
-    }));
+    const mirrorList: (MirrorElement | undefined)[] = listElementEach.map(
+        (elems) => ({
+            startMarker: document.createTextNode(''),
+            endMarker: document.createTextNode(''),
+            elems: elems
+        })
+    );
     const listComponent: ControlComponent = {
-        elems: mirrorList
-            .map((m) => [m.startMarker, ...m.elems, m.endMarker])
-            .flat(),
+        elems: mirrorList.flatMap((m) =>
+            m ? [m.startMarker, ...m.elems, m.endMarker] : []
+        ),
         marker: listMarker
     };
     list.onUpdate((index, next) => {
         const item = statifiedList[index];
-        const { startMarker, endMarker, elems: oldElems } = mirrorList[index];
-        const { parentNode } = endMarker;
-        if (!parentNode) {
-            return;
-        }
         if (item instanceof State) {
             item.setValue(next);
         } else {
+            const mirronElement = mirrorList[index];
             let nextItem = next;
             if (!isReactive(next)) {
                 nextItem = new State(next);
@@ -394,30 +392,82 @@ function componentLoopList(
                 cloneObjWithValue(params, alias, nextItem),
                 compChildren
             );
-            removeItems(parentNode, oldElems);
-            insertItemsBefore(parentNode, endMarker, newElems);
-            mirrorList[index].elems = newElems;
-            const elementIndex = listComponent.elems.indexOf(startMarker);
-            listComponent.elems.splice(
-                elementIndex + 1,
-                oldElems.length,
-                ...newElems
-            );
+            if (mirronElement) {
+                const { startMarker, endMarker, elems } = mirronElement;
+                const { parentNode } = endMarker;
+                if (!parentNode) {
+                    return;
+                }
+                removeItems(parentNode, elems);
+                insertItemsBefore(parentNode, endMarker, newElems);
+                mirronElement.elems = newElems;
+                const elementIndex = listComponent.elems.indexOf(startMarker);
+                listComponent.elems.splice(
+                    elementIndex + 1,
+                    elems.length,
+                    ...newElems
+                );
+            } else {
+                const m: MirrorElement = {
+                    startMarker: document.createTextNode(''),
+                    endMarker: document.createTextNode(''),
+                    elems: newElems
+                };
+                const flatElems = [m.startMarker, ...m.elems, m.endMarker];
+                mirrorList[index] = m;
+                if (index >= mirrorList.length) {
+                    const { parentNode } = listMarker;
+                    if (parentNode) {
+                        insertItemsBefore(parentNode, listMarker, flatElems);
+                    }
+                } else {
+                    let i = index + 1;
+                    while (i < mirrorList.length) {
+                        const mirror = mirrorList[i];
+                        if (mirror) {
+                            const { startMarker } = mirror;
+                            const { parentNode } = startMarker;
+                            if (parentNode) {
+                                insertItemsBefore(
+                                    parentNode,
+                                    startMarker,
+                                    flatElems
+                                );
+                            }
+                            break;
+                        }
+                        i++;
+                    }
+                    if (i === mirrorList.length) {
+                        const { parentNode } = listMarker;
+                        if (parentNode) {
+                            insertItemsBefore(
+                                parentNode,
+                                listMarker,
+                                flatElems
+                            );
+                        }
+                    }
+                }
+            }
         }
     });
     list.onDelete((index) => {
-        const { startMarker, endMarker, elems } = mirrorList[index];
-        const { parentNode } = endMarker;
-        if (!parentNode) {
-            return;
+        const mirrorElement = mirrorList[index];
+        if (mirrorElement) {
+            const { startMarker, endMarker, elems } = mirrorElement;
+            const { parentNode } = endMarker;
+            if (!parentNode) {
+                return;
+            }
+            removeItems(parentNode, elems);
+            parentNode.removeChild(startMarker);
+            parentNode.removeChild(endMarker);
+            mirrorList.splice(index, 1);
+            const elementIndex = listComponent.elems.indexOf(startMarker);
+            statifiedList.splice(index, 1);
+            listComponent.elems.splice(elementIndex, elems.length + 2);
         }
-        removeItems(parentNode, elems);
-        parentNode.removeChild(startMarker);
-        parentNode.removeChild(endMarker);
-        mirrorList.splice(index, 1);
-        const elementIndex = listComponent.elems.indexOf(startMarker);
-        statifiedList.splice(index, 1);
-        listComponent.elems.splice(elementIndex, elems.length + 2);
     });
     list.onInsert((index, inserted) => {
         const nextMirror = mirrorList[index];
