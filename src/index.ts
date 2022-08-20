@@ -385,7 +385,7 @@ function componentLoopList(
             item.setValue(next);
         } else {
             let nextItem = next;
-            if (isReactive(next)) {
+            if (!isReactive(next)) {
                 nextItem = new State(next);
             }
             statifiedList[index] = nextItem;
@@ -430,7 +430,7 @@ function componentLoopList(
             return;
         }
         let insertedItem = inserted;
-        if (isReactive(inserted)) {
+        if (!isReactive(inserted)) {
             insertedItem = new State(inserted);
         }
         const startMarker = document.createTextNode('');
