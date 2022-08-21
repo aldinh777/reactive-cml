@@ -14,9 +14,11 @@ import {
 import { Component, RCMLResult } from '..';
 
 type NodeComponent = Node | ControlComponent;
-type ReactiveComponent = (
+type EventDispatcher = (name: string, ...args: any[]) => any;
+export type ReactiveComponent = (
     props: Properties,
-    children: CompChildren
+    dispatch: EventDispatcher,
+    _children: ComponentChildren
 ) => NodeComponent[];
 
 interface ControlComponent {
@@ -28,9 +30,9 @@ interface MirrorElement {
     start: Text;
     end: Text;
 }
-interface CompChildren {
-    tree: RCMLResult[];
-    props: Properties;
+interface ComponentChildren {
+    tree?: RCMLResult[];
+    props?: Properties;
 }
 
 export function appendItems(parent: Node, items: NodeComponent[]) {
@@ -69,7 +71,6 @@ export function insertItemsBefore(
         }
     }
 }
-
 
 function processComponentProperties(
     props: StaticProperties<string | TextProp>,
@@ -126,13 +127,13 @@ function createFlatListElement(
     alias: string,
     items: any[],
     children: RCMLResult[],
-    compChildren: CompChildren
+    cc: ComponentChildren
 ): NodeComponent[] {
     const elements: NodeComponent[] = [];
     for (const item of items) {
         const localParams: Properties = Object.assign({}, params);
         localParams[alias] = item;
-        for (const elem of intoDom(children, localParams, compChildren)) {
+        for (const elem of intoDom(children, localParams, cc)) {
             elements.push(elem);
         }
     }
@@ -144,12 +145,12 @@ function createListElement(
     alias: string,
     items: any[],
     children: RCMLResult[],
-    compChildren: CompChildren
+    cc: ComponentChildren
 ): NodeComponent[][] {
     const result: NodeComponent[][] = [];
     for (const item of items) {
         const localParams: Properties = cloneObjWithValue(params, alias, item);
-        result.push(intoDom(children, localParams, compChildren));
+        result.push(intoDom(children, localParams, cc));
     }
     return result;
 }
@@ -158,11 +159,11 @@ function componentControl(
     condition: State<any>,
     children: RCMLResult[],
     params: Properties,
-    compChildren: CompChildren
+    cc: ComponentChildren
 ): ControlComponent {
     const hide = document.createElement('div');
     const marker = document.createTextNode('');
-    const elements = intoDom(children, params, compChildren);
+    const elements = intoDom(children, params, cc);
     const component: ControlComponent = {
         elems: [],
         marker: marker
@@ -195,7 +196,7 @@ function componentLoopState(
     alias: string,
     children: RCMLResult[],
     params: Properties,
-    compChildren: CompChildren
+    cc: ComponentChildren
 ): ControlComponent {
     const listComponent: ControlComponent = {
         elems: createFlatListElement(
@@ -203,7 +204,7 @@ function componentLoopState(
             alias,
             list.getValue(),
             children,
-            compChildren
+            cc
         ),
         marker: document.createTextNode('')
     };
@@ -218,7 +219,7 @@ function componentLoopState(
             alias,
             items,
             children,
-            compChildren
+            cc
         );
         removeItems(parentNode, elems);
         insertItemsBefore(parentNode, marker, newListElements);
@@ -232,7 +233,7 @@ function componentLoopList(
     alias: string,
     children: RCMLResult[],
     params: Properties,
-    compChildren: CompChildren
+    cc: ComponentChildren
 ): ControlComponent {
     const listMarker = document.createTextNode('');
     const statifiedList = list.toArray().map((item) => {
@@ -247,7 +248,7 @@ function componentLoopList(
         alias,
         statifiedList,
         children,
-        compChildren
+        cc
     );
     const mirrorList: (MirrorElement | undefined)[] = listElementEach.map(
         (elems) => ({
@@ -276,7 +277,7 @@ function componentLoopList(
             const newElems = intoDom(
                 children,
                 cloneObjWithValue(params, alias, nextItem),
-                compChildren
+                cc
             );
             if (mirronElement) {
                 const {
@@ -378,7 +379,7 @@ function componentLoopList(
         const newElems = intoDom(
             children,
             cloneObjWithValue(params, alias, insertedItem),
-            compChildren
+            cc
         );
         const mirror: MirrorElement = {
             elems: newElems,
@@ -407,14 +408,14 @@ function componentDestructState(
     aliases: PropAlias[],
     children: RCMLResult[],
     params: Properties,
-    compChildren: CompChildren
+    cchildren: ComponentChildren
 ): ControlComponent {
     const destructParams =
         obj.getValue() instanceof Map
             ? cloneMapWithAlias(params, aliases, obj.getValue())
             : cloneObjWithAlias(params, aliases, obj.getValue());
     const destructComponent: ControlComponent = {
-        elems: intoDom(children, destructParams, compChildren),
+        elems: intoDom(children, destructParams, cchildren),
         marker: document.createTextNode('')
     };
     observe(obj, (ob) => {
@@ -431,7 +432,7 @@ function componentDestructState(
         const destructElements = intoDom(
             children,
             destructParams,
-            compChildren
+            cchildren
         );
         insertItemsBefore(parentNode, marker, destructElements);
         destructComponent.elems = destructElements;
@@ -444,13 +445,13 @@ function componentDestructMap(
     aliases: PropAlias[],
     children: RCMLResult[],
     params: Properties,
-    compChildren: CompChildren
+    cc: ComponentChildren
 ): ControlComponent {
     const destructMarker = document.createTextNode('');
     const destructParams = cloneMapWithAlias(params, aliases, map.getRawMap());
     const statifiedParams = statifyObj(destructParams, aliases);
     const destructComponent: ControlComponent = {
-        elems: intoDom(children, statifiedParams, compChildren),
+        elems: intoDom(children, statifiedParams, cc),
         marker: destructMarker
     };
     map.onUpdate((key, value) => {
@@ -481,10 +482,7 @@ function componentDestructMap(
 export function intoDom(
     tree: RCMLResult[],
     params: Properties = {},
-    cc: CompChildren = {
-        tree: [],
-        props: {}
-    }
+    cc: ComponentChildren = {}
 ): NodeComponent[] {
     const result: NodeComponent[] = [];
     for (const item of tree) {
@@ -503,8 +501,10 @@ export function intoDom(
             const { tag, props, events, children } = item as Component;
             switch (tag) {
                 case 'children':
-                    const childrenResult = intoDom(cc.tree, cc.props);
-                    result.push(...childrenResult);
+                    if (cc.tree && cc.props) {
+                        const childrenResult = intoDom(cc.tree, cc.props);
+                        result.push(...childrenResult);
+                    }
                     break;
                 case 'if':
                 case 'unless':
@@ -628,11 +628,22 @@ export function intoDom(
                         const component: ReactiveComponent = params[tag];
                         const [propsComp, eventsComp] =
                             processComponentProperties(props, events, params);
-                        const childrenComp: CompChildren = {
+                        const childrenComp: ComponentChildren = {
                             tree: children,
                             props: params
                         };
-                        result.push(...component(propsComp, childrenComp));
+                        const dispatch = (
+                            name: string,
+                            ...args: any[]
+                        ): any => {
+                            const event = eventsComp[name];
+                            if (typeof event === 'function') {
+                                return event(...args);
+                            }
+                        };
+                        result.push(
+                            ...component(propsComp, dispatch, childrenComp)
+                        );
                     } else {
                         const elem = document.createElement(tag);
                         const [propsComp, eventsComp] =

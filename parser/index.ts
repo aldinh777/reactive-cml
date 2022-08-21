@@ -144,23 +144,25 @@ export function parseReactiveCML(
         return (
             `import { state, observe, observeAll } from '@aldinh777/reactive'\n` +
             `import { stateList, stateMap } from '@aldinh777/reactive/collection'\n` +
+            `import { processRCML } from'@aldinh777/reactive-cml'\n` +
             `import { intoDom } from '@aldinh777/reactive-cml/dom'\n` +
             `${imports}\n` +
-            `export default function(props={}, children={tree: [], props: {}}) {\n` +
+            `export default function(props={}, dispatch=()=>{}, _children={}) {\n` +
             `${script}` +
             `return intoDom(${cmlJson}, ` +
-            `{${params.concat(dependencies).join()}}, children)}`
+            `{${params.concat(dependencies).join()}}, _children)}`
         );
     } else {
         return (
             `const { state, observe, observeAll } = require('@aldinh777/reactive')\n` +
             `const { stateList, stateMap } = require('@aldinh777/reactive/collection')\n` +
+            `const { processRCML } = require('@aldinh777/reactive-cml')\n` +
             `const { intoDom } = require('@aldinh777/reactive-cml/dom')\n` +
             `${imports}\n` +
-            `module.exports = function(props={}, children={tree: [], props: {}}) {\n` +
+            `module.exports = function(props={}, dispatch=()=>{}, _children={}) {\n` +
             `${script}` +
             `return intoDom(${cmlJson}, ` +
-            `{${params.concat(dependencies).join()}}, children)}`
+            `{${params.concat(dependencies).join()}}, _children)}`
         );
     }
 }
