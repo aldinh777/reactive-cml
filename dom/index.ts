@@ -69,7 +69,7 @@ export function insertItemsBefore(
 }
 
 function processTextNode(text: string, params: Properties): Text[] {
-    const streamResult = [];
+    const streamResult: Text[] = [];
     let stream = '';
     let propName = '';
     let propFlag = false;
