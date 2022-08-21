@@ -1,4 +1,3 @@
-import { CMLTree } from '@aldinh777/cml-parser';
 import { StateList, StateMap } from '@aldinh777/reactive/collection';
 import { observe, State } from '@aldinh777/reactive';
 import {
@@ -8,13 +7,16 @@ import {
     cloneObjWithAlias,
     cloneObjWithValue,
     isReactive,
-    statifyObj
+    statifyObj,
+    TextProp,
+    StaticProperties
 } from '../util';
+import { Component, RCMLResult } from '..';
 
 type NodeComponent = Node | ControlComponent;
 type ReactiveComponent = (
     props: Properties,
-    children: ComponentChildren
+    children: CompChildren
 ) => NodeComponent[];
 
 interface ControlComponent {
@@ -22,13 +24,13 @@ interface ControlComponent {
     marker: Node;
 }
 interface MirrorElement {
-    startMarker: Text;
-    endMarker: Text;
     elems: NodeComponent[];
+    start: Text;
+    end: Text;
 }
-interface ComponentChildren {
-    structure: CMLTree;
-    superProps: Properties;
+interface CompChildren {
+    tree: RCMLResult[];
+    props: Properties;
 }
 
 export function appendItems(parent: Node, items: NodeComponent[]) {
@@ -68,132 +70,26 @@ export function insertItemsBefore(
     }
 }
 
-function processTextNode(text: string, params: Properties): Text[] {
-    const streamResult: Text[] = [];
-    let stream = '';
-    let propName = '';
-    let propFlag = false;
-    let propNameFlag = false;
-    let propSpaceLeftFlag = false;
-    for (let i = 0; i < text.length; i++) {
-        const c = text[i];
-        if (propFlag) {
-            if (propSpaceLeftFlag) {
-                if (c === '{') {
-                    stream += '{' + propName;
-                    propName = '';
-                } else if (c === '}') {
-                    propFlag = false;
-                    propSpaceLeftFlag = false;
-                    stream += '{' + propName + '}';
-                } else if (c.match(/[^\s]/)) {
-                    propSpaceLeftFlag = false;
-                    propNameFlag = true;
-                    propName += c;
-                } else {
-                    propName += c;
-                }
-            } else if (propNameFlag) {
-                if (c === '{') {
-                    propNameFlag = false;
-                    propSpaceLeftFlag = true;
-                    stream += '{' + propName;
-                    propName = '';
-                } else if (
-                    c === '}' &&
-                    propName.match(/^\s*[\$_A-Za-z][\$_\w]*/)
-                ) {
-                    propFlag = false;
-                    const t = params[propName.trim()];
-                    if (t instanceof State) {
-                        const rawText = document.createTextNode(stream);
-                        const stateText = document.createTextNode('');
-                        observe(t, (text) => (stateText.textContent = text));
-                        streamResult.push(rawText, stateText);
-                        stream = '';
-                        propName = '';
-                    } else {
-                        stream += t;
-                        propName = '';
-                    }
-                } else if (c.match(/\s/)) {
-                    propNameFlag = false;
-                    propName += c;
-                } else if (c.match(/[\$_\w]/)) {
-                    propName += c;
-                } else {
-                    propNameFlag = false;
-                    propFlag = false;
-                    stream += '{' + propName + c;
-                    propName = '';
-                }
-            } else {
-                if (c === '}' && propName.match(/^\s*[\$_A-Za-z][\$_\w]*/)) {
-                    propFlag = false;
-                    const t = params[propName.trim()];
-                    if (t instanceof State) {
-                        const rawText = document.createTextNode(stream);
-                        const stateText = document.createTextNode('');
-                        observe(t, (text) => (stateText.textContent = text));
-                        streamResult.push(rawText, stateText);
-                        stream = '';
-                        propName = '';
-                    } else {
-                        stream += t;
-                        propName = '';
-                    }
-                } else if (c.match(/\s/)) {
-                    propName += c;
-                } else {
-                    propFlag = false;
-                    stream += '{' + propName + c;
-                    propName = '';
-                }
-            }
-        } else {
-            if (c === '\\' && text[i + 1] === '{') {
-                stream += '\\{';
-                i++;
-                continue;
-            } else if (c === '{') {
-                propFlag = true;
-                propSpaceLeftFlag = true;
-            } else {
-                stream += c;
-            }
-        }
-    }
-    if (propFlag) {
-        stream += '{' + propName;
-    }
-    if (stream) {
-        streamResult.push(document.createTextNode(stream));
-    }
-    return streamResult;
-}
 
 function processComponentProperties(
-    props: Properties,
+    props: StaticProperties<string | TextProp>,
+    events: StaticProperties<string>,
     params: Properties
-): Properties {
-    const properties: Properties = {};
-    for (const key in props) {
-        const value = props[key];
-        const matches = key.match(/(on|bind):(.+)/);
-        if (matches) {
-            const [_, type, attr] = matches;
-            if (type === 'on') {
-                const listener = params[value];
-                properties[attr] = listener;
-            } else if (type === 'bind') {
-                const state = params[value];
-                properties[attr] = state;
-            }
+): [Properties, StaticProperties<Function>] {
+    const propsComp: Properties = {};
+    const eventsComp: StaticProperties<Function> = {};
+    for (const prop in props) {
+        const value = props[prop];
+        if (typeof value === 'string') {
+            propsComp[prop] = value;
         } else {
-            properties[key] = value;
+            propsComp[prop] = params[value.name];
         }
     }
-    return properties;
+    for (const event in events) {
+        eventsComp[event] = params[event];
+    }
+    return [propsComp, eventsComp];
 }
 
 function setElementAttribute(elem: HTMLElement, attr: string, value: any) {
@@ -209,29 +105,19 @@ function setElementAttribute(elem: HTMLElement, attr: string, value: any) {
 function processElementProperties(
     elem: HTMLElement,
     props: Properties,
-    params: Properties
+    events: StaticProperties<Function>
 ) {
-    for (const key in props) {
-        const value = props[key];
-        const matches = key.match(/(on|bind):(.+)/);
-        if (matches) {
-            const [_, type, attr] = matches;
-            if (type === 'on') {
-                const listener = params[value];
-                elem.addEventListener(attr, listener);
-            } else if (type === 'bind') {
-                const state = params[value];
-                if (state instanceof State) {
-                    observe(state, (value) =>
-                        setElementAttribute(elem, attr, value)
-                    );
-                } else {
-                    setElementAttribute(elem, attr, value);
-                }
-            }
+    for (const prop in props) {
+        const value = props[prop];
+        if (value instanceof State) {
+            observe(value, (next) => setElementAttribute(elem, prop, next));
         } else {
-            setElementAttribute(elem, key, value);
+            setElementAttribute(elem, prop, value);
         }
+    }
+    for (const event in events) {
+        const listener = events[event] as EventListener;
+        elem.addEventListener(event, listener);
     }
 }
 
@@ -239,8 +125,8 @@ function createFlatListElement(
     params: Properties,
     alias: string,
     items: any[],
-    children: CMLTree,
-    compChildren: ComponentChildren
+    children: RCMLResult[],
+    compChildren: CompChildren
 ): NodeComponent[] {
     const elements: NodeComponent[] = [];
     for (const item of items) {
@@ -257,8 +143,8 @@ function createListElement(
     params: Properties,
     alias: string,
     items: any[],
-    children: CMLTree,
-    compChildren: ComponentChildren
+    children: RCMLResult[],
+    compChildren: CompChildren
 ): NodeComponent[][] {
     const result: NodeComponent[][] = [];
     for (const item of items) {
@@ -270,9 +156,9 @@ function createListElement(
 
 function componentControl(
     condition: State<any>,
-    children: CMLTree,
+    children: RCMLResult[],
     params: Properties,
-    compChildren: ComponentChildren
+    compChildren: CompChildren
 ): ControlComponent {
     const hide = document.createElement('div');
     const marker = document.createTextNode('');
@@ -307,9 +193,9 @@ function componentControl(
 function componentLoopState(
     list: State<any[]>,
     alias: string,
-    children: CMLTree,
+    children: RCMLResult[],
     params: Properties,
-    compChildren: ComponentChildren
+    compChildren: CompChildren
 ): ControlComponent {
     const listComponent: ControlComponent = {
         elems: createFlatListElement(
@@ -344,9 +230,9 @@ function componentLoopState(
 function componentLoopList(
     list: StateList<any>,
     alias: string,
-    children: CMLTree,
+    children: RCMLResult[],
     params: Properties,
-    compChildren: ComponentChildren
+    compChildren: CompChildren
 ): ControlComponent {
     const listMarker = document.createTextNode('');
     const statifiedList = list.toArray().map((item) => {
@@ -365,14 +251,14 @@ function componentLoopList(
     );
     const mirrorList: (MirrorElement | undefined)[] = listElementEach.map(
         (elems) => ({
-            startMarker: document.createTextNode(''),
-            endMarker: document.createTextNode(''),
-            elems: elems
+            elems: elems,
+            start: document.createTextNode(''),
+            end: document.createTextNode('')
         })
     );
     const listComponent: ControlComponent = {
         elems: mirrorList.flatMap((m) =>
-            m ? [m.startMarker, ...m.elems, m.endMarker] : []
+            m ? [m.start, ...m.elems, m.end] : []
         ),
         marker: listMarker
     };
@@ -393,7 +279,11 @@ function componentLoopList(
                 compChildren
             );
             if (mirronElement) {
-                const { startMarker, endMarker, elems } = mirronElement;
+                const {
+                    start: startMarker,
+                    end: endMarker,
+                    elems
+                } = mirronElement;
                 const { parentNode } = endMarker;
                 if (!parentNode) {
                     return;
@@ -409,11 +299,11 @@ function componentLoopList(
                 );
             } else {
                 const m: MirrorElement = {
-                    startMarker: document.createTextNode(''),
-                    endMarker: document.createTextNode(''),
-                    elems: newElems
+                    elems: newElems,
+                    start: document.createTextNode(''),
+                    end: document.createTextNode('')
                 };
-                const flatElems = [m.startMarker, ...m.elems, m.endMarker];
+                const flatElems = [m.start, ...m.elems, m.end];
                 mirrorList[index] = m;
                 if (index >= mirrorList.length) {
                     const { parentNode } = listMarker;
@@ -425,7 +315,7 @@ function componentLoopList(
                     while (i < mirrorList.length) {
                         const mirror = mirrorList[i];
                         if (mirror) {
-                            const { startMarker } = mirror;
+                            const { start: startMarker } = mirror;
                             const { parentNode } = startMarker;
                             if (parentNode) {
                                 insertItemsBefore(
@@ -455,7 +345,7 @@ function componentLoopList(
     list.onDelete((index) => {
         const mirrorElement = mirrorList[index];
         if (mirrorElement) {
-            const { startMarker, endMarker, elems } = mirrorElement;
+            const { start: startMarker, end: endMarker, elems } = mirrorElement;
             const { parentNode } = endMarker;
             if (!parentNode) {
                 return;
@@ -473,7 +363,7 @@ function componentLoopList(
         const nextMirror = mirrorList[index];
         let nextMarker = listMarker;
         if (nextMirror) {
-            nextMarker = nextMirror.startMarker;
+            nextMarker = nextMirror.start;
         }
         const { parentNode } = nextMarker;
         if (!parentNode) {
@@ -490,10 +380,10 @@ function componentLoopList(
             cloneObjWithValue(params, alias, insertedItem),
             compChildren
         );
-        const mirror = {
-            startMarker: startMarker,
-            endMarker: endMarker,
-            elems: newElems
+        const mirror: MirrorElement = {
+            elems: newElems,
+            start: startMarker,
+            end: endMarker
         };
         const flatNewElems = [startMarker, ...newElems, endMarker];
         insertItemsBefore(parentNode, nextMarker, flatNewElems);
@@ -513,13 +403,16 @@ function componentLoopList(
 }
 
 function componentDestructState(
-    obj: State<any>,
+    obj: State<any> | State<Map<string, any>>,
     aliases: PropAlias[],
-    children: CMLTree,
+    children: RCMLResult[],
     params: Properties,
-    compChildren: ComponentChildren
+    compChildren: CompChildren
 ): ControlComponent {
-    const destructParams = cloneObjWithAlias(params, aliases, obj.getValue());
+    const destructParams =
+        obj.getValue() instanceof Map
+            ? cloneMapWithAlias(params, aliases, obj.getValue())
+            : cloneObjWithAlias(params, aliases, obj.getValue());
     const destructComponent: ControlComponent = {
         elems: intoDom(children, destructParams, compChildren),
         marker: document.createTextNode('')
@@ -531,7 +424,10 @@ function componentDestructState(
             return;
         }
         removeItems(parentNode, elems);
-        const destructParams = cloneObjWithAlias(params, aliases, ob);
+        const destructParams =
+            ob instanceof Map
+                ? cloneMapWithAlias(params, aliases, ob)
+                : cloneObjWithAlias(params, aliases, ob);
         const destructElements = intoDom(
             children,
             destructParams,
@@ -546,9 +442,9 @@ function componentDestructState(
 function componentDestructMap(
     map: StateMap<any>,
     aliases: PropAlias[],
-    children: CMLTree,
+    children: RCMLResult[],
     params: Properties,
-    compChildren: ComponentChildren
+    compChildren: CompChildren
 ): ControlComponent {
     const destructMarker = document.createTextNode('');
     const destructParams = cloneMapWithAlias(params, aliases, map.getRawMap());
@@ -583,215 +479,166 @@ function componentDestructMap(
 }
 
 export function intoDom(
-    items: CMLTree,
+    tree: RCMLResult[],
     params: Properties = {},
-    compChildren: ComponentChildren = {
-        structure: [],
-        superProps: {}
+    cc: CompChildren = {
+        tree: [],
+        props: {}
     }
 ): NodeComponent[] {
     const result: NodeComponent[] = [];
-    for (const item of items) {
+    for (const item of tree) {
         if (typeof item === 'string') {
-            const texts = processTextNode(item, params);
-            for (const text of texts) {
-                result.push(text);
+            result.push(document.createTextNode(item));
+        } else if (Reflect.has(item, 'name')) {
+            const param = params[(item as TextProp).name];
+            const text = document.createTextNode('');
+            if (param instanceof State) {
+                observe(param, (next) => (text.textContent = next));
+            } else {
+                text.textContent = param;
             }
+            result.push(text);
         } else {
-            const { tag, props, children } = item;
+            const { tag, props, events, children } = item as Component;
             switch (tag) {
                 case 'children':
-                    const childrenResult = intoDom(
-                        compChildren.structure,
-                        compChildren.superProps
-                    );
-                    for (const child of childrenResult) {
-                        result.push(child);
-                    }
+                    const childrenResult = intoDom(cc.tree, cc.props);
+                    result.push(...childrenResult);
                     break;
-
                 case 'if':
-                    const ifKey: string = props['condition'];
-                    const ifCondition: boolean | State<boolean> = params[ifKey];
-                    if (ifCondition instanceof State) {
-                        result.push(
-                            componentControl(
-                                ifCondition,
-                                children,
-                                params,
-                                compChildren
-                            )
-                        );
-                    } else if (ifCondition) {
-                        for (const elem of intoDom(
-                            children,
-                            params,
-                            compChildren
-                        )) {
-                            result.push(elem);
-                        }
-                    }
-                    break;
-
                 case 'unless':
-                    const unlessKey: string = props['condition'];
-                    const unlessCondition: boolean | State<boolean> =
-                        params[unlessKey];
-                    if (unlessCondition instanceof State) {
-                        const rev = new State(!unlessCondition.getValue());
-                        observe(unlessCondition, (condition) =>
-                            rev.setValue(!condition)
-                        );
-                        result.push(
-                            componentControl(
-                                rev,
-                                children,
-                                params,
-                                compChildren
-                            )
-                        );
-                    } else if (!unlessCondition) {
-                        for (const elem of intoDom(
-                            children,
-                            params,
-                            compChildren
-                        )) {
-                            result.push(elem);
-                        }
-                    }
-                    break;
-
-                case 'foreach':
-                    const listName: string = props['list'];
-                    const listAlias: string = props['as'];
-                    const list: any[] | State<any[]> | StateList<any> =
-                        params[listName];
-                    if (list instanceof State) {
-                        result.push(
-                            componentLoopState(
-                                list,
-                                listAlias,
-                                children,
-                                params,
-                                compChildren
-                            )
-                        );
-                    } else if (list instanceof StateList) {
-                        result.push(
-                            componentLoopList(
-                                list,
-                                listAlias,
-                                children,
-                                params,
-                                compChildren
-                            )
-                        );
-                    } else {
-                        for (const item of list) {
-                            const localParams = cloneObjWithValue(
-                                params,
-                                listAlias,
-                                item
+                    if (typeof props.condition === 'string') {
+                        let condition: boolean | State<boolean> =
+                            params[props.condition];
+                        if (condition instanceof State) {
+                            if (tag === 'unless') {
+                                const rev = new State(!condition.getValue());
+                                condition.onChange((un) => rev.setValue(!un));
+                                condition = rev;
+                            }
+                            result.push(
+                                componentControl(
+                                    condition,
+                                    children,
+                                    params,
+                                    cc
+                                )
                             );
-                            for (const elem of intoDom(
-                                children,
-                                localParams,
-                                compChildren
-                            )) {
-                                result.push(elem);
+                        } else {
+                            if (tag === 'unless') {
+                                condition = !condition;
+                            }
+                            if (condition) {
+                                result.push(...intoDom(tree, params, cc));
                             }
                         }
                     }
                     break;
-
+                case 'foreach':
+                    if (
+                        typeof props.list === 'string' &&
+                        typeof props.as === 'string'
+                    ) {
+                        const list = params[props.list];
+                        if (list instanceof State) {
+                            result.push(
+                                componentLoopState(
+                                    list,
+                                    props.as,
+                                    children,
+                                    params,
+                                    cc
+                                )
+                            );
+                        } else if (list instanceof StateList) {
+                            result.push(
+                                componentLoopList(
+                                    list,
+                                    props.as,
+                                    children,
+                                    params,
+                                    cc
+                                )
+                            );
+                        } else {
+                            for (const item of list) {
+                                const localParams = cloneObjWithValue(
+                                    params,
+                                    props.as,
+                                    item
+                                );
+                                result.push(
+                                    ...intoDom(children, localParams, cc)
+                                );
+                            }
+                        }
+                    }
+                    break;
                 case 'destruct':
-                    const objKey: string = props['object'];
-                    const propQuery: string = props['as'];
-                    const obj: any = params[objKey];
-                    const propNames: PropAlias[] = propQuery
-                        .split(/\s+/)
-                        .map((query) => {
-                            const matches = query.match(/(.+):(.+)/);
-                            if (matches) {
-                                const [_, alias, prop] = matches;
-                                return { alias, prop };
-                            } else {
-                                return { alias: query, prop: query };
-                            }
-                        });
-                    if (obj instanceof State) {
-                        result.push(
-                            componentDestructState(
-                                obj,
-                                propNames,
-                                children,
-                                params,
-                                compChildren
-                            )
-                        );
-                    } else if (obj instanceof StateMap) {
-                        result.push(
-                            componentDestructMap(
-                                obj,
-                                propNames,
-                                children,
-                                params,
-                                compChildren
-                            )
-                        );
-                    } else if (obj instanceof Map) {
-                        const destructParams = cloneMapWithAlias(
-                            params,
-                            propNames,
-                            obj
-                        );
-                        for (const elem of intoDom(
-                            children,
-                            destructParams,
-                            compChildren
-                        )) {
-                            result.push(elem);
-                        }
-                    } else {
-                        const destructParams = cloneObjWithAlias(
-                            params,
-                            propNames,
-                            obj
-                        );
-                        for (const elem of intoDom(
-                            children,
-                            destructParams,
-                            compChildren
-                        )) {
-                            result.push(elem);
+                    if (
+                        typeof props.object === 'string' &&
+                        typeof props.as === 'string'
+                    ) {
+                        const obj: any = params[props.object];
+                        const propNames: PropAlias[] = props.as
+                            .split(/\s+/)
+                            .map((query) => {
+                                const matches = query.match(/(.+):(.+)/);
+                                if (matches) {
+                                    const [_, alias, prop] = matches;
+                                    return { alias, prop };
+                                } else {
+                                    return { alias: query, prop: query };
+                                }
+                            });
+                        if (obj instanceof State) {
+                            result.push(
+                                componentDestructState(
+                                    obj,
+                                    propNames,
+                                    children,
+                                    params,
+                                    cc
+                                )
+                            );
+                        } else if (obj instanceof StateMap) {
+                            result.push(
+                                componentDestructMap(
+                                    obj,
+                                    propNames,
+                                    children,
+                                    params,
+                                    cc
+                                )
+                            );
+                        } else {
+                            const destructParams =
+                                obj instanceof Map
+                                    ? cloneMapWithAlias(params, propNames, obj)
+                                    : cloneObjWithAlias(params, propNames, obj);
+                            result.push(
+                                ...intoDom(children, destructParams, cc)
+                            );
                         }
                     }
                     break;
-
                 default:
-                    if (tag[0] === tag[0].toUpperCase() && tag[0].match(/\w/)) {
+                    if (tag[0].match(/[A-Z]/)) {
                         const component: ReactiveComponent = params[tag];
-                        const properties = processComponentProperties(
-                            props,
-                            params
-                        );
-                        const compChildren: ComponentChildren = {
-                            structure: children,
-                            superProps: params
+                        const [propsComp, eventsComp] =
+                            processComponentProperties(props, events, params);
+                        const childrenComp: CompChildren = {
+                            tree: children,
+                            props: params
                         };
-                        for (const elem of component(
-                            properties,
-                            compChildren
-                        )) {
-                            result.push(elem);
-                        }
+                        result.push(...component(propsComp, childrenComp));
                     } else {
                         const elem = document.createElement(tag);
-                        processElementProperties(elem, props, params);
-                        appendItems(
-                            elem,
-                            intoDom(children, params, compChildren)
-                        );
+                        const [propsComp, eventsComp] =
+                            processComponentProperties(props, events, params);
+                        processElementProperties(elem, propsComp, eventsComp);
+                        appendItems(elem, intoDom(children, params, cc));
                         result.push(elem);
                     }
                     break;

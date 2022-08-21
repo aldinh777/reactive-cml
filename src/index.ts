@@ -5,19 +5,19 @@ import {
     TextProp
 } from '../util';
 
-type RCMLResult = string | TextProp | Component;
+export type RCMLResult = string | TextProp | Component;
 
-interface Component {
+export interface Component {
     tag: string;
     props: StaticProperties<string | TextProp>;
-    events: StaticProperties<Function | TextProp>;
+    events: StaticProperties<string>;
     children: RCMLResult[];
 }
 
 function processComponent(node: CMLObject): Component {
     const { tag, props, children } = node;
     const propsComp: StaticProperties<string | TextProp> = {};
-    const eventsComp: StaticProperties<Function | TextProp> = {};
+    const eventsComp: StaticProperties<string> = {};
     for (const prop in props) {
         const value = props[prop];
         const matches = prop.match(/(on|bind):(.+)/);
@@ -28,7 +28,7 @@ function processComponent(node: CMLObject): Component {
                     propsComp[attr] = { name: value };
                     break;
                 case 'on':
-                    eventsComp[attr] = { name: value };
+                    eventsComp[attr] = value;
                     break;
             }
         } else {
@@ -45,9 +45,9 @@ function processComponent(node: CMLObject): Component {
 
 function extractSpecifics(node: CMLObject, extracts: string[]): Component {
     const { tag, props, children } = node;
-    const propsComp: StaticProperties<TextProp> = {};
+    const propsComp: StaticProperties<string> = {};
     for (const extract of extracts) {
-        propsComp[extract] = { name: props[extract] };
+        propsComp[extract] = props[extract];
     }
     return {
         tag: tag,
