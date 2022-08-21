@@ -1,5 +1,5 @@
 import { CMLTree, parseCML } from '@aldinh777/cml-parser';
-import { undupe } from '../util';
+import { extractTextProps, TextProp, undupe } from '../util';
 
 type ImportFlag = 'import' | 'from' | 'end';
 
@@ -43,10 +43,10 @@ function extractParams(items: CMLTree, blacklist = new Set()): ExtractedParams {
     let par: string[] = [];
     for (const item of items) {
         if (typeof item === 'string') {
-            const matches = item.matchAll(/\{(.*?)\}/g);
-            for (const [, param] of Array.from(matches)) {
-                par.push(param.trim());
-            }
+            const params = extractTextProps(item)
+                .filter((i) => typeof i !== 'string')
+                .map((tp) => (tp as TextProp).name);
+            par.push(...params);
         } else {
             const { tag, props, children } = item;
             const localBlacklist = new Set(blacklist);
@@ -144,9 +144,9 @@ export function parseReactiveCML(
         return (
             `import { state, observe, observeAll } from '@aldinh777/reactive'\n` +
             `import { stateList, stateMap } from '@aldinh777/reactive/collection'\n` +
-            `import { intoDom } from '@aldinh777/reactive-cml'\n` +
+            `import { intoDom } from '@aldinh777/reactive-cml/dom'\n` +
             `${imports}\n` +
-            `export default function(props={}, children={structure: [], superProps: {}}) {\n` +
+            `export default function(props={}, children={tree: [], props: {}}) {\n` +
             `${script}` +
             `return intoDom(${cmlJson}, ` +
             `{${params.concat(dependencies).join()}}, children)}`
@@ -155,9 +155,9 @@ export function parseReactiveCML(
         return (
             `const { state, observe, observeAll } = require('@aldinh777/reactive')\n` +
             `const { stateList, stateMap } = require('@aldinh777/reactive/collection')\n` +
-            `const { intoDom } = require('@aldinh777/reactive-cml')\n` +
+            `const { intoDom } = require('@aldinh777/reactive-cml/dom')\n` +
             `${imports}\n` +
-            `module.exports = function(props={}, children={structure: [], superProps: {}}) {\n` +
+            `module.exports = function(props={}, children={tree: [], props: {}}) {\n` +
             `${script}` +
             `return intoDom(${cmlJson}, ` +
             `{${params.concat(dependencies).join()}}, children)}`
