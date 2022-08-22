@@ -1,4 +1,4 @@
-import { observe, State } from '@aldinh777/reactive';
+import { State } from '@aldinh777/reactive';
 import { Properties } from '../../util';
 import {
     appendItems,
@@ -30,13 +30,13 @@ export default function (
         const hide = document.createElement('div');
         const marker = document.createTextNode('');
         const elements = intoDom(tree, params, _super);
-        const component: ControlComponent = { elems: [], marker };
+        const component: ControlComponent = { elems: [] };
         if (condition.getValue()) {
             component.elems = elements;
         } else {
             appendItems(hide, elements);
         }
-        observe(condition, (append) => {
+        condition.onChange((append: boolean) => {
             const { parentNode } = marker;
             if (!parentNode) {
                 return;
@@ -51,7 +51,7 @@ export default function (
                 component.elems = [];
             }
         });
-        return [component];
+        return [component, marker];
     } else {
         if (unless) {
             condition = !condition;

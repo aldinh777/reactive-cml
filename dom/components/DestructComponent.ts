@@ -1,4 +1,4 @@
-import { observe, State } from '@aldinh777/reactive';
+import { State } from '@aldinh777/reactive';
 import { StateMap } from '@aldinh777/reactive/collection';
 import {
     cloneMapWithAlias,
@@ -40,16 +40,16 @@ export default function (
         }
     });
     if (obj instanceof State) {
+        const marker = document.createTextNode('');
         const destructParams =
             obj.getValue() instanceof Map
                 ? cloneMapWithAlias(params, propnames, obj.getValue())
                 : cloneObjWithAlias(params, propnames, obj.getValue());
-        const destructComponent: ControlComponent = {
-            elems: intoDom(tree, destructParams, _super),
-            marker: document.createTextNode('')
+        const component: ControlComponent = {
+            elems: intoDom(tree, destructParams, _super)
         };
-        observe(obj, (ob) => {
-            const { elems, marker } = destructComponent;
+        obj.onChange(ob => {
+            const { elems } = component;
             const { parentNode } = marker;
             if (!parentNode) {
                 return;
@@ -61,20 +61,19 @@ export default function (
                     : cloneObjWithAlias(params, propnames, ob);
             const destructElements = intoDom(tree, destructParams, _super);
             insertItemsBefore(parentNode, marker, destructElements);
-            destructComponent.elems = destructElements;
+            component.elems = destructElements;
         });
-        return [destructComponent];
+        return [component, marker];
     } else if (obj instanceof StateMap) {
-        const destructMarker = document.createTextNode('');
+        const marker = document.createTextNode('');
         const destructParams = cloneMapWithAlias(
             params,
             propnames,
             obj.getRawMap()
         );
         const statifiedParams = statifyObj(destructParams, propnames);
-        const destructComponent: ControlComponent = {
-            elems: intoDom(tree, statifiedParams, _super),
-            marker: destructMarker
+        const component: ControlComponent = {
+            elems: intoDom(tree, statifiedParams, _super)
         };
         obj.onUpdate((key, value) => {
             const param = statifiedParams[key];
@@ -98,7 +97,7 @@ export default function (
                 statifiedParams[key] = new State(value);
             }
         });
-        return [destructComponent];
+        return [component, marker];
     } else {
         const destructParams =
             obj instanceof Map

@@ -1,4 +1,4 @@
-import { observe, State } from '@aldinh777/reactive';
+import { State } from '@aldinh777/reactive';
 import { StateList } from '@aldinh777/reactive/collection';
 import { cloneObjWithValue, isReactive, Properties } from '../../util';
 import { RCMLResult } from '../..';
@@ -62,19 +62,17 @@ export default function (
     const list = params[props.list];
     const alias = props.as;
     if (list instanceof State) {
-        const elems: NodeComponent[] = createFlatListElement(
-            params,
-            alias,
-            list.getValue(),
-            tree,
-            _super
-        );
+        const marker = document.createTextNode('');
         const component: ControlComponent = {
-            elems,
-            marker: document.createElement('')
+            elems:createFlatListElement(
+                params,
+                alias,
+                list.getValue(),
+                tree,
+                _super)
         };
-        observe(list, (items) => {
-            const { elems, marker } = component;
+        list.onChange((items) => {
+            const { elems } = component;
             const { parentNode } = marker;
             if (!parentNode) {
                 return;
@@ -90,7 +88,7 @@ export default function (
             insertItemsBefore(parentNode, marker, newListElements);
             component.elems = newListElements;
         });
-        return [component];
+        return [component, marker];
     } else if (list instanceof StateList) {
         const marker = document.createTextNode('');
         const statifiedList = list
@@ -113,8 +111,7 @@ export default function (
         const component: ControlComponent = {
             elems: mirrorList.flatMap((m) =>
                 m ? [m.start, ...m.elems, m.end] : []
-            ),
-            marker: marker
+            )
         };
         list.onUpdate((index, next) => {
             const item = statifiedList[index];
@@ -253,7 +250,7 @@ export default function (
                 statifiedList.splice(index, 0, insertedItem);
             }
         });
-        return [component];
+        return [component, marker];
     } else {
         const elems: NodeComponent[] = [];
         for (const item of list) {

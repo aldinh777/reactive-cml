@@ -15,7 +15,6 @@ export type ReactiveComponent = (
 
 export interface ControlComponent {
     elems: NodeComponent[];
-    marker: Node;
 }
 export interface ComponentChildren {
     tree: RCMLResult[];
@@ -27,39 +26,31 @@ interface PropertyResult {
     events: StaticProperties<Function>;
 }
 
-export function appendItems(parent: Node, items: NodeComponent[]) {
-    for (const item of items) {
-        if (item instanceof Node) {
-            parent.appendChild(item);
-        } else {
-            appendItems(parent, item.elems);
-            parent.appendChild(item.marker);
+function recursiveControl(handler: (par: Node, item: Node, bef?: Node) => any) {
+    function recurse(parent: Node, items: NodeComponent[]) {
+        for (const item of items) {
+            if (item instanceof Node) {
+                handler(parent, item);
+            } else {
+                recurse(parent, item.elems);
+            }
         }
     }
+    return recurse;
 }
 
-export function removeItems(parent: Node, items: NodeComponent[]) {
-    for (const item of items) {
-        if (item instanceof Node) {
-            parent.removeChild(item);
-        } else {
-            removeItems(parent, item.elems);
-            parent.removeChild(item.marker);
-        }
-    }
-}
-
-export function insertItemsBefore(
-    parent: Node,
-    child: Node,
-    items: NodeComponent[]
-) {
+export const appendItems = recursiveControl((par, item) =>
+    par.appendChild(item)
+);
+export const removeItems = recursiveControl((par, item) =>
+    par.removeChild(item)
+);
+export function insertItemsBefore(parent: Node, child: Node, items: NodeComponent[]) {
     for (const item of items) {
         if (item instanceof Node) {
             parent.insertBefore(item, child);
         } else {
             insertItemsBefore(parent, child, item.elems);
-            parent.insertBefore(item.marker, child);
         }
     }
 }
