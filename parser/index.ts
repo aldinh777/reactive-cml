@@ -174,7 +174,7 @@ export function parseReactiveCML(
             `module.exports = `;
     }
     const outscript =
-        `function(props={}, dispatch=()=>{}, _children={}) {\n` +
+        `function(props={}, _children, dispatch=()=>{}) {\n` +
         `${script}` +
         `return intoDom(processRCML(${cmlJson}), ` +
         `{${params.concat(dependencies).join()}}, _children)}`;
