@@ -88,7 +88,7 @@ function processComponentProperties(
         }
     }
     for (const event in events) {
-        eventsComp[event] = params[event];
+        eventsComp[event] = params[events[event]];
     }
     return [propsComp, eventsComp];
 }
@@ -581,7 +581,7 @@ export function intoDom(
                         typeof props.as === 'string'
                     ) {
                         const obj: any = params[props.object];
-                        const propNames: PropAlias[] = props.as
+                        const propnames: PropAlias[] = props.as
                             .split(/\s+/)
                             .map((query) => {
                                 const matches = query.match(/(.+):(.+)/);
@@ -596,7 +596,7 @@ export function intoDom(
                             result.push(
                                 componentDestructState(
                                     obj,
-                                    propNames,
+                                    propnames,
                                     children,
                                     params,
                                     cc
@@ -606,7 +606,7 @@ export function intoDom(
                             result.push(
                                 componentDestructMap(
                                     obj,
-                                    propNames,
+                                    propnames,
                                     children,
                                     params,
                                     cc
@@ -615,8 +615,8 @@ export function intoDom(
                         } else {
                             const destructParams =
                                 obj instanceof Map
-                                    ? cloneMapWithAlias(params, propNames, obj)
-                                    : cloneObjWithAlias(params, propNames, obj);
+                                    ? cloneMapWithAlias(params, propnames, obj)
+                                    : cloneObjWithAlias(params, propnames, obj);
                             result.push(
                                 ...intoDom(children, destructParams, cc)
                             );
