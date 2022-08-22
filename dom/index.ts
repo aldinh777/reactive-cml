@@ -1,5 +1,5 @@
-import { StateList, StateMap } from '@aldinh777/reactive/collection';
 import { observe, State } from '@aldinh777/reactive';
+import { StateList, StateMap } from '@aldinh777/reactive/collection';
 import {
     PropAlias,
     Properties,
@@ -530,7 +530,7 @@ export function intoDom(
                                 condition = !condition;
                             }
                             if (condition) {
-                                result.push(...intoDom(tree, params, cc));
+                                result.push(...intoDom(children, params, cc));
                             }
                         }
                     }
