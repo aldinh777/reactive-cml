@@ -140,29 +140,43 @@ export function parseReactiveCML(
 
     const { dependencies, params } = extractParams(cmlTree);
 
+    const staticDependency = [
+        ['@aldinh777/reactive', ['state', 'observe', 'observeAll']],
+        ['@aldinh777/reactive/collection', ['stateList', 'stateMap']],
+        ['@aldinh777/reactive-cml', ['processRCML']],
+        ['@aldinh777/reactive-cml/dom', ['intoDom']]
+    ];
+
+    let outdep = '';
     if (mode === 'import') {
-        return (
-            `import { state, observe, observeAll } from '@aldinh777/reactive'\n` +
-            `import { stateList, stateMap } from '@aldinh777/reactive/collection'\n` +
-            `import { processRCML } from'@aldinh777/reactive-cml'\n` +
-            `import { intoDom } from '@aldinh777/reactive-cml/dom'\n` +
+        outdep =
+            staticDependency
+                .map(
+                    ([from, imports]) =>
+                        `import { ${(
+                            imports as string[]
+                        ).join()} } from '${from}'\n`
+                )
+                .join('') +
             `${imports}\n` +
-            `export default function(props={}, dispatch=()=>{}, _children={}) {\n` +
-            `${script}` +
-            `return intoDom(${cmlJson}, ` +
-            `{${params.concat(dependencies).join()}}, _children)}`
-        );
+            `export default `;
     } else {
-        return (
-            `const { state, observe, observeAll } = require('@aldinh777/reactive')\n` +
-            `const { stateList, stateMap } = require('@aldinh777/reactive/collection')\n` +
-            `const { processRCML } = require('@aldinh777/reactive-cml')\n` +
-            `const { intoDom } = require('@aldinh777/reactive-cml/dom')\n` +
+        outdep =
+            staticDependency
+                .map(
+                    ([from, imports]) =>
+                        `const { ${(
+                            imports as string[]
+                        ).join()} } = require('${from}')\n`
+                )
+                .join('') +
             `${imports}\n` +
-            `module.exports = function(props={}, dispatch=()=>{}, _children={}) {\n` +
-            `${script}` +
-            `return intoDom(${cmlJson}, ` +
-            `{${params.concat(dependencies).join()}}, _children)}`
-        );
+            `module.exports = `;
     }
+    const outscript =
+        `function(props={}, dispatch=()=>{}, _children={}) {\n` +
+        `${script}` +
+        `return intoDom(processRCML(${cmlJson}), ` +
+        `{${params.concat(dependencies).join()}}, _children)}`;
+    return outdep + outscript;
 }
