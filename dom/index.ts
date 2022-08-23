@@ -45,7 +45,11 @@ export const appendItems = recursiveControl((par, item) =>
 export const removeItems = recursiveControl((par, item) =>
     par.removeChild(item)
 );
-export function insertItemsBefore(parent: Node, child: Node, items: NodeComponent[]) {
+export function insertItemsBefore(
+    parent: Node,
+    child: Node,
+    items: NodeComponent[]
+) {
     for (const item of items) {
         if (item instanceof Node) {
             parent.insertBefore(item, child);
@@ -125,6 +129,11 @@ export function intoDom(
             result.push(text);
         } else {
             const { tag, props, events, children } = item as Component;
+            const childrenComp: ComponentChildren = {
+                tree: children,
+                params: params,
+                _super: cc
+            };
             switch (tag) {
                 case 'children':
                     if (cc) {
@@ -133,13 +142,13 @@ export function intoDom(
                     break;
                 case 'if':
                 case 'unless':
-                    result.push(...ControlComponent(props, cc));
+                    result.push(...ControlComponent(props, childrenComp));
                     break;
                 case 'foreach':
-                    result.push(...LoopComponent(props, cc));
+                    result.push(...LoopComponent(props, childrenComp));
                     break;
                 case 'destruct':
-                    result.push(...DestructComponent(props, cc));
+                    result.push(...DestructComponent(props, childrenComp));
                     break;
                 default:
                     if (tag[0].match(/[A-Z]/)) {
@@ -149,11 +158,6 @@ export function intoDom(
                             events,
                             params
                         );
-                        const childrenComp: ComponentChildren = {
-                            tree: children,
-                            params: params,
-                            _super: cc
-                        };
                         result.push(
                             ...component(
                                 pres.props,
