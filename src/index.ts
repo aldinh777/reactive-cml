@@ -35,11 +35,11 @@ function processComponent(node: CMLObject): Component {
         tag: tag,
         props: propsComp,
         events: eventsComp,
-        children: processRCML(children)
+        children: processRC(children)
     };
 }
 
-export function processRCML(tree: CMLTree): RCMLResult[] {
+export function processRC(tree: CMLTree): RCMLResult[] {
     const result: RCMLResult[] = [];
     for (const node of tree) {
         if (typeof node === 'string') {

@@ -1,4 +1,5 @@
 import { CMLTree, parseCML } from '@aldinh777/cml-parser';
+import { processRC } from '..';
 import { extractTextProps, TextProp, undupe } from '../util';
 
 type ImportFlag = 'import' | 'from' | 'end';
@@ -74,17 +75,15 @@ function extractParams(items: CMLTree, blacklist = new Set()): ExtractedParams {
                 case 'destruct':
                     const obj = props['object'];
                     const localPropQuery = props['as'];
-                    const localPropNames = localPropQuery
-                        .split(/\s+/)
-                        .map((s: string) => {
-                            const matches = s.match(/(.+):(.+)/);
-                            if (matches) {
-                                const [_, alias] = matches;
-                                return alias;
-                            } else {
-                                return s;
-                            }
-                        });
+                    const localPropNames = localPropQuery.split(/\s+/).map((s: string) => {
+                        const matches = s.match(/(.+):(.+)/);
+                        if (matches) {
+                            const [_, alias] = matches;
+                            return alias;
+                        } else {
+                            return s;
+                        }
+                    });
                     for (const prop of localPropNames) {
                         localBlacklist.add(prop);
                     }
@@ -100,10 +99,7 @@ function extractParams(items: CMLTree, blacklist = new Set()): ExtractedParams {
                     }
                     break;
             }
-            const { dependencies, params } = extractParams(
-                children,
-                localBlacklist
-            );
+            const { dependencies, params } = extractParams(children, localBlacklist);
             dep = dep.concat(dependencies);
             par = par.concat(params);
         }
@@ -116,10 +112,7 @@ function extractParams(items: CMLTree, blacklist = new Set()): ExtractedParams {
     };
 }
 
-export function parseReactiveCML(
-    source: string,
-    mode: 'import' | 'require' = 'import'
-): string {
+export function parseReactiveCML(source: string, mode: 'import' | 'require' = 'import'): string {
     const importIndex = extractImportsIndex(source);
     let separatorIndex: number = source.length;
     const matchResult = source.match(/(div|span)(\s+.*=".*")*\s*</);
@@ -136,14 +129,14 @@ export function parseReactiveCML(
     ];
 
     const cmlTree = parseCML(cml);
-    const cmlJson = JSON.stringify(cmlTree, null, 2);
+    const rcResult = processRC(cmlTree);
+    const rcJson = JSON.stringify(rcResult, null, 2);
 
     const { dependencies, params } = extractParams(cmlTree);
 
     const staticDependency = [
         ['@aldinh777/reactive', ['state', 'observe', 'observeAll']],
         ['@aldinh777/reactive/collection', ['stateList', 'stateMap']],
-        ['@aldinh777/reactive-cml', ['processRCML']],
         ['@aldinh777/reactive-cml/dom', ['intoDom']]
     ];
 
@@ -153,9 +146,7 @@ export function parseReactiveCML(
             staticDependency
                 .map(
                     ([from, imports]) =>
-                        `import { ${(
-                            imports as string[]
-                        ).join()} } from '${from}'\n`
+                        `import { ${(imports as string[]).join()} } from '${from}'\n`
                 )
                 .join('') +
             `${imports}\n` +
@@ -165,9 +156,7 @@ export function parseReactiveCML(
             staticDependency
                 .map(
                     ([from, imports]) =>
-                        `const { ${(
-                            imports as string[]
-                        ).join()} } = require('${from}')\n`
+                        `const { ${(imports as string[]).join()} } = require('${from}')\n`
                 )
                 .join('') +
             `${imports}\n` +
@@ -176,7 +165,7 @@ export function parseReactiveCML(
     const outscript =
         `function(props={}, _children, dispatch=()=>{}) {\n` +
         `${script}` +
-        `return intoDom(processRCML(${cmlJson}), ` +
+        `return intoDom(${rcJson},` +
         `{${params.concat(dependencies).join()}}, _children)}`;
     return outdep + outscript;
 }

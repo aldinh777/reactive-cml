@@ -16,11 +16,7 @@ export function undupe<T>(array: T[]): T[] {
 }
 
 export function isReactive(item: any) {
-    return (
-        item instanceof State ||
-        item instanceof StateList ||
-        item instanceof StateMap
-    );
+    return item instanceof State || item instanceof StateList || item instanceof StateMap;
 }
 
 export function statifyObj(obj: Properties, aliases: PropAlias[]): Properties {
@@ -58,11 +54,7 @@ export function cloneMapWithAlias(
     return ob;
 }
 
-export function cloneObjWithValue(
-    params: Properties,
-    name: string,
-    value: any
-): Properties {
+export function cloneObjWithValue(params: Properties, name: string, value: any): Properties {
     const ob: Properties = Object.assign({}, params);
     ob[name] = value;
     return ob;
@@ -99,10 +91,7 @@ export function extractTextProps(text: string): (string | TextProp)[] {
                     flagWhitespace = true;
                     stream += '{' + propname;
                     propname = '';
-                } else if (
-                    c === '}' &&
-                    propname.match(/^\s*[\$_A-Za-z][\$_\w]*/)
-                ) {
+                } else if (c === '}' && propname.match(/^\s*[\$_A-Za-z][\$_\w]*/)) {
                     flagProp = false;
                     result.push(stream, { name: propname });
                     stream = '';
