@@ -46,7 +46,6 @@ export function processRCML(tree: CMLTree): RCMLResult[] {
             result.push(...extractTextProps(node));
         } else {
             result.push(processComponent(node));
-            break;
         }
     }
     return result;
