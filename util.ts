@@ -30,7 +30,7 @@ export function statifyObj(obj: Properties, aliases: PropAlias[]): Properties {
     return ob;
 }
 
-export function cloneObjWithAlias(
+export function propObjClone(
     params: Properties,
     aliases: PropAlias[],
     obj: Properties
@@ -42,7 +42,7 @@ export function cloneObjWithAlias(
     return ob;
 }
 
-export function cloneMapWithAlias(
+export function propMapClone(
     params: Properties,
     aliases: PropAlias[],
     map: Map<string, any>
@@ -54,7 +54,7 @@ export function cloneMapWithAlias(
     return ob;
 }
 
-export function cloneObjWithValue(params: Properties, name: string, value: any): Properties {
+export function cloneSetVal(params: Properties, name: string, value: any): Properties {
     const ob: Properties = Object.assign({}, params);
     ob[name] = value;
     return ob;

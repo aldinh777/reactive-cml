@@ -1,14 +1,14 @@
 import { observe, State } from '@aldinh777/reactive';
 import {
-    Properties,
-    TextProp,
-    StaticProperties,
-    cloneObjWithValue,
+    cloneSetVal,
     isReactive,
+    propMapClone,
+    propObjClone,
+    statifyObj,
     PropAlias,
-    cloneMapWithAlias,
-    cloneObjWithAlias,
-    statifyObj
+    Properties,
+    StaticProperties,
+    TextProp
 } from '../util';
 import { Component, RCMLResult } from '..';
 import { StateList, StateMap } from '@aldinh777/reactive/collection';
@@ -136,8 +136,10 @@ export function intoDom(
             };
             switch (tag) {
                 case 'if':
-                case 'unless':
                     result.push(...ConditionComponent(props, chomp));
+                    break;
+                case 'unless':
+                    result.push(...ConditionComponent(cloneSetVal(props, 'rev', true), chomp));
                     break;
                 case 'foreach':
                     result.push(...LoopComponent(props, chomp));
@@ -192,7 +194,7 @@ function ConditionComponent(
         return [];
     }
     const { tree, params, _super } = _children;
-    const unless = props.reverse;
+    const unless = props.rev;
     const condkey = props.condition;
     let condition = _children.params[condkey];
     if (condition instanceof State) {
@@ -268,8 +270,8 @@ function DestructComponent(props: Properties = {}, _children?: ComponentChildren
         const marker = document.createTextNode('');
         const destructParams =
             obj.getValue() instanceof Map
-                ? cloneMapWithAlias(params, propnames, obj.getValue())
-                : cloneObjWithAlias(params, propnames, obj.getValue());
+                ? propMapClone(params, propnames, obj.getValue())
+                : propObjClone(params, propnames, obj.getValue());
         const component: ControlComponent = {
             elems: intoDom(tree, destructParams, _super)
         };
@@ -282,8 +284,8 @@ function DestructComponent(props: Properties = {}, _children?: ComponentChildren
             removeItems(parentNode, elems);
             const destructParams =
                 ob instanceof Map
-                    ? cloneMapWithAlias(params, propnames, ob)
-                    : cloneObjWithAlias(params, propnames, ob);
+                    ? propMapClone(params, propnames, ob)
+                    : propObjClone(params, propnames, ob);
             const destructElements = intoDom(tree, destructParams, _super);
             insertItemsBefore(parentNode, marker, destructElements);
             component.elems = destructElements;
@@ -291,7 +293,7 @@ function DestructComponent(props: Properties = {}, _children?: ComponentChildren
         return [component, marker];
     } else if (obj instanceof StateMap) {
         const marker = document.createTextNode('');
-        const destructParams = cloneMapWithAlias(params, propnames, obj.getRawMap());
+        const destructParams = propMapClone(params, propnames, obj.getRawMap());
         const statifiedParams = statifyObj(destructParams, propnames);
         const component: ControlComponent = {
             elems: intoDom(tree, statifiedParams, _super)
@@ -322,8 +324,8 @@ function DestructComponent(props: Properties = {}, _children?: ComponentChildren
     } else {
         const destructParams =
             obj instanceof Map
-                ? cloneMapWithAlias(params, propnames, obj)
-                : cloneObjWithAlias(params, propnames, obj);
+                ? propMapClone(params, propnames, obj)
+                : propObjClone(params, propnames, obj);
         return intoDom(tree, destructParams, _super);
     }
 }
@@ -389,7 +391,7 @@ function LoopComponent(props: Properties = {}, _children?: ComponentChildren): N
                 const mirronElement = mirrorList[index];
                 const nextItem = isReactive(next) ? next : new State(next);
                 statifiedList[index] = nextItem;
-                const newElems = intoDom(tree, cloneObjWithValue(params, alias, nextItem), _super);
+                const newElems = intoDom(tree, cloneSetVal(params, alias, nextItem), _super);
                 if (mirronElement) {
                     const { start: startMarker, end: endMarker, elems } = mirronElement;
                     const { parentNode } = endMarker;
@@ -468,7 +470,7 @@ function LoopComponent(props: Properties = {}, _children?: ComponentChildren): N
             const insertedItem = isReactive(inserted) ? inserted : new State(inserted);
             const startMarker = document.createTextNode('');
             const endMarker = document.createTextNode('');
-            const newElems = intoDom(tree, cloneObjWithValue(params, alias, insertedItem), _super);
+            const newElems = intoDom(tree, cloneSetVal(params, alias, insertedItem), _super);
             const mirror: MirrorElement = {
                 elems: newElems,
                 start: startMarker,
@@ -492,7 +494,7 @@ function LoopComponent(props: Properties = {}, _children?: ComponentChildren): N
     } else {
         const elems: NodeComponent[] = [];
         for (const item of list) {
-            const localParams = cloneObjWithValue(params, props.as, item);
+            const localParams = cloneSetVal(params, props.as, item);
             elems.push(...intoDom(tree, localParams, _super));
         }
         return elems;
@@ -514,7 +516,7 @@ function createFlatListElement(
 ): NodeComponent[] {
     const elems: NodeComponent[] = [];
     for (const item of items) {
-        const localParams: Properties = cloneObjWithValue(params, alias, item);
+        const localParams: Properties = cloneSetVal(params, alias, item);
         elems.push(...intoDom(tree, localParams, cc));
     }
     return elems;
@@ -529,7 +531,7 @@ function createListElement(
 ): NodeComponent[][] {
     const result: NodeComponent[][] = [];
     for (const item of items) {
-        const localParams: Properties = cloneObjWithValue(params, alias, item);
+        const localParams: Properties = cloneSetVal(params, alias, item);
         result.push(intoDom(children, localParams, cc));
     }
     return result;
