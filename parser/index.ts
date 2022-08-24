@@ -243,7 +243,7 @@ export function parseReactiveCML(source: string, mode: ImportType = 'import'): s
     const retQuery =
         fullparams.length > 0
             ? `return intoDom(${rcJson}, {${fullparams.join()}}, _children)}`
-            : `return ${rcJson}`;
+            : `return ${rcJson}}`;
 
     const staticDependency: [string, string[]][] = [
         ['@aldinh777/reactive', ['state', 'observe', 'observeAll']],
@@ -282,6 +282,6 @@ export function parseReactiveCML(source: string, mode: ImportType = 'import'): s
             `module.exports = `;
     }
     const outscript =
-        `function(props={}, _children, dispatch=()=>{}) {\n` + `${script.trim()}\n` + retQuery;
+        `function(props={}, _children, dispatch=()=>{}) {\n` + `${script.trim()}\n${retQuery}`;
     return outdep + outscript;
 }
