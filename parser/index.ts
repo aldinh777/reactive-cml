@@ -2,41 +2,111 @@ import { CMLTree, parseCML } from '@aldinh777/cml-parser';
 import { processRC } from '..';
 import { extractTextProps, TextProp, undupe } from '../util';
 
-type ImportFlag = 'import' | 'from' | 'end';
+type ImportsResult = [query: string, module: string];
+type ImportType = 'none' | 'import' | 'require';
 
 interface ExtractedParams {
     dependencies: string[];
     params: string[];
 }
 
-function extractImportsIndex(source: string): number {
-    let flag: ImportFlag = 'import';
+enum ImportFlag {
+    start,
+    from,
+    find
+}
+
+function extractImports(source: string): [number, ImportsResult[]] {
+    let endIndex: number = 0;
+    let imports: ImportsResult[] = [];
+    let flag: ImportFlag = ImportFlag.start;
+    let mode: ImportType = 'none';
     let imp: string = '';
+    let impos: string = '';
     for (let i = 0; i < source.length; i++) {
-        const ch = source[i];
-        if (ch.match(/\s/)) {
-            if (imp.length <= 0) {
-                continue;
+        const chr = source[i];
+        if (mode === 'import') {
+            if (chr.match(/\s/)) {
+                if (!imp) {
+                    continue;
+                }
+                if (flag === ImportFlag.start) {
+                    if (imp === 'from') {
+                        flag = ImportFlag.from;
+                    } else {
+                        impos += imp;
+                    }
+                } else if (flag === ImportFlag.from) {
+                    const impatch = imp.match(/((['"`])(.+)\2)/);
+                    if (impatch) {
+                        imports.push([impos, impatch[1]]);
+                        flag = ImportFlag.start;
+                        mode = 'none';
+                        endIndex = i;
+                        impos = '';
+                        imp = '';
+                    } else {
+                        return [endIndex, imports];
+                    }
+                }
+                imp = '';
+            } else {
+                imp += chr;
             }
-            if (flag === 'import') {
-                if (imp === 'import') {
-                    flag = 'from';
+        } else if (mode === 'require') {
+            if (flag === ImportFlag.start) {
+                if (chr === '=') {
+                    flag = ImportFlag.find;
                 } else {
-                    return i - imp.length;
+                    impos += chr;
                 }
-            } else if (flag === 'from') {
-                if (imp === 'from') {
-                    flag = 'end';
+            } else if (flag === ImportFlag.find) {
+                if (chr.match(/\s/)) {
+                    continue;
+                } else if (chr.match(/[A-Za-z]/)) {
+                    imp += chr;
+                } else if (imp === 'require') {
+                    flag = ImportFlag.from;
+                    imp = chr;
+                } else {
+                    return [endIndex, imports];
                 }
-            } else if (flag === 'end') {
-                flag = 'import';
+            } else if (flag === ImportFlag.from) {
+                if (chr.match(/[\n\r;]/)) {
+                    const impatch = imp.match(/\(\s*((['"])(.+)\2)\s*\)/);
+                    if (impatch) {
+                        imports.push([impos, impatch[1]]);
+                        flag = ImportFlag.start;
+                        mode = 'none';
+                        endIndex = i;
+                        impos = '';
+                        imp = '';
+                    } else {
+                        return [endIndex, imports];
+                    }
+                } else {
+                    imp += chr;
+                }
             }
-            imp = '';
         } else {
-            imp += ch;
+            if (chr.match(/[\s;]/)) {
+                if (!imp) {
+                    continue;
+                }
+                if (imp === 'import') {
+                    mode = 'import';
+                } else if (imp === 'const') {
+                    mode = 'require';
+                } else {
+                    return [endIndex, imports];
+                }
+                imp = '';
+            } else {
+                imp += chr;
+            }
         }
     }
-    return source.length;
+    return [endIndex, imports];
 }
 
 function extractParams(items: CMLTree, blacklist = new Set()): ExtractedParams {
@@ -113,7 +183,7 @@ function extractParams(items: CMLTree, blacklist = new Set()): ExtractedParams {
 }
 
 export function parseReactiveCML(source: string, mode: 'import' | 'require' = 'import'): string {
-    const importIndex = extractImportsIndex(source);
+    const [importIndex, imports] = extractImports(source);
     let separatorIndex: number = source.length;
     const matchResult = source.match(/(div|span)(\s+.*=".*")*\s*</);
     if (matchResult) {
@@ -122,8 +192,7 @@ export function parseReactiveCML(source: string, mode: 'import' | 'require' = 'i
             separatorIndex = matchIndex;
         }
     }
-    const [imports, script, cml] = [
-        source.substring(0, importIndex),
+    const [script, cml] = [
         source.substring(importIndex, separatorIndex),
         source.substring(separatorIndex)
     ];
@@ -133,8 +202,14 @@ export function parseReactiveCML(source: string, mode: 'import' | 'require' = 'i
     const rcJson = JSON.stringify(rcResult, null, 2);
 
     const { dependencies, params } = extractParams(cmlTree);
+    const fullparams = params.concat(dependencies);
 
-    const staticDependency = [
+    const retQuery =
+        fullparams.length > 0
+            ? `return intoDom(${rcJson}, {${fullparams.join()}}, _children)}`
+            : `return ${rcJson}`;
+
+    const staticDependency: [string, string[]][] = [
         ['@aldinh777/reactive', ['state', 'observe', 'observeAll']],
         ['@aldinh777/reactive/collection', ['stateList', 'stateMap']],
         ['@aldinh777/reactive-cml/dom', ['intoDom']]
@@ -144,28 +219,21 @@ export function parseReactiveCML(source: string, mode: 'import' | 'require' = 'i
     if (mode === 'import') {
         outdep =
             staticDependency
-                .map(
-                    ([from, imports]) =>
-                        `import { ${(imports as string[]).join()} } from '${from}'\n`
-                )
+                .map(([from, imports]) => `import { ${imports.join()} } from '${from}'\n`)
                 .join('') +
-            `${imports}\n` +
+            `${imports.map(([q, f]) => `import ${q} from ${f}\n`).join('')}` +
+            `\n` +
             `export default `;
     } else {
         outdep =
             staticDependency
-                .map(
-                    ([from, imports]) =>
-                        `const { ${(imports as string[]).join()} } = require('${from}')\n`
-                )
+                .map(([from, imports]) => `const { ${imports.join()} } = require('${from}')\n`)
                 .join('') +
-            `${imports}\n` +
+            `${imports.map(([q, f]) => `const ${q} = require(${f})\n`).join('')}` +
+            `\n` +
             `module.exports = `;
     }
     const outscript =
-        `function(props={}, _children, dispatch=()=>{}) {\n` +
-        `${script}` +
-        `return intoDom(${rcJson},` +
-        `{${params.concat(dependencies).join()}}, _children)}`;
+        `function(props={}, _children, dispatch=()=>{}) {\n` + `${script.trim()}\n` + retQuery;
     return outdep + outscript;
 }
