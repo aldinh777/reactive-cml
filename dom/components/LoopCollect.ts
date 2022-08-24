@@ -3,7 +3,7 @@ import { StateList } from '@aldinh777/reactive/collection';
 import { ComponentChildren, ControlComponent, intoDom, NodeComponent } from '..';
 import { RCMLResult } from '../../src';
 import { Properties } from '../../util';
-import { removeItems, insertItemsBefore } from '../dom-util';
+import { remove, insertBefore } from '../dom-util';
 import { cloneSetVal } from '../prop-util';
 import { isReactive } from '../reactive-util';
 
@@ -64,8 +64,8 @@ export default function (props: Properties = {}, _children?: ComponentChildren):
                     if (!parentNode) {
                         return;
                     }
-                    removeItems(parentNode, elems);
-                    insertItemsBefore(parentNode, newElems, endMarker);
+                    remove(parentNode, elems);
+                    insertBefore(parentNode, newElems, endMarker);
                     mirronElement.elems = newElems;
                     const elementIndex = component.elems.indexOf(startMarker);
                     component.elems.splice(elementIndex + 1, elems.length, ...newElems);
@@ -80,7 +80,7 @@ export default function (props: Properties = {}, _children?: ComponentChildren):
                     if (index >= mirrorList.length) {
                         const { parentNode } = marker;
                         if (parentNode) {
-                            insertItemsBefore(parentNode, flatElems, marker);
+                            insertBefore(parentNode, flatElems, marker);
                         }
                     } else {
                         let i = index + 1;
@@ -90,7 +90,7 @@ export default function (props: Properties = {}, _children?: ComponentChildren):
                                 const { start: startMarker } = mirror;
                                 const { parentNode } = startMarker;
                                 if (parentNode) {
-                                    insertItemsBefore(parentNode, flatElems, startMarker);
+                                    insertBefore(parentNode, flatElems, startMarker);
                                 }
                                 break;
                             }
@@ -99,7 +99,7 @@ export default function (props: Properties = {}, _children?: ComponentChildren):
                         if (i === mirrorList.length) {
                             const { parentNode } = marker;
                             if (parentNode) {
-                                insertItemsBefore(parentNode, flatElems, marker);
+                                insertBefore(parentNode, flatElems, marker);
                             }
                         }
                     }
@@ -114,7 +114,7 @@ export default function (props: Properties = {}, _children?: ComponentChildren):
                 if (!parentNode) {
                     return;
                 }
-                removeItems(parentNode, elems);
+                remove(parentNode, elems);
                 parentNode.removeChild(startMarker);
                 parentNode.removeChild(endMarker);
                 const elementIndex = component.elems.indexOf(startMarker);
@@ -143,7 +143,7 @@ export default function (props: Properties = {}, _children?: ComponentChildren):
                 end: endMarker
             };
             const flatNewElems = [startMarker, ...newElems, endMarker];
-            insertItemsBefore(parentNode, flatNewElems, nextMarker);
+            insertBefore(parentNode, flatNewElems, nextMarker);
             parentNode.insertBefore(startMarker, nextMarker);
             if (nextMarker === marker) {
                 mirrorList.push(mirror);

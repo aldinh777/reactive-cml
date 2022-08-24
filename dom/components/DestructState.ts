@@ -1,7 +1,7 @@
 import { State } from '@aldinh777/reactive';
 import { ComponentChildren, ControlComponent, intoDom, NodeComponent } from '..';
 import { Properties } from '../../util';
-import { removeItems, insertItemsBefore } from '../dom-util';
+import { remove, insertBefore } from '../dom-util';
 import { PropAlias, propAlias } from '../prop-util';
 
 export default function (props: Properties = {}, _children?: ComponentChildren): NodeComponent[] {
@@ -31,10 +31,10 @@ export default function (props: Properties = {}, _children?: ComponentChildren):
             if (!parentNode) {
                 return;
             }
-            removeItems(parentNode, elems);
+            remove(parentNode, elems);
             const destructParams = propAlias(params, propnames, obj.getValue());
             const destructElements = intoDom(tree, destructParams, _super);
-            insertItemsBefore(parentNode, destructElements, marker);
+            insertBefore(parentNode, destructElements, marker);
             component.elems = destructElements;
         });
         return [component, marker];

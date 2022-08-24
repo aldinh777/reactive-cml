@@ -1,7 +1,7 @@
 import { observe, State } from '@aldinh777/reactive';
 import { Properties, StaticProperties, TextProp } from '../util';
 import { Component, RCMLResult } from '..';
-import { appendItems, setElementAttribute } from './dom-util';
+import { append, setAttr } from './dom-util';
 import { cloneSetVal, PropAlias, propAlias } from './prop-util';
 
 export type NodeComponent = Node | ControlComponent;
@@ -54,9 +54,9 @@ function processElementProperties(
     for (const prop in props) {
         const value = props[prop];
         if (value instanceof State) {
-            observe(value, (next) => setElementAttribute(elem, prop, next));
+            observe(value, (next) => setAttr(elem, prop, next));
         } else {
-            setElementAttribute(elem, prop, value);
+            setAttr(elem, prop, value);
         }
     }
     for (const event in events) {
@@ -161,7 +161,7 @@ export function intoDom(
                         const elem = document.createElement(tag);
                         const pres = processComponentProperties(props, events, params);
                         processElementProperties(elem, pres.props, pres.events);
-                        appendItems(elem, intoDom(children, params, cc));
+                        append(elem, intoDom(children, params, cc));
                         result.push(elem);
                     }
                     break;

@@ -1,9 +1,8 @@
 import { NodeComponent } from '.';
 import { RCMLResult, Component } from '../src';
-import { TextProp } from '../util';
 
-function recursiveControl(handler: (par: Node, item: Node, bef?: Node) => any) {
-    function recurse(parent: Node, items: NodeComponent[], before?: Node) {
+function recursiveNodes(handler: (par: Node, item: Node, bef?: Node) => any) {
+    return function recurse(parent: Node, items: NodeComponent[], before?: Node) {
         for (const item of items) {
             if (item instanceof Node) {
                 handler(parent, item, before);
@@ -12,14 +11,13 @@ function recursiveControl(handler: (par: Node, item: Node, bef?: Node) => any) {
             }
         }
     }
-    return recurse;
 }
 
-export const appendItems = recursiveControl((par, item) => par.appendChild(item));
-export const removeItems = recursiveControl((par, item) => par.removeChild(item));
-export const insertItemsBefore = recursiveControl((par, item, bef) => par.insertBefore(item, bef as Node));
+export const append = recursiveNodes((par, item) => par.appendChild(item));
+export const remove = recursiveNodes((par, item) => par.removeChild(item));
+export const insertBefore = recursiveNodes((par, item, bef) => par.insertBefore(item, bef as Node));
 
-export function setElementAttribute(elem: HTMLElement, attr: string, value: any) {
+export function setAttr(elem: HTMLElement, attr: string, value: any) {
     if (elem.hasAttribute(attr)) {
         elem.setAttribute(attr, value);
     } else {
@@ -34,16 +32,14 @@ export function simpleDom(tree: RCMLResult[]): NodeComponent[] {
     for (const item of tree) {
         if (typeof item === 'string') {
             result.push(document.createTextNode(item));
-        } else if (Reflect.has(item, 'name')) {
-            result.push(document.createTextNode(`{${(item as TextProp).name}}`));
         } else {
             const { tag, props, children } = item as Component;
             const elem = document.createElement(tag);
             for (const prop in props) {
                 const value = props[prop];
-                setElementAttribute(elem, prop, value);
+                setAttr(elem, prop, value);
             }
-            appendItems(elem, simpleDom(children));
+            append(elem, simpleDom(children));
             result.push(elem);
         }
     }

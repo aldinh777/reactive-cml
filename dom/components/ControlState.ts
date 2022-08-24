@@ -1,7 +1,7 @@
 import { State } from '@aldinh777/reactive';
 import { ComponentChildren, ControlComponent, intoDom, NodeComponent } from '..';
 import { Properties } from '../../util';
-import { appendItems, removeItems, insertItemsBefore } from '../dom-util';
+import { append, remove, insertBefore } from '../dom-util';
 
 export default function (props: Properties = {}, _children?: ComponentChildren): NodeComponent[] {
     if (!_children || typeof props.condition !== 'string') {
@@ -24,20 +24,20 @@ export default function (props: Properties = {}, _children?: ComponentChildren):
         if (condition.getValue()) {
             component.elems = elements;
         } else {
-            appendItems(hide, elements);
+            append(hide, elements);
         }
-        condition.onChange((append: boolean) => {
+        condition.onChange((active: boolean) => {
             const { parentNode } = marker;
             if (!parentNode) {
                 return;
             }
-            if (append) {
-                removeItems(hide, elements);
-                insertItemsBefore(parentNode, elements, marker);
+            if (active) {
+                remove(hide, elements);
+                insertBefore(parentNode, elements, marker);
                 component.elems = elements;
             } else {
-                removeItems(parentNode, elements);
-                appendItems(hide, elements);
+                remove(parentNode, elements);
+                append(hide, elements);
                 component.elems = [];
             }
         });
