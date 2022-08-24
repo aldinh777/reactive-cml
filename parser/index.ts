@@ -240,10 +240,7 @@ export function parseReactiveCML(source: string, mode: ImportType = 'import'): s
     const rcResult = processRC(cmlTree);
     const rcJson = JSON.stringify(rcResult, null, 2);
 
-    const staticDependency: [string, string[]][] = [
-        ['@aldinh777/reactive', ['state', 'observe', 'observeAll']],
-        ['@aldinh777/reactive/collection', ['stateList', 'stateMap']]
-    ];
+    const autoDependencies: [string, string[]][] = [];
     const controlComp = new Set([
         'ControlState',
         'DestructCollect',
@@ -255,17 +252,17 @@ export function parseReactiveCML(source: string, mode: ImportType = 'import'): s
 
     let outreturn = '';
     if (fullparams.length > 0) {
-        staticDependency.push(['@aldinh777/reactive-cml/dom', ['intoDom']]);
+        autoDependencies.push(['@aldinh777/reactive-cml/dom', ['intoDom']]);
         outreturn = `return intoDom(${rcJson}, {${fullparams.join()}}, _children)`;
     } else {
-        staticDependency.push(['@aldinh777/reactive-cml/dom', ['simpleDom']]);
+        autoDependencies.push(['@aldinh777/reactive-cml/dom', ['simpleDom']]);
         outreturn = `return simpleDom(${rcJson})`;
     }
 
     let outdep = '';
     if (mode === 'import') {
         outdep =
-            staticDependency
+            autoDependencies
                 .map(([from, imports]) => `import { ${imports.join()} } from '${from}'\n`)
                 .join('') +
             baseDependencies
@@ -278,7 +275,7 @@ export function parseReactiveCML(source: string, mode: ImportType = 'import'): s
             `export default `;
     } else {
         outdep =
-            staticDependency
+            autoDependencies
                 .map(([from, imports]) => `const { ${imports.join()} } = require('${from}')\n`)
                 .join('') +
             baseDependencies
