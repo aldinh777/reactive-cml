@@ -5,8 +5,8 @@ export type RCMLResult = string | TextProp | Component;
 
 export interface Component {
     tag: string;
-    props: StaticProperties<string | TextProp>;
-    events: StaticProperties<string>;
+    props?: StaticProperties<string | TextProp>;
+    events?: StaticProperties<string>;
     children: RCMLResult[];
 }
 
@@ -14,6 +14,8 @@ function processComponent(node: CMLObject): Component {
     const { tag, props, children } = node;
     const propsComp: StaticProperties<string | TextProp> = {};
     const eventsComp: StaticProperties<string> = {};
+    let trimProps = true;
+    let trimEvents = true;
     for (const prop in props) {
         const value = props[prop];
         const matches = prop.match(/(on|bind):(.+)/);
@@ -22,21 +24,31 @@ function processComponent(node: CMLObject): Component {
             switch (type) {
                 case 'bind':
                     propsComp[attr] = { name: value };
+                    trimProps = false;
                     break;
                 case 'on':
                     eventsComp[attr] = value;
+                    trimEvents = false;
                     break;
             }
         } else {
             propsComp[prop] = value;
+            trimProps = false;
         }
     }
-    return {
+    const comp: Component = {
         tag: tag,
         props: propsComp,
         events: eventsComp,
         children: processRC(children)
     };
+    if (trimProps) {
+        delete comp.props;
+    }
+    if (trimEvents) {
+        delete comp.events;
+    }
+    return comp;
 }
 
 export function processRC(tree: CMLTree): RCMLResult[] {

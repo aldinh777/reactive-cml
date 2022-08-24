@@ -25,8 +25,8 @@ interface PropertyResult {
 }
 
 function processComponentProperties(
-    props: StaticProperties<string | TextProp>,
-    events: StaticProperties<string>,
+    props: StaticProperties<string | TextProp> = {},
+    events: StaticProperties<string> = {},
     params: Properties
 ): PropertyResult {
     const propsComp: Properties = {};
@@ -96,44 +96,52 @@ export function intoDom(
                     }
                     break;
                 case 'if':
-                    const ifkey = props.condition;
-                    if (typeof ifkey === 'string' && params[ifkey]) {
-                        result.push(...intoDom(children, params, cc));
+                    if (props) {
+                        const ifkey = props.condition;
+                        if (typeof ifkey === 'string' && params[ifkey]) {
+                            result.push(...intoDom(children, params, cc));
+                        }
                     }
                     break;
                 case 'unless':
-                    const unkey = props.condition;
-                    if (typeof unkey === 'string' && !params[unkey]) {
-                        result.push(...intoDom(children, params, cc));
+                    if (props) {
+                        const unkey = props.condition;
+                        if (typeof unkey === 'string' && !params[unkey]) {
+                            result.push(...intoDom(children, params, cc));
+                        }
                     }
                     break;
                 case 'foreach':
-                    const listkey = props.list;
-                    const alias = props.as;
-                    if (typeof listkey === 'string' && typeof alias === 'string') {
-                        const list = params[listkey];
-                        for (const item of list) {
-                            const localparams = cloneSetVal(params, alias, item);
-                            result.push(...intoDom(children, localparams, cc));
+                    if (props) {
+                        const listkey = props.list;
+                        const alias = props.as;
+                        if (typeof listkey === 'string' && typeof alias === 'string') {
+                            const list = params[listkey];
+                            for (const item of list) {
+                                const localparams = cloneSetVal(params, alias, item);
+                                result.push(...intoDom(children, localparams, cc));
+                            }
                         }
                     }
                     break;
                 case 'destruct':
-                    const objkey = props.object;
-                    const propquery = props.as;
-                    if (typeof objkey === 'string' && typeof propquery === 'string') {
-                        const obj = params[objkey];
-                        const propnames: PropAlias[] = propquery.split(/\s+/).map((query) => {
-                            const matches = query.match(/(.+):(.+)/);
-                            if (matches) {
-                                const [_, alias, prop] = matches;
-                                return [alias, prop];
-                            } else {
-                                return [query, query];
-                            }
-                        });
-                        const localparams = propAlias(params, propnames, obj);
-                        result.push(...intoDom(children, localparams, cc));
+                    if (props) {
+                        const objkey = props.object;
+                        const propquery = props.as;
+                        if (typeof objkey === 'string' && typeof propquery === 'string') {
+                            const obj = params[objkey];
+                            const propnames: PropAlias[] = propquery.split(/\s+/).map((query) => {
+                                const matches = query.match(/(.+):(.+)/);
+                                if (matches) {
+                                    const [_, alias, prop] = matches;
+                                    return [alias, prop];
+                                } else {
+                                    return [query, query];
+                                }
+                            });
+                            const localparams = propAlias(params, propnames, obj);
+                            result.push(...intoDom(children, localparams, cc));
+                        }
                     }
                     break;
                 default:

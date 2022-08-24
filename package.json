@@ -9,7 +9,7 @@
   "author": "aldinh777",
   "license": "ISC",
   "devDependencies": {
-    "@aldinh777/reactive": "^0.20.0-refined",
+    "@aldinh777/reactive": "^0.21.0",
     "typescript": "^4.7.4"
   },
   "dependencies": {
