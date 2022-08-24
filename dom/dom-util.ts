@@ -1,24 +1,6 @@
 import { NodeComponent } from '.';
 import { RCMLResult, Component } from '../src';
-import { Properties, TextProp } from '../util';
-
-export type PropAlias = string[];
-
-export function propAlias(
-    params: Properties,
-    aliases: PropAlias[],
-    obj: Properties | Map<string, any>
-): Properties {
-    const ob: Properties = Object.assign({}, params);
-    for (const [alias, prop] of aliases) {
-        ob[alias] = obj instanceof Map ? obj.get(prop) : obj[prop];
-    }
-    return ob;
-}
-
-export function cloneSetVal(params: Properties, name: string, value: any): Properties {
-    return Object.assign({}, params, { [name]: value });
-}
+import { TextProp } from '../util';
 
 function recursiveControl(handler: (par: Node, item: Node, bef?: Node) => any) {
     function recurse(parent: Node, items: NodeComponent[], before?: Node) {

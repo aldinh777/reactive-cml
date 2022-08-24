@@ -1,7 +1,8 @@
 import { observe, State } from '@aldinh777/reactive';
 import { Properties, StaticProperties, TextProp } from '../util';
 import { Component, RCMLResult } from '..';
-import { appendItems, cloneSetVal, PropAlias, propAlias, setElementAttribute } from './dom-util';
+import { appendItems, setElementAttribute } from './dom-util';
+import { cloneSetVal, PropAlias, propAlias } from './prop-util';
 
 export type NodeComponent = Node | ControlComponent;
 export type EventDispatcher = (name: string, ...args: any[]) => any;

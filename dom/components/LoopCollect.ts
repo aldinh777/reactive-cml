@@ -3,7 +3,8 @@ import { StateList } from '@aldinh777/reactive/collection';
 import { ComponentChildren, ControlComponent, intoDom, NodeComponent } from '..';
 import { RCMLResult } from '../../src';
 import { Properties } from '../../util';
-import { cloneSetVal, insertItemsBefore, removeItems } from '../dom-util';
+import { removeItems, insertItemsBefore } from '../dom-util';
+import { cloneSetVal } from '../prop-util';
 import { isReactive } from '../reactive-util';
 
 interface MirrorElement {

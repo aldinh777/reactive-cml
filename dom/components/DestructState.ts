@@ -1,7 +1,8 @@
 import { State } from '@aldinh777/reactive';
 import { ComponentChildren, ControlComponent, intoDom, NodeComponent } from '..';
 import { Properties } from '../../util';
-import { PropAlias, removeItems, insertItemsBefore, propAlias } from '../dom-util';
+import { removeItems, insertItemsBefore } from '../dom-util';
+import { PropAlias, propAlias } from '../prop-util';
 
 export default function (props: Properties = {}, _children?: ComponentChildren): NodeComponent[] {
     if (!_children || typeof props.object !== 'string' || typeof props.as !== 'string') {

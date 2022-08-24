@@ -1,7 +1,7 @@
 import { State } from '@aldinh777/reactive';
 import { StateList, StateMap } from '@aldinh777/reactive/collection';
 import { Properties } from '../util';
-import { PropAlias } from './dom-util';
+import { PropAlias } from './prop-util';
 
 export function isReactive(item: any) {
     return item instanceof State || item instanceof StateList || item instanceof StateMap;

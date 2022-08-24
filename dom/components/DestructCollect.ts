@@ -2,7 +2,7 @@ import { State } from '@aldinh777/reactive';
 import { StateMap } from '@aldinh777/reactive/collection';
 import { ComponentChildren, ControlComponent, intoDom, NodeComponent } from '..';
 import { Properties } from '../../util';
-import { propAlias, PropAlias } from '../dom-util';
+import { propAlias, PropAlias } from '../prop-util';
 import { statifyObj, isReactive } from '../reactive-util';
 
 export default function (props: Properties = {}, _children?: ComponentChildren): NodeComponent[] {
