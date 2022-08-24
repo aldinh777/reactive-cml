@@ -12,7 +12,7 @@ export function statifyObj(obj: Properties, aliases: PropAlias[]): Properties {
     for (const [alias, prop] of aliases) {
         const item = obj[prop];
         if (!isReactive(item)) {
-            ob[alias] = new State(obj[prop]);
+            ob[alias] = new State(item);
         }
     }
     return ob;

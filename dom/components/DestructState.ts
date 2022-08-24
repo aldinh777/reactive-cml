@@ -1,14 +1,7 @@
 import { State } from '@aldinh777/reactive';
-import {
-    ComponentChildren,
-    ControlComponent,
-    insertItemsBefore,
-    intoDom,
-    NodeComponent,
-    removeItems
-} from '..';
+import { ComponentChildren, ControlComponent, intoDom, NodeComponent } from '..';
 import { Properties } from '../../util';
-import { PropAlias, propMapClone, propObjClone } from '../dom-util';
+import { PropAlias, removeItems, insertItemsBefore, propAlias } from '../dom-util';
 
 export default function (props: Properties = {}, _children?: ComponentChildren): NodeComponent[] {
     if (!_children || typeof props.object !== 'string' || typeof props.as !== 'string') {
@@ -27,10 +20,7 @@ export default function (props: Properties = {}, _children?: ComponentChildren):
     });
     if (obj instanceof State) {
         const marker = document.createTextNode('');
-        const destructParams =
-            obj.getValue() instanceof Map
-                ? propMapClone(params, propnames, obj.getValue())
-                : propObjClone(params, propnames, obj.getValue());
+        const destructParams = propAlias(params, propnames, obj.getValue());
         const component: ControlComponent = {
             elems: intoDom(tree, destructParams, _super)
         };
@@ -41,12 +31,9 @@ export default function (props: Properties = {}, _children?: ComponentChildren):
                 return;
             }
             removeItems(parentNode, elems);
-            const destructParams =
-                ob instanceof Map
-                    ? propMapClone(params, propnames, ob)
-                    : propObjClone(params, propnames, ob);
+            const destructParams = propAlias(params, propnames, obj.getValue());
             const destructElements = intoDom(tree, destructParams, _super);
-            insertItemsBefore(parentNode, marker, destructElements);
+            insertItemsBefore(parentNode, destructElements, marker);
             component.elems = destructElements;
         });
         return [component, marker];

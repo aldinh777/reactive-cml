@@ -1,15 +1,8 @@
 import { State } from '@aldinh777/reactive';
-import {
-    ComponentChildren,
-    ControlComponent,
-    insertItemsBefore,
-    intoDom,
-    NodeComponent,
-    removeItems
-} from '..';
+import { ComponentChildren, ControlComponent, intoDom, NodeComponent } from '..';
 import { RCMLResult } from '../../src';
 import { Properties } from '../../util';
-import { cloneSetVal } from '../dom-util';
+import { cloneSetVal, insertItemsBefore, removeItems } from '../dom-util';
 
 function createFlatListElement(
     params: Properties,
@@ -52,7 +45,7 @@ export default function (props: Properties = {}, _children?: ComponentChildren):
                 _super
             );
             removeItems(parentNode, elems);
-            insertItemsBefore(parentNode, marker, newListElements);
+            insertItemsBefore(parentNode, newListElements, marker);
             component.elems = newListElements;
         });
         return [component, marker];

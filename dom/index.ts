@@ -1,7 +1,7 @@
 import { observe, State } from '@aldinh777/reactive';
 import { Properties, StaticProperties, TextProp } from '../util';
 import { Component, RCMLResult } from '..';
-import { cloneSetVal, PropAlias, propMapClone, propObjClone } from './dom-util';
+import { appendItems, cloneSetVal, PropAlias, propAlias, setElementAttribute } from './dom-util';
 
 export type NodeComponent = Node | ControlComponent;
 export type EventDispatcher = (name: string, ...args: any[]) => any;
@@ -24,31 +24,6 @@ interface PropertyResult {
     events: StaticProperties<Function>;
 }
 
-function recursiveControl(handler: (par: Node, item: Node, bef?: Node) => any) {
-    function recurse(parent: Node, items: NodeComponent[]) {
-        for (const item of items) {
-            if (item instanceof Node) {
-                handler(parent, item);
-            } else {
-                recurse(parent, item.elems);
-            }
-        }
-    }
-    return recurse;
-}
-
-export const appendItems = recursiveControl((par, item) => par.appendChild(item));
-export const removeItems = recursiveControl((par, item) => par.removeChild(item));
-export function insertItemsBefore(parent: Node, child: Node, items: NodeComponent[]) {
-    for (const item of items) {
-        if (item instanceof Node) {
-            parent.insertBefore(item, child);
-        } else {
-            insertItemsBefore(parent, child, item.elems);
-        }
-    }
-}
-
 function processComponentProperties(
     props: StaticProperties<string | TextProp>,
     events: StaticProperties<string>,
@@ -68,16 +43,6 @@ function processComponentProperties(
         eventsComp[event] = params[events[event]];
     }
     return { props: propsComp, events: eventsComp };
-}
-
-function setElementAttribute(elem: HTMLElement, attr: string, value: any) {
-    if (elem.hasAttribute(attr)) {
-        elem.setAttribute(attr, value);
-    } else {
-        const att = document.createAttribute(attr);
-        att.value = value;
-        elem.setAttributeNode(att);
-    }
 }
 
 function processElementProperties(
@@ -167,10 +132,7 @@ export function intoDom(
                                 return [query, query];
                             }
                         });
-                        const localparams =
-                            obj instanceof Map
-                                ? propMapClone(params, propnames, obj)
-                                : propObjClone(params, propnames, obj);
+                        const localparams = propAlias(params, propnames, obj);
                         result.push(...intoDom(children, localparams, cc));
                     }
                     break;
@@ -195,27 +157,6 @@ export function intoDom(
                     }
                     break;
             }
-        }
-    }
-    return result;
-}
-
-export function simpleDom(tree: RCMLResult[]): NodeComponent[] {
-    const result: NodeComponent[] = [];
-    for (const item of tree) {
-        if (typeof item === 'string') {
-            result.push(document.createTextNode(item));
-        } else if (Reflect.has(item, 'name')) {
-            result.push(document.createTextNode(`{${(item as TextProp).name}}`));
-        } else {
-            const { tag, props, children } = item as Component;
-            const elem = document.createElement(tag);
-            for (const prop in props) {
-                const value = props[prop];
-                setElementAttribute(elem, prop, value);
-            }
-            appendItems(elem, simpleDom(children));
-            result.push(elem);
         }
     }
     return result;

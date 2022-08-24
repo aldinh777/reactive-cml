@@ -255,7 +255,7 @@ export function parseReactiveCML(source: string, mode: ImportType = 'import'): s
         autoDependencies.push(['@aldinh777/reactive-cml/dom', ['intoDom']]);
         outreturn = `return intoDom(${rcJson}, {${fullparams.join()}}, _children)`;
     } else {
-        autoDependencies.push(['@aldinh777/reactive-cml/dom', ['simpleDom']]);
+        autoDependencies.push(['@aldinh777/reactive-cml/dom/dom-util', ['simpleDom']]);
         outreturn = `return simpleDom(${rcJson})`;
     }
 

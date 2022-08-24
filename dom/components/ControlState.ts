@@ -1,14 +1,7 @@
 import { State } from '@aldinh777/reactive';
-import {
-    appendItems,
-    ComponentChildren,
-    ControlComponent,
-    insertItemsBefore,
-    intoDom,
-    NodeComponent,
-    removeItems
-} from '..';
+import { ComponentChildren, ControlComponent, intoDom, NodeComponent } from '..';
 import { Properties } from '../../util';
+import { appendItems, removeItems, insertItemsBefore } from '../dom-util';
 
 export default function (props: Properties = {}, _children?: ComponentChildren): NodeComponent[] {
     if (!_children || typeof props.condition !== 'string') {
@@ -40,7 +33,7 @@ export default function (props: Properties = {}, _children?: ComponentChildren):
             }
             if (append) {
                 removeItems(hide, elements);
-                insertItemsBefore(parentNode, marker, elements);
+                insertItemsBefore(parentNode, elements, marker);
                 component.elems = elements;
             } else {
                 removeItems(parentNode, elements);
