@@ -155,7 +155,8 @@ export function intoDom(
                     if (typeof listkey === 'string' && typeof alias === 'string') {
                         const list = params[listkey];
                         for (const item of list) {
-                            result.push(...intoDom(children, cloneSetVal(params, alias, item)));
+                            const localparams = cloneSetVal(params, alias, item);
+                            result.push(...intoDom(children, localparams, cc));
                         }
                     }
                     break;
