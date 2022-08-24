@@ -269,7 +269,9 @@ export function parseReactiveCML(source: string, mode: ImportType = 'import'): s
                 .map(([from, imports]) => `import { ${imports.join()} } from '${from}'\n`)
                 .join('') +
             baseDependencies
-                .map((dep) => `import ${dep} from '@aldinh777/dom/components/${dep}'\n`)
+                .map(
+                    (dep) => `import ${dep} from '@aldinh777/reactive-cml/dom/components/${dep}'\n`
+                )
                 .join('') +
             `${imports.map(([q, f]) => `import ${q} from ${f}\n`).join('')}` +
             `\n` +
@@ -280,7 +282,10 @@ export function parseReactiveCML(source: string, mode: ImportType = 'import'): s
                 .map(([from, imports]) => `const { ${imports.join()} } = require('${from}')\n`)
                 .join('') +
             baseDependencies
-                .map((dep) => `const ${dep} = require('@aldinh777/dom/components/${dep}')\n`)
+                .map(
+                    (dep) =>
+                        `const ${dep} = require('@aldinh777/reactive-cml/dom/components/${dep}')\n`
+                )
                 .join('') +
             `${imports.map(([q, f]) => `const ${q} = require(${f})\n`).join('')}` +
             `\n` +
