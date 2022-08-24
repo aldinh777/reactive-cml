@@ -126,24 +126,44 @@ function extractParams(items: CMLTree, blacklist = new Set()): ExtractedParams {
             }
             switch (tag) {
                 case 'if':
-                    const appendCondition = props['condition'];
-                    par.push(appendCondition);
-                    break;
-
                 case 'unless':
-                    const removeCondition = props['condition'];
-                    par.push(removeCondition);
+                    if (Reflect.has(props, 'state:condition')) {
+                        const state = props['state:condition'];
+                        delete props['state:condition'];
+                        props.condition = state;
+                        item.tag = 'ControlState';
+                        dep.push('ControlState');
+                        par.push(state);
+                    } else {
+                        const appendCondition = props['condition'];
+                        par.push(appendCondition);
+                    }
                     break;
 
                 case 'foreach':
-                    const list = props['list'];
                     const localItem = props['as'];
                     localBlacklist.add(localItem);
-                    par.push(list);
+                    if (Reflect.has(props, 'state:list')) {
+                        const state = props['state:list'];
+                        delete props['state:list'];
+                        props.list = state;
+                        item.tag = 'LoopState';
+                        dep.push('LoopState');
+                        par.push(state);
+                    } else if (Reflect.has(props, 'collect:list')) {
+                        const collect = props['collect:list'];
+                        delete props['collect:list'];
+                        props.list = collect;
+                        item.tag = 'LoopCollect';
+                        dep.push('LoopCollect');
+                        par.push(collect);
+                    } else {
+                        const list = props['list'];
+                        par.push(list);
+                    }
                     break;
 
                 case 'destruct':
-                    const obj = props['object'];
                     const localPropQuery = props['as'];
                     const localPropNames = localPropQuery.split(/\s+/).map((s: string) => {
                         const matches = s.match(/(.+):(.+)/);
@@ -157,7 +177,24 @@ function extractParams(items: CMLTree, blacklist = new Set()): ExtractedParams {
                     for (const prop of localPropNames) {
                         localBlacklist.add(prop);
                     }
-                    par.push(obj);
+                    if (Reflect.has(props, 'state:object')) {
+                        const state = props['state:object'];
+                        delete props['state:object'];
+                        props.object = state;
+                        item.tag = 'DestructState';
+                        dep.push('DestructState');
+                        par.push(state);
+                    } else if (Reflect.has(props, 'collect:object')) {
+                        const collect = props['collect:object'];
+                        delete props['collect:object'];
+                        props.object = collect;
+                        item.tag = 'DestructCollect';
+                        dep.push('DestructCollect');
+                        par.push(collect);
+                    } else {
+                        const obj = props['object'];
+                        par.push(obj);
+                    }
                     break;
 
                 default:
@@ -182,7 +219,7 @@ function extractParams(items: CMLTree, blacklist = new Set()): ExtractedParams {
     };
 }
 
-export function parseReactiveCML(source: string, mode: 'import' | 'require' = 'import'): string {
+export function parseReactiveCML(source: string, mode: ImportType = 'import'): string {
     const [importIndex, imports] = extractImports(source);
     let separatorIndex: number = source.length;
     const matchResult = source.match(/(div|span)(\s+.*=".*")*\s*</);
@@ -198,11 +235,10 @@ export function parseReactiveCML(source: string, mode: 'import' | 'require' = 'i
     ];
 
     const cmlTree = parseCML(cml);
-    const rcResult = processRC(cmlTree);
-    const rcJson = JSON.stringify(rcResult, null, 2);
-
     const { dependencies, params } = extractParams(cmlTree);
     const fullparams = params.concat(dependencies);
+    const rcResult = processRC(cmlTree);
+    const rcJson = JSON.stringify(rcResult, null, 2);
 
     const retQuery =
         fullparams.length > 0
@@ -214,6 +250,18 @@ export function parseReactiveCML(source: string, mode: 'import' | 'require' = 'i
         ['@aldinh777/reactive/collection', ['stateList', 'stateMap']],
         ['@aldinh777/reactive-cml/dom', ['intoDom']]
     ];
+    const controlComp = new Set([
+        'ControlState',
+        'DestructCollect',
+        'DestructState',
+        'LoopCollect',
+        'LoopState'
+    ]);
+    const dynamicDependencies = dependencies.filter((dep) => controlComp.has(dep));
+
+    if (dynamicDependencies.length > 0) {
+        staticDependency.push(['@aldinh777/reactive-cml/dom/components', dynamicDependencies]);
+    }
 
     let outdep = '';
     if (mode === 'import') {
