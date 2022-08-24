@@ -1,7 +1,9 @@
 import { State } from '@aldinh777/reactive';
 import { StateMap } from '@aldinh777/reactive/collection';
 import { ComponentChildren, ControlComponent, intoDom, NodeComponent } from '..';
-import { isReactive, PropAlias, Properties, propMapClone, statifyObj } from '../../util';
+import { Properties } from '../../util';
+import { PropAlias, propMapClone } from '../dom-util';
+import { statifyObj, isReactive } from '../reactive-util';
 
 export default function (props: Properties = {}, _children?: ComponentChildren): NodeComponent[] {
     if (!_children || typeof props.object !== 'string' || typeof props.as !== 'string') {

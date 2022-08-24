@@ -8,7 +8,8 @@ import {
     removeItems
 } from '..';
 import { RCMLResult } from '../../src';
-import { cloneSetVal, Properties } from '../../util';
+import { Properties } from '../../util';
+import { cloneSetVal } from '../dom-util';
 
 function createFlatListElement(
     params: Properties,

@@ -242,8 +242,7 @@ export function parseReactiveCML(source: string, mode: ImportType = 'import'): s
 
     const staticDependency: [string, string[]][] = [
         ['@aldinh777/reactive', ['state', 'observe', 'observeAll']],
-        ['@aldinh777/reactive/collection', ['stateList', 'stateMap']],
-        ['@aldinh777/reactive-cml/dom', ['intoDom']]
+        ['@aldinh777/reactive/collection', ['stateList', 'stateMap']]
     ];
     const controlComp = new Set([
         'ControlState',
@@ -252,10 +251,15 @@ export function parseReactiveCML(source: string, mode: ImportType = 'import'): s
         'LoopCollect',
         'LoopState'
     ]);
-    const dynamicDependencies = dependencies.filter((dep) => controlComp.has(dep));
+    const baseDependencies = dependencies.filter((dep) => controlComp.has(dep));
 
-    if (dynamicDependencies.length > 0) {
-        staticDependency.push(['@aldinh777/reactive-cml/dom/components', dynamicDependencies]);
+    let outreturn = '';
+    if (fullparams.length > 0) {
+        staticDependency.push(['@aldinh777/reactive-cml/dom', ['intoDom']]);
+        outreturn = `return intoDom(${rcJson}, {${fullparams.join()}}, _children)`;
+    } else {
+        staticDependency.push(['@aldinh777/reactive-cml/dom', ['simpleDom']]);
+        outreturn = `return simpleDom(${rcJson})`;
     }
 
     let outdep = '';
@@ -263,6 +267,9 @@ export function parseReactiveCML(source: string, mode: ImportType = 'import'): s
         outdep =
             staticDependency
                 .map(([from, imports]) => `import { ${imports.join()} } from '${from}'\n`)
+                .join('') +
+            baseDependencies
+                .map((dep) => `import ${dep} from '@aldinh777/dom/components/${dep}'\n`)
                 .join('') +
             `${imports.map(([q, f]) => `import ${q} from ${f}\n`).join('')}` +
             `\n` +
@@ -272,13 +279,13 @@ export function parseReactiveCML(source: string, mode: ImportType = 'import'): s
             staticDependency
                 .map(([from, imports]) => `const { ${imports.join()} } = require('${from}')\n`)
                 .join('') +
+            baseDependencies
+                .map((dep) => `const ${dep} = require('@aldinh777/dom/components/${dep}')\n`)
+                .join('') +
             `${imports.map(([q, f]) => `const ${q} = require(${f})\n`).join('')}` +
             `\n` +
             `module.exports = `;
     }
-    const outscript =
-        `function(props={}, _children, dispatch=()=>{}) {\n` +
-        `${script.trim()}\n` +
-        `return intoDom(${rcJson}, {${fullparams.join()}}, _children)}`;
+    const outscript = `function(props={}, _children, dispatch=()=>{}) {\n${script.trim()}\n${outreturn}\n}`;
     return outdep + outscript;
 }

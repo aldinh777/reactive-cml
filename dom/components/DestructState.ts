@@ -7,7 +7,8 @@ import {
     NodeComponent,
     removeItems
 } from '..';
-import { PropAlias, Properties, propMapClone, propObjClone } from '../../util';
+import { Properties } from '../../util';
+import { PropAlias, propMapClone, propObjClone } from '../dom-util';
 
 export default function (props: Properties = {}, _children?: ComponentChildren): NodeComponent[] {
     if (!_children || typeof props.object !== 'string' || typeof props.as !== 'string') {

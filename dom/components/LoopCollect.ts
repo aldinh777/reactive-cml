@@ -9,7 +9,9 @@ import {
     removeItems
 } from '..';
 import { RCMLResult } from '../../src';
-import { cloneSetVal, isReactive, Properties } from '../../util';
+import { Properties } from '../../util';
+import { cloneSetVal } from '../dom-util';
+import { isReactive } from '../reactive-util';
 
 interface MirrorElement {
     elems: NodeComponent[];

@@ -1,14 +1,7 @@
 import { observe, State } from '@aldinh777/reactive';
-import {
-    cloneSetVal,
-    propMapClone,
-    propObjClone,
-    PropAlias,
-    Properties,
-    StaticProperties,
-    TextProp
-} from '../util';
+import { Properties, StaticProperties, TextProp } from '../util';
 import { Component, RCMLResult } from '..';
+import { cloneSetVal, PropAlias, propMapClone, propObjClone } from './dom-util';
 
 export type NodeComponent = Node | ControlComponent;
 export type EventDispatcher = (name: string, ...args: any[]) => any;
@@ -202,6 +195,27 @@ export function intoDom(
                     }
                     break;
             }
+        }
+    }
+    return result;
+}
+
+export function simpleDom(tree: RCMLResult[]): NodeComponent[] {
+    const result: NodeComponent[] = [];
+    for (const item of tree) {
+        if (typeof item === 'string') {
+            result.push(document.createTextNode(item));
+        } else if (Reflect.has(item, 'name')) {
+            result.push(document.createTextNode(`{${(item as TextProp).name}}`));
+        } else {
+            const { tag, props, children } = item as Component;
+            const elem = document.createElement(tag);
+            for (const prop in props) {
+                const value = props[prop];
+                setElementAttribute(elem, prop, value);
+            }
+            appendItems(elem, simpleDom(children));
+            result.push(elem);
         }
     }
     return result;
