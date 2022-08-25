@@ -8,6 +8,7 @@ type ImportType = 'none' | 'import' | 'require';
 interface ExtractedParams {
     dependencies: string[];
     params: string[];
+    hasChildrenTag: boolean;
 }
 
 enum ImportFlag {
@@ -112,6 +113,7 @@ function extractImports(source: string): [number, ImportsResult[]] {
 function extractParams(items: CMLTree, blacklist = new Set()): ExtractedParams {
     let dep: string[] = [];
     let par: string[] = [];
+    let chill: boolean = false;
     for (const item of items) {
         if (typeof item === 'string') {
             const params = extractTextProps(item)
@@ -125,6 +127,9 @@ function extractParams(items: CMLTree, blacklist = new Set()): ExtractedParams {
                 dep.push(tag);
             }
             switch (tag) {
+                case 'children':
+                    chill = true;
+                    break;
                 case 'if':
                 case 'unless':
                     if (Reflect.has(props, 'state:condition')) {
@@ -139,7 +144,6 @@ function extractParams(items: CMLTree, blacklist = new Set()): ExtractedParams {
                         par.push(appendCondition);
                     }
                     break;
-
                 case 'foreach':
                     const localItem = props['as'];
                     localBlacklist.add(localItem);
@@ -162,7 +166,6 @@ function extractParams(items: CMLTree, blacklist = new Set()): ExtractedParams {
                         par.push(list);
                     }
                     break;
-
                 case 'destruct':
                     const localPropQuery = props['as'];
                     const localPropNames = localPropQuery.split(/\s+/).map((s: string) => {
@@ -196,7 +199,6 @@ function extractParams(items: CMLTree, blacklist = new Set()): ExtractedParams {
                         par.push(obj);
                     }
                     break;
-
                 default:
                     for (const key in props) {
                         const match = key.match(/(on|bind):(.+)/);
@@ -206,7 +208,13 @@ function extractParams(items: CMLTree, blacklist = new Set()): ExtractedParams {
                     }
                     break;
             }
-            const { dependencies, params } = extractParams(children, localBlacklist);
+            const { dependencies, params, hasChildrenTag } = extractParams(
+                children,
+                localBlacklist
+            );
+            if (hasChildrenTag) {
+                chill = true;
+            }
             dep = dep.concat(dependencies);
             par = par.concat(params);
         }
@@ -215,7 +223,8 @@ function extractParams(items: CMLTree, blacklist = new Set()): ExtractedParams {
     par = undupe(par).filter((param) => !blacklist.has(param));
     return {
         dependencies: dep,
-        params: par
+        params: par,
+        hasChildrenTag: chill
     };
 }
 
@@ -235,7 +244,7 @@ export function parseReactiveCML(source: string, mode: ImportType = 'import'): s
     ];
 
     const cmlTree = parseCML(cml);
-    const { dependencies, params } = extractParams(cmlTree);
+    const { dependencies, params, hasChildrenTag } = extractParams(cmlTree);
     const fullparams = params.concat(dependencies);
     const rcResult = processRC(cmlTree);
     const rcJson = JSON.stringify(rcResult, null, 2);
@@ -251,7 +260,7 @@ export function parseReactiveCML(source: string, mode: ImportType = 'import'): s
     const baseDependencies = dependencies.filter((dep) => controlComp.has(dep));
 
     let outreturn = '';
-    if (fullparams.length > 0) {
+    if (fullparams.length > 0 || hasChildrenTag) {
         autoDependencies.push(['@aldinh777/reactive-cml/dom', ['intoDom']]);
         outreturn = `return intoDom(${rcJson}, {${fullparams.join()}}, _children)`;
     } else {
