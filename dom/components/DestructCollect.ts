@@ -1,5 +1,5 @@
 import { State } from '@aldinh777/reactive';
-import { StateMap } from '@aldinh777/reactive/collection';
+import { StateMap } from '@aldinh777/reactive/collection/StateMap';
 import { ComponentChildren, ControlComponent, intoDom, NodeComponent } from '..';
 import { Properties } from '../../util';
 import { propAlias, PropAlias } from '../prop-util';
@@ -22,7 +22,7 @@ export default function (props: Properties = {}, _children?: ComponentChildren):
     });
     if (obj instanceof StateMap) {
         const marker = document.createTextNode('');
-        const destructParams = propAlias(params, propnames, obj.getRawMap());
+        const destructParams = propAlias(params, propnames, obj.raw());
         const statifiedParams = statifyObj(destructParams, propnames);
         const component: ControlComponent = {
             elems: intoDom(tree, statifiedParams, _super)

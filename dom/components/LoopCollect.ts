@@ -1,5 +1,5 @@
 import { State } from '@aldinh777/reactive';
-import { StateList } from '@aldinh777/reactive/collection';
+import { StateList } from '@aldinh777/reactive/collection/StateList';
 import { ComponentChildren, ControlComponent, intoDom, NodeComponent } from '..';
 import { RCMLResult } from '../../src';
 import { Properties } from '../../util';
@@ -37,9 +37,7 @@ export default function (props: Properties = {}, _children?: ComponentChildren):
     const alias = props.as;
     if (list instanceof StateList) {
         const marker = document.createTextNode('');
-        const statifiedList = list
-            .toArray()
-            .map((item) => (isReactive(item) ? item : new State(item)));
+        const statifiedList = list.raw().map((item) => (isReactive(item) ? item : new State(item)));
         const listElementEach = createListElement(params, alias, statifiedList, tree, _super);
         const mirrorList: (MirrorElement | undefined)[] = listElementEach.map((elems) => ({
             elems: elems,
