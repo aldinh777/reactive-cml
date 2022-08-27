@@ -10,7 +10,7 @@ export type ReactiveComponent = (
     props: Properties,
     _children?: ComponentChildren,
     dispatch?: EventDispatcher
-) => NodeComponent[];
+) => NodeComponent[] | void;
 
 export interface ControlComponent {
     elems: NodeComponent[];
@@ -149,14 +149,15 @@ export function intoDom(
                     if (tag[0].match(/[A-Z]/)) {
                         const component: ReactiveComponent = params[tag];
                         const pres = processComponentProperties(props, events, params);
-                        result.push(
-                            ...component(pres.props, chomp, (name: string, ...args: any[]) => {
-                                const event = pres.events[name];
-                                if (typeof event === 'function') {
-                                    return event(...args);
-                                }
-                            })
-                        );
+                        const res = component(pres.props, chomp, (name: string, ...args: any[]) => {
+                            const event = pres.events[name];
+                            if (typeof event === 'function') {
+                                return event(...args);
+                            }
+                        });
+                        if (res) {
+                            result.push(...res);
+                        }
                     } else {
                         const elem = document.createElement(tag);
                         const pres = processComponentProperties(props, events, params);

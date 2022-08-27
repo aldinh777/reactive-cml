@@ -110,7 +110,7 @@ function extractImports(source: string): [number, ImportsResult[]] {
     return [endIndex, imports];
 }
 
-function extractParams(items: CMLTree, blacklist = new Set()): ExtractedParams {
+function extractParams(items: CMLTree, blacklist: Set<string> = new Set()): ExtractedParams {
     let dep: string[] = [];
     let par: string[] = [];
     let chill: boolean = false;
@@ -228,6 +228,15 @@ function extractParams(items: CMLTree, blacklist = new Set()): ExtractedParams {
     };
 }
 
+function improt(dep: string | string[], from: string, mode: ImportType): string {
+    let deps = typeof dep === 'string' ? dep : dep.join();
+    if (mode === 'import') {
+        return `import ${deps} from '${from}'\n`;
+    } else {
+        return `const ${deps} = require('${from}')\n`;
+    }
+}
+
 export function parseReactiveCML(source: string, mode: ImportType = 'import'): string {
     const [importIndex, imports] = extractImports(source);
     let separatorIndex: number = source.length;
@@ -257,43 +266,37 @@ export function parseReactiveCML(source: string, mode: ImportType = 'import'): s
         'LoopCollect',
         'LoopState'
     ]);
+    const baseCompPath = '@aldinh777/reactive-cml/dom/components';
     const baseDependencies = dependencies.filter((dep) => controlComp.has(dep));
 
     let outreturn = '';
     if (fullparams.length > 0 || hasChildrenTag) {
         autoDependencies.push(['@aldinh777/reactive-cml/dom', ['intoDom']]);
         outreturn = `return intoDom(${rcJson}, {${fullparams.join()}}, _children)`;
-    } else {
+    } else if (rcJson.length > 0) {
         autoDependencies.push(['@aldinh777/reactive-cml/dom/dom-util', ['simpleDom']]);
         outreturn = `return simpleDom(${rcJson})`;
+    } else {
+        outreturn = '';
     }
 
     let outdep = '';
     if (mode === 'import') {
         outdep =
-            autoDependencies
-                .map(([from, imports]) => `import { ${imports.join()} } from '${from}'\n`)
-                .join('') +
+            autoDependencies.map(([from, imports]) => improt(imports, from, 'import')).join('') +
             baseDependencies
-                .map(
-                    (dep) => `import ${dep} from '@aldinh777/reactive-cml/dom/components/${dep}'\n`
-                )
+                .map((dep) => improt(dep, `${baseCompPath}/${dep}`, 'import'))
                 .join('') +
-            `${imports.map(([q, f]) => `import ${q} from ${f}\n`).join('')}` +
+            `${imports.map(([q, f]) => improt(q, f, 'import')).join('')}` +
             `\n` +
             `export default `;
     } else {
         outdep =
-            autoDependencies
-                .map(([from, imports]) => `const { ${imports.join()} } = require('${from}')\n`)
-                .join('') +
+            autoDependencies.map(([from, imports]) => improt(imports, from, 'require')).join('') +
             baseDependencies
-                .map(
-                    (dep) =>
-                        `const ${dep} = require('@aldinh777/reactive-cml/dom/components/${dep}')\n`
-                )
+                .map((dep) => improt(dep, `${baseCompPath}/${dep}`, 'require'))
                 .join('') +
-            `${imports.map(([q, f]) => `const ${q} = require(${f})\n`).join('')}` +
+            `${imports.map(([q, f]) => improt(q, f, 'require')).join('')}` +
             `\n` +
             `module.exports = `;
     }
