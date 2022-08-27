@@ -229,11 +229,11 @@ function extractParams(items: CMLTree, blacklist: Set<string> = new Set()): Extr
 }
 
 function improt(dep: string | string[], from: string, mode: ImportType): string {
-    let deps = typeof dep === 'string' ? dep : dep.join();
+    let deps = typeof dep === 'string' ? dep : `{ ${dep.join()} }`;
     if (mode === 'import') {
-        return `import ${deps} from '${from}'\n`;
+        return `import ${deps} from ${from}\n`;
     } else {
-        return `const ${deps} = require('${from}')\n`;
+        return `const ${deps} = require(${from})\n`;
     }
 }
 
@@ -271,10 +271,10 @@ export function parseReactiveCML(source: string, mode: ImportType = 'import'): s
 
     let outreturn = '';
     if (fullparams.length > 0 || hasChildrenTag) {
-        autoDependencies.push(['@aldinh777/reactive-cml/dom', ['intoDom']]);
+        autoDependencies.push(["'@aldinh777/reactive-cml/dom'", ['intoDom']]);
         outreturn = `return intoDom(${rcJson}, {${fullparams.join()}}, _children)`;
-    } else if (rcJson.length > 0) {
-        autoDependencies.push(['@aldinh777/reactive-cml/dom/dom-util', ['simpleDom']]);
+    } else if (rcResult.length > 0) {
+        autoDependencies.push(["'@aldinh777/reactive-cml/dom/dom-util'", ['simpleDom']]);
         outreturn = `return simpleDom(${rcJson})`;
     } else {
         outreturn = '';
