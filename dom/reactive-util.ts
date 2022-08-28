@@ -1,4 +1,4 @@
-import { State } from '@aldinh777/reactive';
+import { State } from '@aldinh777/reactive/state/State';
 import { StateCollection } from '@aldinh777/reactive/collection/StateCollection';
 import { Properties } from '../util';
 import { PropAlias } from './prop-util';

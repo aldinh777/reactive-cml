@@ -8,7 +8,6 @@ type ImportType = 'none' | 'import' | 'require';
 interface ExtractedParams {
     dependencies: string[];
     params: string[];
-    hasChildrenTag: boolean;
 }
 
 enum ImportFlag {
@@ -113,7 +112,6 @@ function extractImports(source: string): [number, ImportsResult[]] {
 function extractParams(items: CMLTree, blacklist: Set<string> = new Set()): ExtractedParams {
     let dep: string[] = [];
     let par: string[] = [];
-    let chill: boolean = false;
     for (const item of items) {
         if (typeof item === 'string') {
             const params = extractTextProps(item)
@@ -128,7 +126,8 @@ function extractParams(items: CMLTree, blacklist: Set<string> = new Set()): Extr
             }
             switch (tag) {
                 case 'children':
-                    chill = true;
+                    item.tag = 'Children';
+                    dep.push('Children');
                     break;
                 case 'if':
                 case 'unless':
@@ -141,6 +140,8 @@ function extractParams(items: CMLTree, blacklist: Set<string> = new Set()): Extr
                         par.push(state);
                     } else {
                         const appendCondition = props['condition'];
+                        item.tag = 'ControlBasic';
+                        dep.push('ControlBasic');
                         par.push(appendCondition);
                     }
                     break;
@@ -163,6 +164,8 @@ function extractParams(items: CMLTree, blacklist: Set<string> = new Set()): Extr
                         par.push(collect);
                     } else {
                         const list = props['list'];
+                        item.tag = 'LoopBasic';
+                        dep.push('LoopBasic');
                         par.push(list);
                     }
                     break;
@@ -196,6 +199,8 @@ function extractParams(items: CMLTree, blacklist: Set<string> = new Set()): Extr
                         par.push(collect);
                     } else {
                         const obj = props['object'];
+                        item.tag = 'DestructBasic';
+                        dep.push('DestructBasic');
                         par.push(obj);
                     }
                     break;
@@ -208,13 +213,10 @@ function extractParams(items: CMLTree, blacklist: Set<string> = new Set()): Extr
                     }
                     break;
             }
-            const { dependencies, params, hasChildrenTag } = extractParams(
+            const { dependencies, params } = extractParams(
                 children,
                 localBlacklist
             );
-            if (hasChildrenTag) {
-                chill = true;
-            }
             dep = dep.concat(dependencies);
             par = par.concat(params);
         }
@@ -223,8 +225,7 @@ function extractParams(items: CMLTree, blacklist: Set<string> = new Set()): Extr
     par = undupe(par).filter((param) => !blacklist.has(param));
     return {
         dependencies: dep,
-        params: par,
-        hasChildrenTag: chill
+        params: par
     };
 }
 
@@ -253,16 +254,20 @@ export function parseReactiveCML(source: string, mode: ImportType = 'import'): s
     ];
 
     const cmlTree = parseCML(cml);
-    const { dependencies, params, hasChildrenTag } = extractParams(cmlTree);
+    const { dependencies, params } = extractParams(cmlTree);
     const fullparams = params.concat(dependencies);
     const rcResult = processRC(cmlTree);
     const rcJson = JSON.stringify(rcResult, null, 2);
 
     const autoDependencies: [string, string[]][] = [];
     const controlComp = new Set([
+        'Children',
+        'ControlBasic',
         'ControlState',
+        'DestructBasic',
         'DestructCollect',
         'DestructState',
+        'LoopBasic',
         'LoopCollect',
         'LoopState'
     ]);
@@ -270,7 +275,7 @@ export function parseReactiveCML(source: string, mode: ImportType = 'import'): s
     const baseDependencies = dependencies.filter((dep) => controlComp.has(dep));
 
     let outreturn = '';
-    if (fullparams.length > 0 || hasChildrenTag) {
+    if (fullparams.length > 0) {
         autoDependencies.push(["'@aldinh777/reactive-cml/dom'", ['intoDom']]);
         outreturn = `return intoDom(${rcJson}, {${fullparams.join()}}, _children)`;
     } else if (rcResult.length > 0) {

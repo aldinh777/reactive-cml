@@ -10,7 +10,7 @@ function recursiveNodes(handler: (par: Node, item: Node, bef?: Node) => any) {
                 recurse(parent, item.elems, before);
             }
         }
-    }
+    };
 }
 
 export const append = recursiveNodes((par, item) => par.appendChild(item));

@@ -1,4 +1,4 @@
-import { State } from '@aldinh777/reactive';
+import { State } from '@aldinh777/reactive/state/State';
 import { StateList } from '@aldinh777/reactive/collection/StateList';
 import { ComponentChildren, ControlComponent, intoDom, NodeComponent } from '..';
 import { RCMLResult } from '../../src';
@@ -28,9 +28,12 @@ function createListElement(
     return result;
 }
 
-export default function (props: Properties = {}, _children?: ComponentChildren): NodeComponent[] {
+export default function (
+    props: Properties = {},
+    _children?: ComponentChildren
+): NodeComponent[] | void {
     if (!_children || typeof props.list !== 'string' || typeof props.as !== 'string') {
-        return [];
+        return;
     }
     const { tree, params, _super } = _children;
     const list = params[props.list];

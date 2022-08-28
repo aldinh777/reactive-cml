@@ -1,8 +1,7 @@
-import { observe, State } from '@aldinh777/reactive';
+import { State } from '@aldinh777/reactive/state/State';
 import { Properties, StaticProperties, TextProp } from '../util';
 import { Component, RCMLResult } from '..';
 import { append, setAttr } from './dom-util';
-import { cloneSetVal, PropAlias, propAlias } from './prop-util';
 
 export type NodeComponent = Node | ControlComponent;
 export type EventDispatcher = (name: string, ...args: any[]) => any;
@@ -52,11 +51,12 @@ function processElementProperties(
     events: StaticProperties<Function>
 ) {
     for (const prop in props) {
-        const value = props[prop];
-        if (value instanceof State) {
-            observe(value, (next) => setAttr(elem, prop, next));
+        const propval = props[prop];
+        if (propval instanceof State) {
+            setAttr(elem, prop, propval.getValue());
+            propval.onChange((next) => setAttr(elem, prop, next``));
         } else {
-            setAttr(elem, prop, value);
+            setAttr(elem, prop, propval);
         }
     }
     for (const event in events) {
@@ -78,95 +78,38 @@ export function intoDom(
             const param = params[(item as TextProp).name];
             const text = document.createTextNode('');
             if (param instanceof State) {
-                observe(param, (next) => (text.textContent = next));
+                text.textContent = param.getValue();
+                param.onChange((next) => (text.textContent = next));
             } else {
                 text.textContent = param;
             }
             result.push(text);
         } else {
             const { tag, props, events, children } = item as Component;
-            const chomp: ComponentChildren = {
-                tree: children,
-                params: params,
-                _super: cc
-            };
-            switch (tag) {
-                case 'children':
-                    if (cc) {
-                        result.push(...intoDom(cc.tree, cc.params, cc._super));
+            const comps = processComponentProperties(props, events, params);
+            if (tag[0].match(/[A-Z]/)) {
+                const chomp: ComponentChildren = {
+                    tree: children,
+                    params: params,
+                    _super: cc
+                };
+                const component: ReactiveComponent = params[tag];
+                const res = component(comps.props, chomp, (name: string, ...args: any[]) => {
+                    const event = comps.events[name];
+                    if (typeof event === 'function') {
+                        return event(...args);
                     }
-                    break;
-                case 'if':
-                    if (props) {
-                        const ifkey = props.condition;
-                        if (typeof ifkey === 'string' && params[ifkey]) {
-                            result.push(...intoDom(children, params, cc));
-                        }
-                    }
-                    break;
-                case 'unless':
-                    if (props) {
-                        const unkey = props.condition;
-                        if (typeof unkey === 'string' && !params[unkey]) {
-                            result.push(...intoDom(children, params, cc));
-                        }
-                    }
-                    break;
-                case 'foreach':
-                    if (props) {
-                        const listkey = props.list;
-                        const alias = props.as;
-                        if (typeof listkey === 'string' && typeof alias === 'string') {
-                            const list = params[listkey];
-                            for (const item of list) {
-                                const localparams = cloneSetVal(params, alias, item);
-                                result.push(...intoDom(children, localparams, cc));
-                            }
-                        }
-                    }
-                    break;
-                case 'destruct':
-                    if (props) {
-                        const objkey = props.object;
-                        const propquery = props.as;
-                        if (typeof objkey === 'string' && typeof propquery === 'string') {
-                            const obj = params[objkey];
-                            const propnames: PropAlias[] = propquery.split(/\s+/).map((query) => {
-                                const matches = query.match(/(.+):(.+)/);
-                                if (matches) {
-                                    const [_, alias, prop] = matches;
-                                    return [alias, prop];
-                                } else {
-                                    return [query, query];
-                                }
-                            });
-                            const localparams = propAlias(params, propnames, obj);
-                            result.push(...intoDom(children, localparams, cc));
-                        }
-                    }
-                    break;
-                default:
-                    if (tag[0].match(/[A-Z]/)) {
-                        const component: ReactiveComponent = params[tag];
-                        const pres = processComponentProperties(props, events, params);
-                        const res = component(pres.props, chomp, (name: string, ...args: any[]) => {
-                            const event = pres.events[name];
-                            if (typeof event === 'function') {
-                                return event(...args);
-                            }
-                        });
-                        if (res) {
-                            result.push(...res);
-                        }
-                    } else {
-                        const elem = document.createElement(tag);
-                        const pres = processComponentProperties(props, events, params);
-                        processElementProperties(elem, pres.props, pres.events);
-                        append(elem, intoDom(children, params, cc));
-                        result.push(elem);
-                    }
-                    break;
+                });
+                if (res) {
+                    result.push(...res);
+                }
+            } else {
+                const elem = document.createElement(tag);
+                processElementProperties(elem, comps.props, comps.events);
+                append(elem, intoDom(children, params, cc));
+                result.push(elem);
             }
+            break;
         }
     }
     return result;

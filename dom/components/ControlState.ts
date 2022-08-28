@@ -1,18 +1,19 @@
-import { State } from '@aldinh777/reactive';
+import { State } from '@aldinh777/reactive/state/State';
 import { ComponentChildren, ControlComponent, intoDom, NodeComponent } from '..';
 import { Properties } from '../../util';
 import { append, remove, insertBefore } from '../dom-util';
 
-export default function (props: Properties = {}, _children?: ComponentChildren): NodeComponent[] {
+export default function (
+    props: Properties = {},
+    _children?: ComponentChildren
+): NodeComponent[] | void {
     if (!_children || typeof props.condition !== 'string') {
-        return [];
+        return;
     }
     const { tree, params, _super } = _children;
-    const unless = props.rev;
-    const condkey = props.condition;
-    let condition = _children.params[condkey];
+    let condition = _children.params[props.condition];
     if (condition instanceof State) {
-        if (unless) {
+        if (props.rev) {
             const rev = new State(!condition.getValue());
             condition.onChange((un) => rev.setValue(!un));
             condition = rev;
