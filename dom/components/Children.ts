@@ -5,7 +5,8 @@ export default function (
     _props: Properties = {},
     _children?: ComponentChildren
 ): NodeComponent[] | void {
-    if (_children) {
-        return intoDom(_children.tree, _children.params, _children._super);
+    if (_children && _children._super) {
+        const { tree, params, _super } = _children._super;
+        return intoDom(tree, params, _super);
     }
 }
