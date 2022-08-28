@@ -54,7 +54,7 @@ function processElementProperties(
         const propval = props[prop];
         if (propval instanceof State) {
             setAttr(elem, prop, propval.getValue());
-            propval.onChange((next) => setAttr(elem, prop, next``));
+            propval.onChange((next) => setAttr(elem, prop, next));
         } else {
             setAttr(elem, prop, propval);
         }
