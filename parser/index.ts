@@ -290,7 +290,7 @@ export function parseReactiveCML(source: string, mode: ImportType = 'import'): s
         outdep =
             autoDependencies.map(([from, imports]) => improt(imports, from, 'import')).join('') +
             baseDependencies
-                .map((dep) => improt(dep, `${baseCompPath}/${dep}`, 'import'))
+                .map((dep) => improt(dep, `'${baseCompPath}/${dep}'`, 'import'))
                 .join('') +
             `${imports.map(([q, f]) => improt(q, f, 'import')).join('')}` +
             `\n` +
@@ -299,7 +299,7 @@ export function parseReactiveCML(source: string, mode: ImportType = 'import'): s
         outdep =
             autoDependencies.map(([from, imports]) => improt(imports, from, 'require')).join('') +
             baseDependencies
-                .map((dep) => improt(dep, `${baseCompPath}/${dep}`, 'require'))
+                .map((dep) => improt(dep, `'${baseCompPath}/${dep}'`, 'require'))
                 .join('') +
             `${imports.map(([q, f]) => improt(q, f, 'require')).join('')}` +
             `\n` +
