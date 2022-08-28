@@ -109,7 +109,6 @@ export function intoDom(
                 append(elem, intoDom(children, params, cc));
                 result.push(elem);
             }
-            break;
         }
     }
     return result;
