@@ -1,11 +1,9 @@
-import { State } from '@aldinh777/reactive/state/State';
 import { StateList } from '@aldinh777/reactive/collection/StateList';
 import { ComponentChildren, ControlComponent, intoDom, NodeComponent } from '..';
 import { RCMLResult } from '../../src';
 import { Properties } from '../../util';
 import { remove, insertBefore } from '../dom-util';
 import { cloneSetVal } from '../prop-util';
-import { isReactive } from '../reactive-util';
 
 interface MirrorElement {
     elems: NodeComponent[];
@@ -40,8 +38,7 @@ export default function (
     const alias = props.as;
     if (list instanceof StateList) {
         const marker = document.createTextNode('');
-        const statifiedList = list.raw().map((item) => (isReactive(item) ? item : new State(item)));
-        const listElementEach = createListElement(params, alias, statifiedList, tree, _super);
+        const listElementEach = createListElement(params, alias, list.raw(), tree, _super);
         const mirrorList: (MirrorElement | undefined)[] = listElementEach.map((elems) => ({
             elems: elems,
             start: document.createTextNode(''),
@@ -51,57 +48,50 @@ export default function (
             elems: mirrorList.flatMap((m) => (m ? [m.start, ...m.elems, m.end] : []))
         };
         list.onUpdate((index, next) => {
-            const item = statifiedList[index];
-            if (item instanceof State) {
-                item.setValue(next);
+            const mirronElement = mirrorList[index];
+            const newElems = intoDom(tree, cloneSetVal(params, alias, next), _super);
+            if (mirronElement) {
+                const { elems, start: startMarker, end: endMarker } = mirronElement;
+                const { parentNode } = endMarker;
+                if (!parentNode) {
+                    return;
+                }
+                remove(parentNode, elems);
+                insertBefore(parentNode, newElems, endMarker);
+                mirronElement.elems = newElems;
+                const elementIndex = component.elems.indexOf(startMarker);
+                component.elems.splice(elementIndex + 1, elems.length, ...newElems);
             } else {
-                const mirronElement = mirrorList[index];
-                const nextItem = isReactive(next) ? next : new State(next);
-                statifiedList[index] = nextItem;
-                const newElems = intoDom(tree, cloneSetVal(params, alias, nextItem), _super);
-                if (mirronElement) {
-                    const { start: startMarker, end: endMarker, elems } = mirronElement;
-                    const { parentNode } = endMarker;
-                    if (!parentNode) {
-                        return;
+                const m: MirrorElement = {
+                    elems: newElems,
+                    start: document.createTextNode(''),
+                    end: document.createTextNode('')
+                };
+                const flatElems = [m.start, ...m.elems, m.end];
+                mirrorList[index] = m;
+                if (index >= mirrorList.length) {
+                    const { parentNode } = marker;
+                    if (parentNode) {
+                        insertBefore(parentNode, flatElems, marker);
                     }
-                    remove(parentNode, elems);
-                    insertBefore(parentNode, newElems, endMarker);
-                    mirronElement.elems = newElems;
-                    const elementIndex = component.elems.indexOf(startMarker);
-                    component.elems.splice(elementIndex + 1, elems.length, ...newElems);
                 } else {
-                    const m: MirrorElement = {
-                        elems: newElems,
-                        start: document.createTextNode(''),
-                        end: document.createTextNode('')
-                    };
-                    const flatElems = [m.start, ...m.elems, m.end];
-                    mirrorList[index] = m;
-                    if (index >= mirrorList.length) {
+                    let i = index + 1;
+                    while (i < mirrorList.length) {
+                        const mirror = mirrorList[i];
+                        if (mirror) {
+                            const { start: startMarker } = mirror;
+                            const { parentNode } = startMarker;
+                            if (parentNode) {
+                                insertBefore(parentNode, flatElems, startMarker);
+                            }
+                            break;
+                        }
+                        i++;
+                    }
+                    if (i === mirrorList.length) {
                         const { parentNode } = marker;
                         if (parentNode) {
                             insertBefore(parentNode, flatElems, marker);
-                        }
-                    } else {
-                        let i = index + 1;
-                        while (i < mirrorList.length) {
-                            const mirror = mirrorList[i];
-                            if (mirror) {
-                                const { start: startMarker } = mirror;
-                                const { parentNode } = startMarker;
-                                if (parentNode) {
-                                    insertBefore(parentNode, flatElems, startMarker);
-                                }
-                                break;
-                            }
-                            i++;
-                        }
-                        if (i === mirrorList.length) {
-                            const { parentNode } = marker;
-                            if (parentNode) {
-                                insertBefore(parentNode, flatElems, marker);
-                            }
                         }
                     }
                 }
@@ -122,7 +112,6 @@ export default function (
                 component.elems.splice(elementIndex, elems.length + 2);
             }
             mirrorList.splice(index, 1);
-            statifiedList.splice(index, 1);
         });
         list.onInsert((index, inserted) => {
             const nextMirror = mirrorList[index];
@@ -134,10 +123,9 @@ export default function (
             if (!parentNode) {
                 return;
             }
-            const insertedItem = isReactive(inserted) ? inserted : new State(inserted);
             const startMarker = document.createTextNode('');
             const endMarker = document.createTextNode('');
-            const newElems = intoDom(tree, cloneSetVal(params, alias, insertedItem), _super);
+            const newElems = intoDom(tree, cloneSetVal(params, alias, inserted), _super);
             const mirror: MirrorElement = {
                 elems: newElems,
                 start: startMarker,
@@ -149,12 +137,10 @@ export default function (
             if (nextMarker === marker) {
                 mirrorList.push(mirror);
                 component.elems.push(...flatNewElems);
-                statifiedList.push(insertedItem);
             } else {
                 mirrorList.splice(index, 0, mirror);
                 const elementIndex = component.elems.indexOf(nextMarker);
                 component.elems.splice(elementIndex, 0, ...flatNewElems);
-                statifiedList.splice(index, 0, insertedItem);
             }
         });
         return [component, marker];

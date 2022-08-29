@@ -1,9 +1,8 @@
-import { State } from '@aldinh777/reactive/state/State';
 import { StateMap } from '@aldinh777/reactive/collection/StateMap';
 import { ComponentChildren, ControlComponent, intoDom, NodeComponent } from '..';
 import { Properties } from '../../util';
 import { propAlias, PropAlias } from '../prop-util';
-import { statifyObj, isReactive } from '../reactive-util';
+import { insertBefore, remove } from '../dom-util';
 
 export default function (
     props: Properties = {},
@@ -26,30 +25,17 @@ export default function (
     if (obj instanceof StateMap) {
         const marker = document.createTextNode('');
         const destructParams = propAlias(params, propnames, obj.raw());
-        const statifiedParams = statifyObj(destructParams, propnames);
         const component: ControlComponent = {
-            elems: intoDom(tree, statifiedParams, _super)
+            elems: intoDom(tree, destructParams, _super)
         };
-        obj.onUpdate((key, value) => {
-            const param = statifiedParams[key];
-            if (param instanceof State) {
-                param.setValue(value);
-            } else {
-                if (isReactive(value)) {
-                    statifiedParams[key] = value;
-                } else {
-                    statifiedParams[key] = new State(value);
-                }
-            }
-        });
-        obj.onDelete((key) => {
-            delete statifiedParams[key];
-        });
-        obj.onInsert((key, value) => {
-            if (isReactive(value)) {
-                statifiedParams[key] = value;
-            } else {
-                statifiedParams[key] = new State(value);
+        obj.onUpdate(() => {
+            const { parentNode } = marker;
+            if (parentNode) {
+                const destructParams = propAlias(params, propnames, obj.raw());
+                const newElems = intoDom(tree, destructParams, _super);
+                remove(parentNode, component.elems);
+                insertBefore(parentNode, newElems, marker);
+                component.elems = newElems;
             }
         });
         return [component, marker];
