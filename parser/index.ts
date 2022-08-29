@@ -241,6 +241,18 @@ function extractParams(items: CMLTree, blacklist: Set<string> = new Set()): Extr
                     for (const key in props) {
                         const match = key.match(/(on|bind):(.+)/);
                         if (match) {
+                            const param = props[key].trim();
+                            if (!param) {
+                                if (match[1] === 'on') {
+                                    throw CompileError.emptyBindedProperty('event', match[2], tag);
+                                } else {
+                                    throw CompileError.emptyBindedProperty(
+                                        'property',
+                                        match[2],
+                                        tag
+                                    );
+                                }
+                            }
                             par.push(props[key].trim());
                         }
                     }
