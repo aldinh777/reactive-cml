@@ -2,7 +2,7 @@ import { State } from '@aldinh777/reactive/state/State';
 import { ComponentChildren, ControlComponent, intoDom, NodeComponent } from '..';
 import { Properties } from '../../util';
 import { remove, insertBefore } from '../dom-util';
-import { PropAlias, propAlias } from '../prop-util';
+import { PropAlias, propAlias, readAlias } from '../prop-util';
 
 export default function (
     props: Properties = {},
@@ -13,15 +13,7 @@ export default function (
     }
     const { tree, params, _super } = _children;
     const obj: any = params[props.object];
-    const propnames: PropAlias[] = props.as.split(/\s+/).map((query) => {
-        const matches = query.match(/(.+):(.+)/);
-        if (matches) {
-            const [_, alias, prop] = matches;
-            return [alias, prop];
-        } else {
-            return [query, query];
-        }
-    });
+    const propnames: PropAlias[] = readAlias(props.as);
     if (obj instanceof State) {
         const marker = document.createTextNode('');
         const destructParams = propAlias(params, propnames, obj.getValue());

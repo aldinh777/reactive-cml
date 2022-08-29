@@ -1,7 +1,7 @@
 import { StateMap } from '@aldinh777/reactive/collection/StateMap';
 import { ComponentChildren, ControlComponent, intoDom, NodeComponent } from '..';
 import { Properties } from '../../util';
-import { propAlias, PropAlias } from '../prop-util';
+import { propAlias, PropAlias, readAlias } from '../prop-util';
 import { insertBefore, remove } from '../dom-util';
 
 export default function (
@@ -13,15 +13,7 @@ export default function (
     }
     const { tree, params, _super } = _children;
     const obj: any = params[props.object];
-    const propnames: PropAlias[] = props.as.split(/\s+/).map((query) => {
-        const matches = query.match(/(.+):(.+)/);
-        if (matches) {
-            const [_, alias, prop] = matches;
-            return [alias, prop];
-        } else {
-            return [query, query];
-        }
-    });
+    const propnames: PropAlias[] = readAlias(props.as);
     if (obj instanceof StateMap) {
         const marker = document.createTextNode('');
         const destructParams = propAlias(params, propnames, obj.raw());

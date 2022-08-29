@@ -1,6 +1,6 @@
 import { ComponentChildren, intoDom, NodeComponent } from '..';
 import { Properties } from '../../util';
-import { propAlias, PropAlias } from '../prop-util';
+import { propAlias, PropAlias, readAlias } from '../prop-util';
 
 export default function (
     props: Properties = {},
@@ -11,15 +11,7 @@ export default function (
     }
     const { tree, params, _super } = _children;
     const obj = params[props.object];
-    const propnames: PropAlias[] = props.as.split(/\s+/).map((query) => {
-        const matches = query.match(/(.+):(.+)/);
-        if (matches) {
-            const [_, alias, prop] = matches;
-            return [alias, prop];
-        } else {
-            return [query, query];
-        }
-    });
+    const propnames: PropAlias[] = readAlias(props.as);
     const localparams = propAlias(params, propnames, obj);
     return intoDom(tree, localparams, _super);
 }
