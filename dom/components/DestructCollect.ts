@@ -3,6 +3,7 @@ import { ComponentChildren, ControlComponent, intoDom, NodeComponent } from '..'
 import { Properties } from '../../util';
 import { propAlias, PropAlias, readAlias } from '../prop-util';
 import { insertBefore, remove } from '../dom-util';
+import ComponentError from '../../error/ComponentError';
 
 export default function (
     props: Properties = {},
@@ -32,6 +33,6 @@ export default function (
         });
         return [component, marker];
     } else {
-        throw TypeError(`'${props.object}' are not a valid collection state`);
+        throw ComponentError.invalidCollect(props.obj, 'obj', 'destruct');
     }
 }

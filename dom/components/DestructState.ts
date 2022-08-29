@@ -2,6 +2,7 @@ import { State } from '@aldinh777/reactive/state/State';
 import { ComponentChildren, ControlComponent, intoDom, NodeComponent } from '..';
 import { Properties } from '../../util';
 import { remove, insertBefore } from '../dom-util';
+import ComponentError from '../../error/ComponentError';
 import { PropAlias, propAlias, readAlias } from '../prop-util';
 
 export default function (
@@ -27,13 +28,13 @@ export default function (
                 return;
             }
             remove(parentNode, elems);
-            const destructParams = propAlias(params, propnames, obj.getValue());
+            const destructParams = propAlias(params, propnames, ob);
             const destructElements = intoDom(tree, destructParams, _super);
             insertBefore(parentNode, destructElements, marker);
             component.elems = destructElements;
         });
         return [component, marker];
     } else {
-        throw TypeError(`'${props.object}' are not a valid state`);
+        throw ComponentError.invalidState(props.obj, 'obj', 'destruct');
     }
 }

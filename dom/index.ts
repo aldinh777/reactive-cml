@@ -2,6 +2,7 @@ import { State } from '@aldinh777/reactive/state/State';
 import { Properties, StaticProperties, TextProp } from '../util';
 import { Component, RCMLResult } from '..';
 import { append, setAttr } from './dom-util';
+import ComponentError from '../error/ComponentError';
 
 export type NodeComponent = Node | ControlComponent;
 export type EventDispatcher = (name: string, ...args: any[]) => any;
@@ -94,14 +95,18 @@ export function intoDom(
                     _super: cc
                 };
                 const component: ReactiveComponent = params[tag];
-                const res = component(comps.props, chomp, (name: string, ...args: any[]) => {
-                    const event = comps.events[name];
-                    if (typeof event === 'function') {
-                        return event(...args);
-                    }
-                });
-                if (res) {
-                    result.push(...res);
+                try {
+                    const res = component(comps.props, chomp, (name: string, ...args: any[]) => {
+                        const event = comps.events[name];
+                        if (typeof event === 'function') {
+                            return event(...args);
+                        }
+                    });
+                    if (res) {
+                        result.push(...res);
+                    }    
+                } catch (err) {
+                    throw ComponentError.componentCrash(tag, err);
                 }
             } else {
                 const elem = document.createElement(tag);

@@ -2,6 +2,7 @@ import { State } from '@aldinh777/reactive/state/State';
 import { ComponentChildren, ControlComponent, intoDom, NodeComponent } from '..';
 import { Properties } from '../../util';
 import { append, remove, insertBefore } from '../dom-util';
+import ComponentError from '../../error/ComponentError';
 
 export default function (
     props: Properties = {},
@@ -20,15 +21,15 @@ export default function (
             const eq = props.equal;
             const equalCond = new State(unless ? value != eq : value != eq);
             if (unless) {
-                val.onChange(next => equalCond.setValue(next != props.equal));
+                val.onChange((next) => equalCond.setValue(next != props.equal));
             } else {
-                val.onChange(next => equalCond.setValue(next == props.equal));
+                val.onChange((next) => equalCond.setValue(next == props.equal));
             }
             val = equalCond;
         } else {
             if (unless) {
                 const cond = new State(!value);
-                val.onChange(next => cond.setValue(!next));
+                val.onChange((next) => cond.setValue(!next));
                 val = cond;
             }
         }
@@ -41,7 +42,7 @@ export default function (
         } else {
             append(hide, elements);
         }
-        val.onChange((active: boolean) => {
+        val.onChange((active) => {
             const { parentNode } = marker;
             if (!parentNode) {
                 return;
@@ -58,6 +59,6 @@ export default function (
         });
         return [component, marker];
     } else {
-        throw TypeError(`'${props.conditon}' are not a valid state`);
+        throw ComponentError.invalidState(props.val, 'val', 'if');
     }
 }

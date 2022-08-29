@@ -1,6 +1,7 @@
 import { CMLTree, parseCML } from '@aldinh777/cml-parser';
 import { processRC } from '..';
 import { extractTextProps, TextProp, undupe } from '../util';
+import CompileError from '../error/CompileError';
 
 type ImportsResult = [query: string, module: string];
 type ImportType = 'none' | 'import' | 'require';
@@ -19,14 +20,6 @@ enum ImportFlag {
     start,
     from,
     find
-}
-
-class CompileError extends Error {
-    static statementRequire(statement: string, prop: string) {
-        throw new CompileError(
-            `${statement} statement must have property '${prop}' and cannot be empty`
-        );
-    }
 }
 
 function extractImports(source: string): [number, ImportsResult[]] {
@@ -150,7 +143,7 @@ function extractParams(items: CMLTree, blacklist: Set<string> = new Set()): Extr
                     if (Reflect.has(props, 'state:val')) {
                         const state = props['state:val'];
                         if (!state) {
-                            CompileError.statementRequire('if', 'val');
+                            throw CompileError.statementRequire('if', 'val');
                         }
                         delete props['state:val'];
                         props.val = state;
@@ -160,7 +153,7 @@ function extractParams(items: CMLTree, blacklist: Set<string> = new Set()): Extr
                     } else {
                         const appendCondition = props['val'];
                         if (!appendCondition) {
-                            CompileError.statementRequire('if', 'val');
+                            throw CompileError.statementRequire('if', 'val');
                         }
                         item.tag = 'ControlBasic';
                         dep.push('ControlBasic');
@@ -173,7 +166,7 @@ function extractParams(items: CMLTree, blacklist: Set<string> = new Set()): Extr
                     if (Reflect.has(props, 'state:list')) {
                         const state = props['state:list'];
                         if (!state) {
-                            CompileError.statementRequire('foreach', 'list');                            
+                            throw CompileError.statementRequire('foreach', 'list');
                         }
                         delete props['state:list'];
                         props.list = state;
@@ -183,7 +176,7 @@ function extractParams(items: CMLTree, blacklist: Set<string> = new Set()): Extr
                     } else if (Reflect.has(props, 'collect:list')) {
                         const collect = props['collect:list'];
                         if (!collect) {
-                            CompileError.statementRequire('foreach', 'list');
+                            throw CompileError.statementRequire('foreach', 'list');
                         }
                         delete props['collect:list'];
                         props.list = collect;
@@ -193,7 +186,7 @@ function extractParams(items: CMLTree, blacklist: Set<string> = new Set()): Extr
                     } else {
                         const list = props['list'];
                         if (!list) {
-                            CompileError.statementRequire('foreach', 'list');
+                            throw CompileError.statementRequire('foreach', 'list');
                         }
                         item.tag = 'LoopBasic';
                         dep.push('LoopBasic');
@@ -217,7 +210,7 @@ function extractParams(items: CMLTree, blacklist: Set<string> = new Set()): Extr
                     if (Reflect.has(props, 'state:obj')) {
                         const state = props['state:obj'];
                         if (!state) {
-                            CompileError.statementRequire('destruct', 'obj');
+                            throw CompileError.statementRequire('destruct', 'obj');
                         }
                         delete props['state:obj'];
                         props.obj = state;
@@ -227,7 +220,7 @@ function extractParams(items: CMLTree, blacklist: Set<string> = new Set()): Extr
                     } else if (Reflect.has(props, 'collect:obj')) {
                         const collect = props['collect:obj'];
                         if (!collect) {
-                            CompileError.statementRequire('destruct', 'obj');
+                            throw CompileError.statementRequire('destruct', 'obj');
                         }
                         delete props['collect:obj'];
                         props.obj = collect;
@@ -237,7 +230,7 @@ function extractParams(items: CMLTree, blacklist: Set<string> = new Set()): Extr
                     } else {
                         const obj = props['obj'];
                         if (!obj) {
-                            CompileError.statementRequire('destruct', 'obj');
+                            throw CompileError.statementRequire('destruct', 'obj');
                         }
                         item.tag = 'DestructBasic';
                         dep.push('DestructBasic');

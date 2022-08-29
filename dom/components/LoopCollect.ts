@@ -3,6 +3,7 @@ import { ComponentChildren, ControlComponent, intoDom, NodeComponent } from '..'
 import { RCMLResult } from '../../src';
 import { Properties } from '../../util';
 import { remove, insertBefore } from '../dom-util';
+import ComponentError from '../../error/ComponentError';
 import { propAlias, PropAlias, readAlias } from '../prop-util';
 
 interface MirrorElement {
@@ -159,6 +160,6 @@ export default function (
         });
         return [component, marker];
     } else {
-        throw TypeError(`'${props.object}' are not a valid collection state`);
+        throw ComponentError.invalidCollect(props.list, 'list', 'foreach');
     }
 }
