@@ -13,7 +13,7 @@ export default function (
     const { tree, params, _super } = _children;
     let condition = _children.params[props.condition];
     if (condition instanceof State) {
-        if (props.rev) {
+        if (Reflect.has(props, 'rev')) {
             const rev = new State(!condition.getValue());
             condition.onChange((un) => rev.setValue(!un));
             condition = rev;

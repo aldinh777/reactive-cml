@@ -9,7 +9,7 @@ export default function (
         return;
     }
     const { tree, params, _super } = _children;
-    const unless = props.rev;
+    const unless = Reflect.has(props, 'rev');
     const condkey = props.condition;
     const condition = unless ? !params[condkey] : params[condkey];
     if (condition) {
