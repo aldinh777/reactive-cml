@@ -10,6 +10,11 @@ interface ExtractedParams {
     params: string[];
 }
 
+interface RCMLParserOptions {
+    mode?: ImportType;
+    trimCML?: boolean;
+}
+
 enum ImportFlag {
     start,
     from,
@@ -216,10 +221,7 @@ function extractParams(items: CMLTree, blacklist: Set<string> = new Set()): Extr
                     }
                     break;
             }
-            const { dependencies, params } = extractParams(
-                children,
-                localBlacklist
-            );
+            const { dependencies, params } = extractParams(children, localBlacklist);
             dep = dep.concat(dependencies);
             par = par.concat(params);
         }
@@ -241,7 +243,13 @@ function improt(dep: string | string[], from: string, mode: ImportType): string 
     }
 }
 
-export function parseReactiveCML(source: string, mode: ImportType = 'import'): string {
+export function parseReactiveCML(
+    source: string,
+    options: RCMLParserOptions = {
+        mode: 'import',
+        trimCML: true
+    }
+): string {
     const [importIndex, imports] = extractImports(source);
     let separatorIndex: number = source.length;
     const matchResult = source.match(/(div|span)(\s+.*=".*")*\s*</);
@@ -256,7 +264,7 @@ export function parseReactiveCML(source: string, mode: ImportType = 'import'): s
         source.substring(separatorIndex)
     ];
 
-    const cmlTree = parseCML(cml);
+    const cmlTree = parseCML(cml, options.trimCML);
     const { dependencies, params } = extractParams(cmlTree);
     const fullparams = params.concat(dependencies);
     const rcResult = processRC(cmlTree);
@@ -289,7 +297,7 @@ export function parseReactiveCML(source: string, mode: ImportType = 'import'): s
     }
 
     let outdep = '';
-    if (mode === 'import') {
+    if (options.mode === 'import') {
         outdep =
             autoDependencies.map(([from, imports]) => improt(imports, from, 'import')).join('') +
             baseDependencies
