@@ -132,7 +132,7 @@ function extractParams(items: CMLTree, blacklist: Set<string> = new Set()): Extr
                 case 'if':
                 case 'unless':
                     if (tag === 'unless') {
-                        props.rev = true;
+                        props.rev = '';
                     }
                     if (Reflect.has(props, 'state:condition')) {
                         const state = props['state:condition'];
