@@ -25,7 +25,3 @@ export function readAlias(propsquery: string): PropAlias[] {
         }
     });    
 }
-
-export function cloneSetVal(params: Properties, name: string, value: any): Properties {
-    return Object.assign({}, params, { [name]: value });
-}

@@ -3,7 +3,7 @@ import { ComponentChildren, ControlComponent, intoDom, NodeComponent } from '..'
 import { RCMLResult } from '../../src';
 import { Properties } from '../../util';
 import { remove, insertBefore } from '../dom-util';
-import { cloneSetVal } from '../prop-util';
+import { propAlias, PropAlias, readAlias } from '../prop-util';
 
 interface MirrorElement {
     elems: NodeComponent[];
@@ -14,13 +14,17 @@ interface MirrorElement {
 function createListElement(
     params: Properties,
     alias: string,
+    destruct: PropAlias[],
     items: any[],
     children: RCMLResult[],
     cc?: ComponentChildren
 ): NodeComponent[][] {
     const result: NodeComponent[][] = [];
     for (const item of items) {
-        const localParams: Properties = cloneSetVal(params, alias, item);
+        const localParams = propAlias(params, destruct, item);
+        if (alias) {
+            Object.assign(localParams, { [alias]: item });
+        }
         result.push(intoDom(children, localParams, cc));
     }
     return result;
@@ -36,9 +40,11 @@ export default function (
     const { tree, params, _super } = _children;
     const list = params[props.list];
     const alias = props.as;
+    const destruct =
+        typeof props.destruct === 'string' ? readAlias(props.destruct) : [];
     if (list instanceof StateList) {
         const marker = document.createTextNode('');
-        const listElementEach = createListElement(params, alias, list.raw(), tree, _super);
+        const listElementEach = createListElement(params, alias, destruct, list.raw(), tree, _super);
         const mirrorList: (MirrorElement | undefined)[] = listElementEach.map((elems) => ({
             elems: elems,
             start: document.createTextNode(''),
@@ -49,7 +55,11 @@ export default function (
         };
         list.onUpdate((index, next) => {
             const mirronElement = mirrorList[index];
-            const newElems = intoDom(tree, cloneSetVal(params, alias, next), _super);
+            const localParams = propAlias(params, destruct, next);
+            if (alias) {
+                Object.assign(localParams, { [alias]: next });
+            }
+            const newElems = intoDom(tree, localParams, _super);
             if (mirronElement) {
                 const { elems, start: startMarker, end: endMarker } = mirronElement;
                 const { parentNode } = endMarker;
@@ -125,7 +135,11 @@ export default function (
             }
             const startMarker = document.createTextNode('');
             const endMarker = document.createTextNode('');
-            const newElems = intoDom(tree, cloneSetVal(params, alias, inserted), _super);
+            const localParams = propAlias(params, destruct, inserted);
+            if (alias) {
+                Object.assign(localParams, { [alias]: inserted });
+            }
+            const newElems = intoDom(tree, localParams, _super);
             const mirror: MirrorElement = {
                 elems: newElems,
                 start: startMarker,
