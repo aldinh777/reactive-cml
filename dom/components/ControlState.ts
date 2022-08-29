@@ -13,7 +13,7 @@ export default function (
     }
     const { tree, params, _super } = _children;
     const unless = Reflect.has(props, 'rev');
-    let val: State<any> | boolean = params[props.condition];
+    let val: State<any> | boolean = params[props.val];
     if (val instanceof State) {
         const hasEqual = Reflect.has(props, 'equal');
         const value = val.getValue();
