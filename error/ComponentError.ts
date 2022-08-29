@@ -11,7 +11,7 @@ export default class ComponentError extends Error {
     }
     static componentCrash(comp: string, err: any): ComponentError {
         return new ComponentError(
-            `Crash at component '${comp}'. reason:\n    ${err.name}: ${err.message}`
+            `Crash at component '${comp}'. reason:\n    ${err ? err.stack : err}`
         );
     }
 }

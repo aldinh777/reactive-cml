@@ -12,9 +12,9 @@ export default function (
         return;
     }
     const { tree, params, _super } = _children;
-    let val: State<any> | boolean = _children.params[props.condition];
+    const unless = Reflect.has(props, 'rev');
+    let val: State<any> | boolean = params[props.condition];
     if (val instanceof State) {
-        const unless = Reflect.has(props, 'rev');
         const hasEqual = Reflect.has(props, 'equal');
         const value = val.getValue();
         if (hasEqual) {
@@ -59,6 +59,6 @@ export default function (
         });
         return [component, marker];
     } else {
-        throw ComponentError.invalidState(props.val, 'val', 'if');
+        throw ComponentError.invalidState(props.val, 'val', unless ? 'unless' : 'if');
     }
 }
