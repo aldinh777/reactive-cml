@@ -42,7 +42,7 @@ export function extractTextProps(text: string): (string | TextProp)[] {
                     flagWhitespace = true;
                     stream += '{' + propname;
                     propname = '';
-                } else if (c === '}' && propname.match(/^\s*[\$_A-Za-z][\$_\w]*/)) {
+                } else if (c === '}' && propname.match(/^\s*[_$A-Za-z][_$\w]*/)) {
                     flagProp = false;
                     result.push(stream, { name: propname });
                     stream = '';
@@ -50,7 +50,7 @@ export function extractTextProps(text: string): (string | TextProp)[] {
                 } else if (c.match(/\s/)) {
                     flagPropname = false;
                     propname += c;
-                } else if (c.match(/[\$_\w]/)) {
+                } else if (c.match(/[_$\w]/)) {
                     propname += c;
                 } else {
                     flagPropname = false;
@@ -59,7 +59,7 @@ export function extractTextProps(text: string): (string | TextProp)[] {
                     propname = '';
                 }
             } else {
-                if (c === '}' && propname.match(/^\s*[\$_A-Za-z][\$_\w]*/)) {
+                if (c === '}' && propname.match(/^\s*[_$A-Za-z][_$\w]*/)) {
                     flagProp = false;
                     result.push(stream, { name: propname });
                     stream = '';

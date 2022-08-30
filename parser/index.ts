@@ -128,6 +128,9 @@ function extractParams(items: CMLTree, blacklist: Set<string> = new Set()): Extr
             const { tag, props, children } = item;
             const localBlacklist = new Set(blacklist);
             if (tag[0] === tag[0].toUpperCase() && tag[0].match(/\w/)) {
+                if (isInvalid(tag)) {
+                    throw CompileError.invalidComponent(tag);
+                }
                 dep.push(tag);
             }
             switch (tag) {
@@ -145,6 +148,9 @@ function extractParams(items: CMLTree, blacklist: Set<string> = new Set()): Extr
                         if (!state) {
                             throw CompileError.statementRequire('if', 'val');
                         }
+                        if (isInvalid(state)) {
+                            throw CompileError.invalidIdentifier(tag, 'property', 'list', state);
+                        }
                         delete props['state:val'];
                         props.val = state;
                         item.tag = 'ControlState';
@@ -154,6 +160,14 @@ function extractParams(items: CMLTree, blacklist: Set<string> = new Set()): Extr
                         const appendCondition = props['val'];
                         if (!appendCondition) {
                             throw CompileError.statementRequire('if', 'val');
+                        }
+                        if (isInvalid(appendCondition)) {
+                            throw CompileError.invalidIdentifier(
+                                tag,
+                                'property',
+                                'list',
+                                appendCondition
+                            );
                         }
                         item.tag = 'ControlBasic';
                         dep.push('ControlBasic');
@@ -168,6 +182,9 @@ function extractParams(items: CMLTree, blacklist: Set<string> = new Set()): Extr
                         if (!state) {
                             throw CompileError.statementRequire('foreach', 'list');
                         }
+                        if (isInvalid(state)) {
+                            throw CompileError.invalidIdentifier(tag, 'property', 'list', state);
+                        }
                         delete props['state:list'];
                         props.list = state;
                         item.tag = 'LoopState';
@@ -177,6 +194,9 @@ function extractParams(items: CMLTree, blacklist: Set<string> = new Set()): Extr
                         const collect = props['collect:list'];
                         if (!collect) {
                             throw CompileError.statementRequire('foreach', 'list');
+                        }
+                        if (isInvalid(collect)) {
+                            throw CompileError.invalidIdentifier(tag, 'property', 'list', collect);
                         }
                         delete props['collect:list'];
                         props.list = collect;
@@ -188,6 +208,9 @@ function extractParams(items: CMLTree, blacklist: Set<string> = new Set()): Extr
                         if (!list) {
                             throw CompileError.statementRequire('foreach', 'list');
                         }
+                        if (isInvalid(list)) {
+                            throw CompileError.invalidIdentifier(tag, 'property', 'list', list);
+                        }
                         item.tag = 'LoopBasic';
                         dep.push('LoopBasic');
                         par.push(list);
@@ -198,8 +221,7 @@ function extractParams(items: CMLTree, blacklist: Set<string> = new Set()): Extr
                     const localPropNames = localPropQuery.split(/\s+/).map((s: string) => {
                         const matches = s.match(/(.+):(.+)/);
                         if (matches) {
-                            const [_, alias] = matches;
-                            return alias;
+                            return matches[2];
                         } else {
                             return s;
                         }
@@ -212,6 +234,9 @@ function extractParams(items: CMLTree, blacklist: Set<string> = new Set()): Extr
                         if (!state) {
                             throw CompileError.statementRequire('destruct', 'obj');
                         }
+                        if (isInvalid(state)) {
+                            throw CompileError.invalidIdentifier(tag, 'property', 'obj', state);
+                        }
                         delete props['state:obj'];
                         props.obj = state;
                         item.tag = 'DestructState';
@@ -221,6 +246,9 @@ function extractParams(items: CMLTree, blacklist: Set<string> = new Set()): Extr
                         const collect = props['collect:obj'];
                         if (!collect) {
                             throw CompileError.statementRequire('destruct', 'obj');
+                        }
+                        if (isInvalid(collect)) {
+                            throw CompileError.invalidIdentifier(tag, 'property', 'obj', collect);
                         }
                         delete props['collect:obj'];
                         props.obj = collect;
@@ -232,6 +260,9 @@ function extractParams(items: CMLTree, blacklist: Set<string> = new Set()): Extr
                         if (!obj) {
                             throw CompileError.statementRequire('destruct', 'obj');
                         }
+                        if (isInvalid(obj)) {
+                            throw CompileError.invalidIdentifier(tag, 'property', 'obj', obj);
+                        }
                         item.tag = 'DestructBasic';
                         dep.push('DestructBasic');
                         par.push(obj);
@@ -241,19 +272,16 @@ function extractParams(items: CMLTree, blacklist: Set<string> = new Set()): Extr
                     for (const key in props) {
                         const match = key.match(/(on|bind):(.+)/);
                         if (match) {
+                            const type = match[1] === 'on' ? 'event' : 'property';
+                            const prop = match[2];
                             const param = props[key].trim();
                             if (!param) {
-                                if (match[1] === 'on') {
-                                    throw CompileError.emptyBindedProperty('event', match[2], tag);
-                                } else {
-                                    throw CompileError.emptyBindedProperty(
-                                        'property',
-                                        match[2],
-                                        tag
-                                    );
-                                }
+                                throw CompileError.emptyBindedProperty(tag, type, prop);
                             }
-                            par.push(props[key].trim());
+                            if (isInvalid(param)) {
+                                throw CompileError.invalidIdentifier(tag, type, prop, param);
+                            }
+                            par.push(param);
                         }
                     }
                     break;
@@ -269,6 +297,10 @@ function extractParams(items: CMLTree, blacklist: Set<string> = new Set()): Extr
         dependencies: dep,
         params: par
     };
+}
+
+function isInvalid(id: string): RegExpMatchArray | null {
+    return id.match(/(^\d|[^\w_$])/);
 }
 
 function improt(dep: string | string[], from: string, mode: ImportType): string {
