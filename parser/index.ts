@@ -139,15 +139,15 @@ function extractParams(items: CMLTree, blacklist: Set<string> = new Set()): Extr
                     if (tag === 'unless') {
                         props.rev = '';
                     }
-                    if (Reflect.has(props, 'state:condition')) {
-                        const state = props['state:condition'];
-                        delete props['state:condition'];
-                        props.condition = state;
+                    if (Reflect.has(props, 'state:val')) {
+                        const state = props['state:val'];
+                        delete props['state:val'];
+                        props.val = state;
                         item.tag = 'ControlState';
                         dep.push('ControlState');
                         par.push(state);
                     } else {
-                        const appendCondition = props['condition'];
+                        const appendCondition = props['val'];
                         item.tag = 'ControlBasic';
                         dep.push('ControlBasic');
                         par.push(appendCondition);
@@ -191,22 +191,22 @@ function extractParams(items: CMLTree, blacklist: Set<string> = new Set()): Extr
                     for (const prop of localPropNames) {
                         localBlacklist.add(prop);
                     }
-                    if (Reflect.has(props, 'state:object')) {
-                        const state = props['state:object'];
-                        delete props['state:object'];
-                        props.object = state;
+                    if (Reflect.has(props, 'state:obj')) {
+                        const state = props['state:obj'];
+                        delete props['state:obj'];
+                        props.obj = state;
                         item.tag = 'DestructState';
                         dep.push('DestructState');
                         par.push(state);
-                    } else if (Reflect.has(props, 'collect:object')) {
-                        const collect = props['collect:object'];
-                        delete props['collect:object'];
-                        props.object = collect;
+                    } else if (Reflect.has(props, 'collect:obj')) {
+                        const collect = props['collect:obj'];
+                        delete props['collect:obj'];
+                        props.obj = collect;
                         item.tag = 'DestructCollect';
                         dep.push('DestructCollect');
                         par.push(collect);
                     } else {
-                        const obj = props['object'];
+                        const obj = props['obj'];
                         item.tag = 'DestructBasic';
                         dep.push('DestructBasic');
                         par.push(obj);

@@ -7,27 +7,41 @@ export default function (
     props: Properties = {},
     _children?: ComponentChildren
 ): NodeComponent[] | void {
-    if (!_children || typeof props.condition !== 'string') {
+    if (!_children || typeof props.val !== 'string') {
         return;
     }
     const { tree, params, _super } = _children;
-    let condition = _children.params[props.condition];
-    if (condition instanceof State) {
-        if (Reflect.has(props, 'rev')) {
-            const rev = new State(!condition.getValue());
-            condition.onChange((un) => rev.setValue(!un));
-            condition = rev;
+    let val: State<any> | boolean = _children.params[props.condition];
+    if (val instanceof State) {
+        const unless = Reflect.has(props, 'rev');
+        const hasEqual = Reflect.has(props, 'equal');
+        const value = val.getValue();
+        if (hasEqual) {
+            const eq = props.equal;
+            const equalCond = new State(unless ? value != eq : value != eq);
+            if (unless) {
+                val.onChange(next => equalCond.setValue(next != props.equal));
+            } else {
+                val.onChange(next => equalCond.setValue(next == props.equal));
+            }
+            val = equalCond;
+        } else {
+            if (unless) {
+                const cond = new State(!value);
+                val.onChange(next => cond.setValue(!next));
+                val = cond;
+            }
         }
         const hide = document.createElement('div');
         const marker = document.createTextNode('');
         const elements = intoDom(tree, params, _super);
         const component: ControlComponent = { elems: [] };
-        if (condition.getValue()) {
+        if (val.getValue()) {
             component.elems = elements;
         } else {
             append(hide, elements);
         }
-        condition.onChange((active: boolean) => {
+        val.onChange((active: boolean) => {
             const { parentNode } = marker;
             if (!parentNode) {
                 return;
