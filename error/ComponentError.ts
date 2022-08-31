@@ -34,6 +34,6 @@ export default class ComponentError extends Error {
         } else {
             reason = err || '?';
         }
-        return new ComponentError(`Crash at component '${comp}'.\n`, trace, reason);
+        return new ComponentError(`Crash at component '${comp}'.`, trace, reason);
     }
 }
