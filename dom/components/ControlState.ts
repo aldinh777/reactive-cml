@@ -59,6 +59,11 @@ export default function (
         });
         return [component, marker];
     } else {
-        throw ComponentError.invalidState(props.val, 'val', unless ? 'unless' : 'if');
+        throw ComponentError.invalidState(
+            'ControlState',
+            unless ? 'unless' : 'if',
+            'val',
+            props.val
+        );
     }
 }

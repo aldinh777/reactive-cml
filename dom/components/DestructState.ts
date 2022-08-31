@@ -35,6 +35,6 @@ export default function (
         });
         return [component, marker];
     } else {
-        throw ComponentError.invalidState(props.obj, 'obj', 'destruct');
+        throw ComponentError.invalidState('DestructState', 'destruct', 'obj', props.obj);
     }
 }

@@ -62,6 +62,6 @@ export default function (
         });
         return [component, marker];
     } else {
-        throw ComponentError.invalidState(props.list, 'list', 'foreach');
+        throw ComponentError.invalidState('LoopState', 'foreach', 'list', props.list);
     }
 }

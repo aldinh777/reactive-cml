@@ -33,6 +33,6 @@ export default function (
         });
         return [component, marker];
     } else {
-        throw ComponentError.invalidCollect(props.obj, 'obj', 'destruct');
+        throw ComponentError.invalidCollect('DestructCollect', 'destruct', 'obj', props.obj);
     }
 }

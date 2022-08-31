@@ -41,11 +41,17 @@ export default function (
     const { tree, params, _super } = _children;
     const list = params[props.list];
     const alias = props.as;
-    const destruct =
-        typeof props.destruct === 'string' ? readAlias(props.destruct) : [];
+    const destruct = typeof props.destruct === 'string' ? readAlias(props.destruct) : [];
     if (list instanceof StateList) {
         const marker = document.createTextNode('');
-        const listElementEach = createListElement(params, alias, destruct, list.raw(), tree, _super);
+        const listElementEach = createListElement(
+            params,
+            alias,
+            destruct,
+            list.raw(),
+            tree,
+            _super
+        );
         const mirrorList: (MirrorElement | undefined)[] = listElementEach.map((elems) => ({
             elems: elems,
             start: document.createTextNode(''),
@@ -160,6 +166,6 @@ export default function (
         });
         return [component, marker];
     } else {
-        throw ComponentError.invalidCollect(props.list, 'list', 'foreach');
+        throw ComponentError.invalidCollect('LoopCollect', 'foreach', 'list', props.list);
     }
 }

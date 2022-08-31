@@ -1,4 +1,8 @@
 export default class CompileError extends Error {
+    constructor(msg: string) {
+        super(msg);
+        this.name = 'CompileError';
+    }
     static statementRequire(statement: string, prop: string): CompileError {
         return new CompileError(
             `'${statement}' statement must have property '${prop}' and cannot be empty`
