@@ -106,7 +106,7 @@ export function intoDom(
                         result.push(...res);
                     }    
                 } catch (err) {
-                    throw ComponentError.componentCrash(tag, comps, err);
+                    throw ComponentError.componentCrash(tag, err);
                 }
             } else {
                 const elem = document.createElement(tag);
