@@ -28,11 +28,13 @@ export default class ComponentError extends Error {
     static componentCrash(comp: string, err: any): ComponentError {
         let reason;
         let trace = [comp];
-        if (err instanceof ComponentError) {
-            trace = trace.concat(err.compTrace);
-            reason = err.reason;
-        } else if (err instanceof Error) {
-            reason = err.stack;
+        if (err instanceof Error) {
+            if (err.name === 'ComponentError') {
+                trace = (err as ComponentError).compTrace;
+                reason = (err as ComponentError).reason;
+            } else {
+                reason = err.stack;
+            }
         } else {
             reason = err || '?';
         }
