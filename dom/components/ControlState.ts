@@ -19,11 +19,11 @@ export default function (
         const value = val.getValue();
         if (hasEqual) {
             const eq = props.equal;
-            const equalCond = new State(unless ? value != eq : value != eq);
+            const equalCond = new State(unless ? value != eq : value == eq);
             if (unless) {
-                val.onChange((next) => equalCond.setValue(next != props.equal));
+                val.onChange((next) => equalCond.setValue(next != eq));
             } else {
-                val.onChange((next) => equalCond.setValue(next == props.equal));
+                val.onChange((next) => equalCond.setValue(next == eq));
             }
             val = equalCond;
         } else {
