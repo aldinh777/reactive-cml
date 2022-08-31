@@ -1,17 +1,13 @@
 export default class ComponentError extends Error {
-    reason: any;
+    reason: string;
     compTrace: string[];
 
     constructor(msg: string, trace: string[], reason?: string) {
         super(msg);
         this.name = 'ComponentError';
         this.compTrace = trace;
-        if (reason === undefined) {
-            reason = msg;
-        }
-        this.message = msg +
-            `\ntrace  : ${trace.join(' > ')}` +
-            `\nreason :\n    ${reason}`;
+        this.reason = reason === undefined ? msg : reason;
+        this.message = msg + `\ntrace  : ${trace.join(' > ')}` + `\nreason :\n    ${this.reason}`;
     }
     static invalidState(comp: string, elem: string, prop: string, param: string): ComponentError {
         return new ComponentError(
@@ -30,7 +26,7 @@ export default class ComponentError extends Error {
         let trace = [comp];
         if (err instanceof Error) {
             if (err.name === 'ComponentError') {
-                trace = (err as ComponentError).compTrace;
+                trace = trace.concat((err as ComponentError).compTrace);
                 reason = (err as ComponentError).reason;
             } else {
                 reason = err.stack;
