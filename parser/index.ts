@@ -10,13 +10,16 @@ interface RCMLParserOptions {
     trimCML?: boolean;
 }
 
-function importify(dep: string | string[], from: string, mode: ImportType): string {
-    let dependencies: string;
+function dependify(dep: string | string[]): string {
     if (typeof dep === 'string') {
-        dependencies = dep;
+        return dep;
     } else {
-        dependencies = `{ ${dep.join(',')} }`;
+        return `{ ${dep.join(',')} }`;
     }
+}
+
+function importify(dep: string | string[], from: string, mode: ImportType): string {
+    const dependencies = dependify(dep);
     if (mode === 'import') {
         return `import ${dependencies} from ${from}\n`;
     } else {
