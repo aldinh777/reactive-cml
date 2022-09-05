@@ -17,5 +17,5 @@
     "src",
     "parser",
     "dom"
-, "error/ComponentError.ts"  ]
+  ]
 }

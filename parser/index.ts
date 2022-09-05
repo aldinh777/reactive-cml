@@ -80,28 +80,26 @@ export function parseReactiveCML(
         outreturn = '';
     }
 
-    let outdep = '';
+    let importScript = '';
     if (options.mode === 'import') {
-        outdep =
+        importScript =
             autoDependencies.map(([from, imports]) => importify(imports, from, 'import')).join('') +
             baseDependencies
                 .map((dep) => importify(dep, `'${baseCompPath}/${dep}'`, 'import'))
                 .join('') +
-            `${imports.map(([q, f]) => importify(q, f, 'import')).join('')}` +
-            `\n` +
+            `${imports.map(([q, f]) => importify(q, f, 'import')).join('')}\n` +
             `export default `;
     } else {
-        outdep =
+        importScript =
             autoDependencies
                 .map(([from, imports]) => importify(imports, from, 'require'))
                 .join('') +
             baseDependencies
                 .map((dep) => importify(dep, `'${baseCompPath}/${dep}'`, 'require'))
                 .join('') +
-            `${imports.map(([q, f]) => importify(q, f, 'require')).join('')}` +
-            `\n` +
+            `${imports.map(([q, f]) => importify(q, f, 'require')).join('')}\n` +
             `module.exports = `;
     }
-    const outscript = `function(props={}, _children, dispatch=()=>{}) {\n${script.trim()}\n${outreturn}\n}`;
-    return outdep + outscript;
+    const resultScript = `function(props={}, _children, dispatch=()=>{}) {\n${script.trim()}\n${outreturn}\n}`;
+    return importScript + resultScript;
 }

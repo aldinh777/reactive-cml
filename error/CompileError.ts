@@ -24,4 +24,7 @@ export default class CompileError extends Error {
     static invalidComponent(comp: string): CompileError {
         return new CompileError(`invalid component name : '${comp}'`);
     }
+    static unresolvedDependency(dep: string, file: string): CompileError {
+        return new CompileError(`unresolved dependency '${dep}' at '${file}'`);
+    }
 }
