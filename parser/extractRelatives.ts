@@ -31,23 +31,22 @@ function recursiveFindRelative(
     return '';
 }
 
-export default function extractRelatives(opts: {
-    file: string;
+export default function extractRelatives(filename: string, opts: {
     dependencies: string[];
     exts: string[];
     excludes: string[];
 }): [string, string][] {
-    const { file, dependencies, exts, excludes } = opts;
+    const { dependencies, exts, excludes } = opts;
     const result: [string, string][] = [];
-    const currentDir = dirname(file);
+    const currentDir = dirname(filename);
     for (const dep of dependencies) {
         const depResult = recursiveFindRelative(currentDir, dep, exts, excludes);
         if (!depResult) {
-            CompileError.unresolvedDependency(dep, file);
+            CompileError.unresolvedDependency(dep, filename);
         }
         const path = relative(currentDir, depResult);
-        const upath = './' + path.split(sep).join(posix.sep);
-        result.push([dep, upath]);
+        const from = './' + path.split(sep).join(posix.sep);
+        result.push([from, dep]);
     }
     return result;
 }

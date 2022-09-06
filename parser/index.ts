@@ -2,6 +2,7 @@ import { parseCML } from '@aldinh777/cml-parser';
 import { processRC } from '..';
 import extractImports from './extractImports';
 import extractParams from './extractParams';
+import extractRelatives from './extractRelatives';
 
 type ImportType = 'import' | 'require';
 
@@ -58,7 +59,6 @@ export function parseReactiveCML(
     const fullparams = params.concat(dependencies);
     const rcResult = processRC(cmlTree);
     const rcJson = JSON.stringify(rcResult, null, 2);
-    const autoDependencies: [string, string[]][] = [];
     const controlComp = new Set([
         'Children',
         'ControlBasic',
@@ -71,21 +71,36 @@ export function parseReactiveCML(
         'LoopState'
     ]);
     const baseCompPath = '@aldinh777/reactive-cml/dom/components';
-    const baseDependencies: [string, string][] = dependencies
+    const autoImports: [string, string | string[]][] = [];
+    const componentImports: [string, string][] = dependencies
         .filter((dep) => controlComp.has(dep))
-        .map((dep) => [dep, `'${baseCompPath}/${dep}'`]);
+        .map((dep) => [`'${baseCompPath}/${dep}'`, dep]);
     let outreturn: string;
     if (fullparams.length > 0) {
-        autoDependencies.push(["'@aldinh777/reactive-cml/dom'", ['intoDom']]);
+        autoImports.push(["'@aldinh777/reactive-cml/dom'", ['intoDom']]);
         outreturn = `return intoDom(${rcJson}, {${fullparams.join()}}, _children)`;
     } else if (rcResult.length > 0) {
-        autoDependencies.push(["'@aldinh777/reactive-cml/dom/dom-util'", ['simpleDom']]);
+        autoImports.push(["'@aldinh777/reactive-cml/dom/dom-util'", ['simpleDom']]);
         outreturn = `return simpleDom(${rcJson})`;
     } else {
         outreturn = '';
     }
+    const { autoImport, relativeImport } = options;
+    if (autoImport) {
+        autoImports.push(...autoImport);
+    }
+    if (relativeImport) {
+        const { filename, extensions, excludes } = relativeImport;
+        const deps = dependencies.filter((dep) => !controlComp.has(dep));
+        const relativeDependencies = extractRelatives(filename, {
+            dependencies: deps,
+            exts: extensions || ['.rc', '.js'],
+            excludes: excludes || []
+        });
+        componentImports.push(...relativeDependencies);
+    }
     const importMode = options.mode === 'require' ? 'require' : 'import';
-    const importScript = joinDependencies(importMode, autoDependencies, baseDependencies, imports);
+    const importScript = joinDependencies(importMode, autoImports, componentImports, imports);
     const resultScript = `function(props={}, _children, dispatch=()=>{}) {\n${script.trim()}\n${outreturn}\n}`;
     return importScript + resultScript;
 }
