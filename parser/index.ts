@@ -8,6 +8,12 @@ type ImportType = 'import' | 'require';
 interface RCMLParserOptions {
     mode?: ImportType;
     trimCML?: boolean;
+    autoImport?: [string, string | string[]][];
+    relativeImport?: {
+        filename: string;
+        extensions?: string[];
+        excludes?: string[];
+    };
 }
 
 function dependify(dep: string | string[]): string {
@@ -47,13 +53,11 @@ export function parseReactiveCML(
         source.substring(importIndex, separatorIndex),
         source.substring(separatorIndex)
     ];
-
     const cmlTree = parseCML(cml, options.trimCML);
     const { dependencies, params } = extractParams(cmlTree);
     const fullparams = params.concat(dependencies);
     const rcResult = processRC(cmlTree);
     const rcJson = JSON.stringify(rcResult, null, 2);
-
     const autoDependencies: [string, string[]][] = [];
     const controlComp = new Set([
         'Children',
@@ -67,9 +71,10 @@ export function parseReactiveCML(
         'LoopState'
     ]);
     const baseCompPath = '@aldinh777/reactive-cml/dom/components';
-    const baseDependencies = dependencies.filter((dep) => controlComp.has(dep));
-
-    let outreturn = '';
+    const baseDependencies: [string, string][] = dependencies
+        .filter((dep) => controlComp.has(dep))
+        .map((dep) => [dep, `'${baseCompPath}/${dep}'`]);
+    let outreturn: string;
     if (fullparams.length > 0) {
         autoDependencies.push(["'@aldinh777/reactive-cml/dom'", ['intoDom']]);
         outreturn = `return intoDom(${rcJson}, {${fullparams.join()}}, _children)`;
@@ -79,27 +84,16 @@ export function parseReactiveCML(
     } else {
         outreturn = '';
     }
-
-    let importScript = '';
-    if (options.mode === 'import') {
-        importScript =
-            autoDependencies.map(([from, imports]) => importify(imports, from, 'import')).join('') +
-            baseDependencies
-                .map((dep) => importify(dep, `'${baseCompPath}/${dep}'`, 'import'))
-                .join('') +
-            `${imports.map(([q, f]) => importify(q, f, 'import')).join('')}\n` +
-            `export default `;
-    } else {
-        importScript =
-            autoDependencies
-                .map(([from, imports]) => importify(imports, from, 'require'))
-                .join('') +
-            baseDependencies
-                .map((dep) => importify(dep, `'${baseCompPath}/${dep}'`, 'require'))
-                .join('') +
-            `${imports.map(([q, f]) => importify(q, f, 'require')).join('')}\n` +
-            `module.exports = `;
-    }
+    const importMode = options.mode === 'require' ? 'require' : 'import';
+    const importScript = joinDependencies(importMode, autoDependencies, baseDependencies, imports);
     const resultScript = `function(props={}, _children, dispatch=()=>{}) {\n${script.trim()}\n${outreturn}\n}`;
     return importScript + resultScript;
+}
+
+function joinDependencies(mode: ImportType, ...dependencieses: [string, string | string[]][][]) {
+    dependencieses
+        .map(
+            (deps) => deps.map(([from, imports]) => importify(imports, from, mode)).join('') + '\n'
+        )
+        .join('') + (mode === 'require' ? '\nmodule.exports = ' : '\nexport default ');
 }
