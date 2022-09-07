@@ -4,6 +4,7 @@ import { Component, RCMLResult } from '..';
 import { append, setAttr } from './dom-util';
 import ComponentError from '../error/ComponentError';
 
+type PropertyResult = [props: Properties, events: StaticProperties<Function>];
 export type NodeComponent = Node | ControlComponent;
 export type EventDispatcher = (name: string, ...args: any[]) => any;
 export type ReactiveComponent = (
@@ -20,15 +21,11 @@ export interface ComponentChildren {
     params: Properties;
     _super?: ComponentChildren;
 }
-interface PropertyResult {
-    props: Properties;
-    events: StaticProperties<Function>;
-}
 
 function processComponentProperties(
-    props: StaticProperties<string | TextProp> = {},
-    events: StaticProperties<string> = {},
-    params: Properties
+    params: Properties,
+    props: StaticProperties<string | TextProp>,
+    events: StaticProperties<string>
 ): PropertyResult {
     const propsComp: Properties = {};
     const eventsComp: StaticProperties<Function> = {};
@@ -43,7 +40,7 @@ function processComponentProperties(
     for (const event in events) {
         eventsComp[event] = params[events[event]];
     }
-    return { props: propsComp, events: eventsComp };
+    return [propsComp, eventsComp];
 }
 
 function processElementProperties(
@@ -66,6 +63,15 @@ function processElementProperties(
     }
 }
 
+function createDispatcher(events: StaticProperties<Function>): EventDispatcher {
+    return (name: string, ...args: any[]) => {
+        const event = events[name];
+        if (typeof event === 'function') {
+            return event(...args);
+        }
+    };
+}
+
 export function intoDom(
     tree: RCMLResult[],
     params: Properties,
@@ -86,8 +92,8 @@ export function intoDom(
             }
             result.push(text);
         } else {
-            const { tag, props, events, children } = item as Component;
-            const comps = processComponentProperties(props, events, params);
+            const [tag, props, events, children] = item as Component;
+            const [propsComp, eventsComp] = processComponentProperties(params, props, events);
             if (tag[0].match(/[A-Z]/)) {
                 const chomp: ComponentChildren = {
                     tree: children,
@@ -96,21 +102,16 @@ export function intoDom(
                 };
                 const component: ReactiveComponent = params[tag];
                 try {
-                    const res = component(comps.props, chomp, (name: string, ...args: any[]) => {
-                        const event = comps.events[name];
-                        if (typeof event === 'function') {
-                            return event(...args);
-                        }
-                    });
+                    const res = component(propsComp, chomp, createDispatcher(eventsComp));
                     if (res) {
                         result.push(...res);
-                    }    
+                    }
                 } catch (err) {
                     throw ComponentError.componentCrash(tag, err);
                 }
             } else {
                 const elem = document.createElement(tag);
-                processElementProperties(elem, comps.props, comps.events);
+                processElementProperties(elem, propsComp, eventsComp);
                 append(elem, intoDom(children, params, cc));
                 result.push(elem);
             }
