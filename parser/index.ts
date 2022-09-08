@@ -15,12 +15,16 @@ type ImportType = 'import' | 'require';
 interface RCMLParserOptions {
     mode?: ImportType;
     trimCML?: boolean;
-    autoImport?: [from: string, imports: string | string[]][];
+    autoImports?: [from: string, imports: string | string[]][];
     relativeImport?: {
         filename: string;
         extensions?: string[];
         excludes?: string[];
         includes?: string[];
+    };
+    cmlPreprocessors?: {
+        customPreprocessor?: Preprocessor[];
+        disableDefault?: boolean;
     };
 }
 
@@ -48,8 +52,9 @@ function joinDependencies(mode: ImportType, dependencies: [string, string | stri
 export function parseReactiveCML(source: string, options: RCMLParserOptions = {}): string {
     const mode = options.mode || 'import';
     const trimCML = !(options.trimCML === false);
-    const autoImport = options.autoImport || [];
+    const autoImports = options.autoImports || [];
     const relativeImport = options.relativeImport;
+    const cmlPreprocessors = options.cmlPreprocessors;
 
     const [importIndex, imports] = extractImports(source);
     let separatorIndex: number = source.length;
@@ -76,20 +81,25 @@ export function parseReactiveCML(source: string, options: RCMLParserOptions = {}
         'LoopCollect',
         'LoopState'
     ]);
-    const preprocessors: Preprocessor[] = [
-        preprocessComponent,
-        preprocessChildren,
-        preprocessControl,
-        preprocessList,
-        preprocessDestruct,
-        preprocessElement
-    ];
+    const preprocessors: Preprocessor[] = [];
+    if (!cmlPreprocessors || !cmlPreprocessors.disableDefault) {
+        preprocessors.push(
+            preprocessComponent,
+            preprocessChildren,
+            preprocessControl,
+            preprocessList,
+            preprocessDestruct,
+            preprocessElement
+        );
+    }
+    if (cmlPreprocessors && cmlPreprocessors.customPreprocessor) {
+        preprocessors.push(...cmlPreprocessors.customPreprocessor);
+    }
     const [dependencies, params] = extractParams(cmlTree, preprocessors);
     const fullparams = params.concat(dependencies);
     const rcResult = processRC(cmlTree);
     const rcJson = JSON.stringify(rcResult, null, 2);
     const baseCompPath = '@aldinh777/reactive-cml/dom/components';
-    const autoImports: [string, string | string[]][] = [];
     for (const [query, from] of imports) {
         autoImports.push([from, query]);
     }
@@ -105,9 +115,6 @@ export function parseReactiveCML(source: string, options: RCMLParserOptions = {}
         outreturn = `return simpleDom(${rcJson})`;
     } else {
         outreturn = '';
-    }
-    if (autoImport) {
-        autoImports.push(...autoImport);
     }
     if (relativeImport) {
         const { filename, extensions, excludes, includes } = relativeImport;
