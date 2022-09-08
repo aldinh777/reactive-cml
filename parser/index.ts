@@ -52,7 +52,7 @@ function joinDependencies(mode: ImportType, dependencies: [string, string | stri
 export function parseReactiveCML(source: string, options: RCMLParserOptions = {}): string {
     const mode = options.mode || 'import';
     const trimCML = !(options.trimCML === false);
-    const autoImports = options.autoImports || [];
+    const autoImportsOpt = options.autoImports || [];
     const relativeImports = options.relativeImports;
     const cmlPreprocessors = options.cmlPreprocessors;
 
@@ -81,6 +81,7 @@ export function parseReactiveCML(source: string, options: RCMLParserOptions = {}
         'LoopCollect',
         'LoopState'
     ]);
+    const autoImports: [from: string, imports: string | string[]][] = [...autoImportsOpt];
     const preprocessors: Preprocessor[] = [];
     if (!cmlPreprocessors || !cmlPreprocessors.disableDefault) {
         preprocessors.push(
