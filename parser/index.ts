@@ -1,8 +1,14 @@
 import { parseCML } from '@aldinh777/cml-parser';
 import { processRC } from '..';
 import extractImports from './extractImports';
-import extractParams from './extractParams';
+import extractParams, { Preprocessor } from './extractParams';
 import extractRelatives from './extractRelatives';
+import preprocessChildren from './preprocess/preprocess-children';
+import preprocessComponent from './preprocess/preprocess-component';
+import preprocessControl from './preprocess/preprocess-control';
+import preprocessDestruct from './preprocess/preprocess-destruct';
+import preprocessElement from './preprocess/preprocess-element';
+import preprocessList from './preprocess/preprocess-list';
 
 type ImportType = 'import' | 'require';
 
@@ -59,10 +65,6 @@ export function parseReactiveCML(source: string, options: RCMLParserOptions = {}
         source.substring(separatorIndex)
     ];
     const cmlTree = parseCML(cml, trimCML);
-    const [dependencies, params] = extractParams(cmlTree);
-    const fullparams = params.concat(dependencies);
-    const rcResult = processRC(cmlTree);
-    const rcJson = JSON.stringify(rcResult, null, 2);
     const controlComp = new Set([
         'Children',
         'ControlBasic',
@@ -74,6 +76,18 @@ export function parseReactiveCML(source: string, options: RCMLParserOptions = {}
         'LoopCollect',
         'LoopState'
     ]);
+    const preprocessors: Preprocessor[] = [
+        preprocessComponent,
+        preprocessChildren,
+        preprocessControl,
+        preprocessList,
+        preprocessDestruct,
+        preprocessElement
+    ];
+    const [dependencies, params] = extractParams(cmlTree, preprocessors);
+    const fullparams = params.concat(dependencies);
+    const rcResult = processRC(cmlTree);
+    const rcJson = JSON.stringify(rcResult, null, 2);
     const baseCompPath = '@aldinh777/reactive-cml/dom/components';
     const autoImports: [string, string | string[]][] = [];
     for (const [query, from] of imports) {

@@ -1,18 +1,9 @@
 import { CMLObject, CMLTree } from '@aldinh777/cml-parser';
-import { extractTextProps, TextProp, undupe } from '../util';
-import preprocessComponent from './preprocess/preprocessComponent';
-import preprocessChildren from './preprocess/preprocessChildren';
-import preprocessControl from './preprocess/preprocessControl';
-import preprocessList from './preprocess/preprocessList';
-import preprocessDestruct from './preprocess/preprocessDestruct';
-import preprocessElement from './preprocess/preprocessElement';
+import { extractTextProps, TextProp } from '../util';
+import { undupe } from './parser-util';
 
 export type Identifiers = [dependencies: string[], params: string[], blacklist?: Set<string>];
-type Preprocessor = (node: CMLObject, ids: Identifiers) => CMLObject;
-
-export function isInvalidIdentifier(id: string): RegExpMatchArray | null {
-    return id.match(/(^\d|[^\w_$])/);
-}
+export type Preprocessor = (node: CMLObject, ids: Identifiers) => CMLObject;
 
 function preprocessCML(
     item: CMLObject,
@@ -20,8 +11,7 @@ function preprocessCML(
     preprocessors: Preprocessor[]
 ): CMLObject {
     let processed = item;
-    for (let i = 0; i < preprocessors.length; i++) {
-        const pre = preprocessors[i];
+    for (const pre of preprocessors) {
         processed = pre(processed, ids);
     }
     return processed;
@@ -29,6 +19,7 @@ function preprocessCML(
 
 export default function extractParams(
     items: CMLTree,
+    preprocessors: Preprocessor[],
     blacklist: Set<string> = new Set()
 ): Identifiers {
     let dep: string[] = [];
@@ -44,17 +35,10 @@ export default function extractParams(
             const processedItem = preprocessCML(
                 item,
                 [dep, par, localBlacklist],
-                [
-                    preprocessComponent,
-                    preprocessChildren,
-                    preprocessControl,
-                    preprocessList,
-                    preprocessDestruct,
-                    preprocessElement
-                ]
+                preprocessors
             );
             const { children } = processedItem;
-            const [dependencies, params] = extractParams(children, localBlacklist);
+            const [dependencies, params] = extractParams(children, preprocessors, localBlacklist);
             dep = dep.concat(dependencies);
             par = par.concat(params);
         }

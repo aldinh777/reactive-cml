@@ -7,10 +7,6 @@ export interface TextProp {
     name: string;
 }
 
-export function undupe<T>(array: T[]): T[] {
-    return Array.from(new Set(array));
-}
-
 export function extractTextProps(text: string): (string | TextProp)[] {
     const result: (string | TextProp)[] = [];
     let stream = '';
