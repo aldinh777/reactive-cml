@@ -12,11 +12,11 @@ import preprocessList from './preprocess/preprocess-list';
 
 type ImportType = 'import' | 'require';
 
-interface RCMLParserOptions {
+export interface RCMLParserOptions {
     mode?: ImportType;
     trimCML?: boolean;
     autoImports?: [from: string, imports: string | string[]][];
-    relativeImport?: {
+    relativeImports?: {
         filename: string;
         extensions?: string[];
         excludes?: string[];
@@ -53,7 +53,7 @@ export function parseReactiveCML(source: string, options: RCMLParserOptions = {}
     const mode = options.mode || 'import';
     const trimCML = !(options.trimCML === false);
     const autoImports = options.autoImports || [];
-    const relativeImport = options.relativeImport;
+    const relativeImports = options.relativeImports;
     const cmlPreprocessors = options.cmlPreprocessors;
 
     const [importIndex, imports] = extractImports(source);
@@ -116,8 +116,8 @@ export function parseReactiveCML(source: string, options: RCMLParserOptions = {}
     } else {
         outreturn = '';
     }
-    if (relativeImport) {
-        const { filename, extensions, excludes, includes } = relativeImport;
+    if (relativeImports) {
+        const { filename, extensions, excludes, includes } = relativeImports;
         const currentImports: string[] = autoImports
             .map((imp) => imp[1])
             .filter((m) => typeof m === 'string') as string[];
