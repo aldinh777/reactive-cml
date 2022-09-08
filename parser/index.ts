@@ -9,11 +9,12 @@ type ImportType = 'import' | 'require';
 interface RCMLParserOptions {
     mode?: ImportType;
     trimCML?: boolean;
-    autoImport?: [string, string | string[]][];
+    autoImport?: [from: string, imports: string | string[]][];
     relativeImport?: {
         filename: string;
         extensions?: string[];
         excludes?: string[];
+        includes?: string[];
     };
 }
 
@@ -28,10 +29,14 @@ function dependify(dep: string | string[]): string {
 function importify(dep: string | string[], from: string, mode: ImportType): string {
     const dependencies = dependify(dep);
     if (mode === 'import') {
-        return `import ${dependencies} from ${from}\n`;
+        return `import ${dependencies} from '${from}'\n`;
     } else {
-        return `const ${dependencies} = require(${from})\n`;
+        return `const ${dependencies} = require('${from}')\n`;
     }
+}
+
+function joinDependencies(mode: ImportType, dependencies: [string, string | string[]][]): string {
+    return dependencies.map(([from, imports]) => importify(imports, from, mode)).join('');
 }
 
 export function parseReactiveCML(source: string, options: RCMLParserOptions = {}): string {
@@ -71,15 +76,18 @@ export function parseReactiveCML(source: string, options: RCMLParserOptions = {}
     ]);
     const baseCompPath = '@aldinh777/reactive-cml/dom/components';
     const autoImports: [string, string | string[]][] = [];
-    const componentImports: [string, string][] = dependencies
-        .filter((dep) => controlComp.has(dep))
-        .map((dep) => [`'${baseCompPath}/${dep}'`, dep]);
+    for (const [query, from] of imports) {
+        autoImports.push([from, query]);
+    }
+    for (const dep of dependencies.filter((dep) => controlComp.has(dep))) {
+        autoImports.push([`${baseCompPath}/${dep}`, dep]);
+    }
     let outreturn: string;
     if (fullparams.length > 0) {
-        autoImports.push(["'@aldinh777/reactive-cml/dom'", ['intoDom']]);
+        autoImports.push(['@aldinh777/reactive-cml/dom', ['intoDom']]);
         outreturn = `return intoDom(${rcJson}, {${fullparams.join()}}, _children)`;
     } else if (rcResult.length > 0) {
-        autoImports.push(["'@aldinh777/reactive-cml/dom/dom-util'", ['simpleDom']]);
+        autoImports.push(['@aldinh777/reactive-cml/dom/dom-util', ['simpleDom']]);
         outreturn = `return simpleDom(${rcJson})`;
     } else {
         outreturn = '';
@@ -88,25 +96,22 @@ export function parseReactiveCML(source: string, options: RCMLParserOptions = {}
         autoImports.push(...autoImport);
     }
     if (relativeImport) {
-        const { filename, extensions, excludes } = relativeImport;
+        const { filename, extensions, excludes, includes } = relativeImport;
+        const currentImports: string[] = autoImports
+            .map((imp) => imp[1])
+            .filter((m) => typeof m === 'string') as string[];
         const deps = dependencies.filter((dep) => !controlComp.has(dep));
         const relativeDependencies = extractRelatives(filename, {
             dependencies: deps,
             exts: extensions || ['.rc', '.js'],
-            excludes: excludes || []
+            excludes: excludes || [],
+            includes: includes || [],
+            existingImports: currentImports
         });
-        componentImports.push(...relativeDependencies);
+        autoImports.push(...relativeDependencies);
     }
     const importMode = mode === 'require' ? 'require' : 'import';
-    const importScript = joinDependencies(importMode, autoImports, componentImports, imports);
+    const importScript = joinDependencies(importMode, autoImports) + '\n';
     const resultScript = `function(props={}, _children, dispatch=()=>{}) {\n${script.trim()}\n${outreturn}\n}`;
     return importScript + resultScript;
-}
-
-function joinDependencies(mode: ImportType, ...dependencieses: [string, string | string[]][][]) {
-    dependencieses
-        .map(
-            (deps) => deps.map(([from, imports]) => importify(imports, from, mode)).join('') + '\n'
-        )
-        .join('') + (mode === 'require' ? '\nmodule.exports = ' : '\nexport default ');
 }

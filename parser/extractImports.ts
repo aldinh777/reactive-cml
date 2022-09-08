@@ -32,9 +32,9 @@ export default function extractImports(source: string): [number, ImportsResult[]
                         impos += imp;
                     }
                 } else if (flag === ImportFlag.from) {
-                    const from = imp.match(/((['"`])(.+)\2)/);
+                    const from = imp.match(/(['"`])(.+)\1/);
                     if (from) {
-                        imports.push([impos, from[1]]);
+                        imports.push([impos, from[2]]);
                         flag = ImportFlag.start;
                         mode = ModeFlag.none;
                         endIndex = i;
@@ -68,9 +68,9 @@ export default function extractImports(source: string): [number, ImportsResult[]
                 }
             } else if (flag === ImportFlag.from) {
                 if (chr.match(/[\n\r;]/)) {
-                    const from = imp.match(/\(\s*((['"])(.+)\2)\s*\)/);
+                    const from = imp.match(/\(\s*(['"])(.+)\1\s*\)/);
                     if (from) {
-                        imports.push([impos, from[1]]);
+                        imports.push([impos, from[2]]);
                         flag = ImportFlag.start;
                         mode = ModeFlag.none;
                         endIndex = i;

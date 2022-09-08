@@ -37,19 +37,36 @@ export default function extractRelatives(
         dependencies: string[];
         exts: string[];
         excludes: string[];
+        includes: string[];
+        existingImports: string[];
     }
 ): [string, string][] {
-    const { dependencies, exts, excludes } = opts;
+    const { dependencies, exts, excludes, includes, existingImports } = opts;
     const result: [string, string][] = [];
     const currentDir = dirname(filename);
+    includes.unshift(currentDir);
     for (const dep of dependencies) {
-        const depResult = recursiveFindRelative(currentDir, dep, exts, excludes);
-        if (!depResult) {
-            CompileError.unresolvedDependency(dep, filename);
+        if (existingImports.includes(dep)) {
+            continue;
         }
-        const path = relative(currentDir, depResult);
-        const from = './' + path.split(sep).join(posix.sep);
-        result.push([from, dep]);
+        let depResult;
+        for (const dir of includes) {
+            depResult = recursiveFindRelative(dir, dep, exts, excludes);
+            if (depResult) {
+                break;
+            }
+        }
+        if (depResult) {
+            const path = relative(currentDir, depResult);
+            const from = posixifyPath(path);
+            result.push([from, dep]);
+            continue;
+        }
+        throw CompileError.unresolvedDependency(dep, filename);
     }
     return result;
+}
+
+function posixifyPath(path: string) {
+    return (path[0] === '.' ? path : './' + path).split(sep).join(posix.sep);
 }
