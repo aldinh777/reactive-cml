@@ -54,7 +54,7 @@ export function parseReactiveCML(source: string, options: RCMLParserOptions = {}
         source.substring(separatorIndex)
     ];
     const cmlTree = parseCML(cml, trimCML);
-    const { dependencies, params } = extractParams(cmlTree);
+    const [dependencies, params] = extractParams(cmlTree);
     const fullparams = params.concat(dependencies);
     const rcResult = processRC(cmlTree);
     const rcJson = JSON.stringify(rcResult, null, 2);

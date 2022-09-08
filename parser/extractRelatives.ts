@@ -31,11 +31,14 @@ function recursiveFindRelative(
     return '';
 }
 
-export default function extractRelatives(filename: string, opts: {
-    dependencies: string[];
-    exts: string[];
-    excludes: string[];
-}): [string, string][] {
+export default function extractRelatives(
+    filename: string,
+    opts: {
+        dependencies: string[];
+        exts: string[];
+        excludes: string[];
+    }
+): [string, string][] {
     const { dependencies, exts, excludes } = opts;
     const result: [string, string][] = [];
     const currentDir = dirname(filename);
