@@ -38,10 +38,10 @@ function dependify(dep: string | string[]): string {
 
 function importify(dep: string | string[], from: string, mode: ImportType): string {
     const dependencies = dependify(dep);
-    if (mode === 'import') {
-        return `import ${dependencies} from '${from}'\n`;
-    } else {
+    if (mode === 'require') {
         return `const ${dependencies} = require('${from}')\n`;
+    } else {
+        return `import ${dependencies} from '${from}'\n`;
     }
 }
 
@@ -131,8 +131,8 @@ export function parseReactiveCML(source: string, options: RCMLParserOptions = {}
         });
         autoImports.push(...relativeDependencies);
     }
-    const importMode = mode === 'require' ? 'require' : 'import';
-    const importScript = joinDependencies(importMode, autoImports) + '\n';
+    const importScript = joinDependencies(mode, autoImports);
+    const exportScript = '\n' + (mode === 'require' ? 'module.exports = ' : 'export default ');
     const resultScript = `function(props={}, _children, dispatch=()=>{}) {\n${script.trim()}\n${outreturn}\n}`;
-    return importScript + resultScript;
+    return importScript + exportScript + resultScript;
 }
