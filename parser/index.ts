@@ -34,13 +34,12 @@ function importify(dep: string | string[], from: string, mode: ImportType): stri
     }
 }
 
-export function parseReactiveCML(
-    source: string,
-    options: RCMLParserOptions = {
-        mode: 'import',
-        trimCML: true
-    }
-): string {
+export function parseReactiveCML(source: string, options: RCMLParserOptions = {}): string {
+    const mode = options.mode || 'import';
+    const trimCML = !(options.trimCML === false);
+    const autoImport = options.autoImport || [];
+    const relativeImport = options.relativeImport;
+
     const [importIndex, imports] = extractImports(source);
     let separatorIndex: number = source.length;
     const matchResult = source.match(/(div|span)(\s+.*=".*")*\s*</);
@@ -54,7 +53,7 @@ export function parseReactiveCML(
         source.substring(importIndex, separatorIndex),
         source.substring(separatorIndex)
     ];
-    const cmlTree = parseCML(cml, options.trimCML);
+    const cmlTree = parseCML(cml, trimCML);
     const { dependencies, params } = extractParams(cmlTree);
     const fullparams = params.concat(dependencies);
     const rcResult = processRC(cmlTree);
@@ -85,7 +84,6 @@ export function parseReactiveCML(
     } else {
         outreturn = '';
     }
-    const { autoImport, relativeImport } = options;
     if (autoImport) {
         autoImports.push(...autoImport);
     }
@@ -99,7 +97,7 @@ export function parseReactiveCML(
         });
         componentImports.push(...relativeDependencies);
     }
-    const importMode = options.mode === 'require' ? 'require' : 'import';
+    const importMode = mode === 'require' ? 'require' : 'import';
     const importScript = joinDependencies(importMode, autoImports, componentImports, imports);
     const resultScript = `function(props={}, _children, dispatch=()=>{}) {\n${script.trim()}\n${outreturn}\n}`;
     return importScript + resultScript;

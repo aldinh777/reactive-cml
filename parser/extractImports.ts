@@ -1,4 +1,4 @@
-type ImportsResult = [query: string, module: string];
+export type ImportsResult = [query: string, from: string];
 
 enum ImportFlag {
     start,
@@ -32,9 +32,9 @@ export default function extractImports(source: string): [number, ImportsResult[]
                         impos += imp;
                     }
                 } else if (flag === ImportFlag.from) {
-                    const impatch = imp.match(/((['"`])(.+)\2)/);
-                    if (impatch) {
-                        imports.push([impos, impatch[1]]);
+                    const from = imp.match(/((['"`])(.+)\2)/);
+                    if (from) {
+                        imports.push([impos, from[1]]);
                         flag = ImportFlag.start;
                         mode = ModeFlag.none;
                         endIndex = i;
@@ -68,9 +68,9 @@ export default function extractImports(source: string): [number, ImportsResult[]
                 }
             } else if (flag === ImportFlag.from) {
                 if (chr.match(/[\n\r;]/)) {
-                    const impatch = imp.match(/\(\s*((['"])(.+)\2)\s*\)/);
-                    if (impatch) {
-                        imports.push([impos, impatch[1]]);
+                    const from = imp.match(/\(\s*((['"])(.+)\2)\s*\)/);
+                    if (from) {
+                        imports.push([impos, from[1]]);
                         flag = ImportFlag.start;
                         mode = ModeFlag.none;
                         endIndex = i;
