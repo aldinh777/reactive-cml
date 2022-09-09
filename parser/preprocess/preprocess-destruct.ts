@@ -8,8 +8,8 @@ export default function (item: CMLObject, [dep, par, bl]: Identifiers): CMLObjec
     if (tag !== 'destruct') {
         return item;
     }
-    const localPropQuery = props['as'];
-    const localPropNames = localPropQuery.split(/\s+/).map((s: string) => {
+    const propqueries = props['as'];
+    const propnames = propqueries.split(/\s+/).map((s: string) => {
         const matches = s.match(/(.+):(.+)/);
         if (matches) {
             return matches[2];
@@ -17,7 +17,7 @@ export default function (item: CMLObject, [dep, par, bl]: Identifiers): CMLObjec
             return s;
         }
     });
-    for (const prop of localPropNames) {
+    for (const prop of propnames) {
         bl?.add(prop);
     }
     if (Reflect.has(props, 'state:obj')) {

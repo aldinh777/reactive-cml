@@ -9,7 +9,21 @@ export default function (item: CMLObject, [dep, par, bl]: Identifiers): CMLObjec
         return item;
     }
     const localItem = props['as'];
+    const destructs = props['destruct'];
     bl?.add(localItem);
+    if (destructs) {
+        const propnames = destructs.split(/\s+/).map((s: string) => {
+            const matches = s.match(/(.+):(.+)/);
+            if (matches) {
+                return matches[2];
+            } else {
+                return s;
+            }
+        });
+        for (const prop of propnames) {
+            bl?.add(prop);
+        }
+    }
     if (Reflect.has(props, 'state:list')) {
         const state = props['state:list'];
         if (!state) {
