@@ -117,15 +117,13 @@ export default function (
         list.onDelete((index) => {
             const mirrorElement = mirrorList[index];
             if (mirrorElement) {
-                const { start: startMarker, end: endMarker, elems } = mirrorElement;
-                const { parentNode } = endMarker;
+                const { start, end, elems } = mirrorElement;
+                const { parentNode } = end;
                 if (!parentNode) {
                     return;
                 }
-                remove(parentNode, elems);
-                parentNode.removeChild(startMarker);
-                parentNode.removeChild(endMarker);
-                const elementIndex = component.elems.indexOf(startMarker);
+                remove(parentNode, [start, ...elems, end]);
+                const elementIndex = component.elems.indexOf(start);
                 component.elems.splice(elementIndex, elems.length + 2);
             }
             mirrorList.splice(index, 1);
@@ -154,7 +152,6 @@ export default function (
             };
             const flatNewElems = [startMarker, ...newElems, endMarker];
             insertBefore(parentNode, flatNewElems, nextMarker);
-            parentNode.insertBefore(startMarker, nextMarker);
             if (nextMarker === marker) {
                 mirrorList.push(mirror);
                 component.elems.push(...flatNewElems);
