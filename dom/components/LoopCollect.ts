@@ -48,7 +48,7 @@ export default function (
             params,
             alias,
             destruct,
-            list.raw(),
+            list.raw,
             tree,
             _super
         );

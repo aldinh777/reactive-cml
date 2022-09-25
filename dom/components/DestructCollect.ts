@@ -17,14 +17,14 @@ export default function (
     const propnames: PropAlias[] = readAlias(props.as);
     if (obj instanceof StateMap) {
         const marker = document.createTextNode('');
-        const destructParams = propAlias(params, propnames, obj.raw());
+        const destructParams = propAlias(params, propnames, obj.raw);
         const component: ControlComponent = {
             elems: intoDom(tree, destructParams, _super)
         };
         obj.onUpdate(() => {
             const { parentNode } = marker;
             if (parentNode) {
-                const destructParams = propAlias(params, propnames, obj.raw());
+                const destructParams = propAlias(params, propnames, obj.raw);
                 const newElems = intoDom(tree, destructParams, _super);
                 remove(parentNode, component.elems);
                 insertBefore(parentNode, newElems, marker);
