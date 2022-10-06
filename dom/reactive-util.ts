@@ -1,21 +1,21 @@
-import { State } from '@aldinh777/reactive/state/State';
+import { state } from '@aldinh777/reactive';
 
 export function stateToggle(initial: boolean) {
-    const state = new State(initial);
-    const open = () => state.setValue(true);
-    const close = () => state.setValue(false);
-    const toggle = () => state.setValue(!state.getValue());
-    return [state, open, close, toggle];
+    const st = state(initial);
+    const open = () => st.setValue(true);
+    const close = () => st.setValue(false);
+    const toggle = () => st.setValue(!st.getValue());
+    return [st, open, close, toggle];
 }
 
 export function stateLocalStorage(key: string, initial: string) {
-    const state = new State(initial);
+    const st = state(initial);
     const local = localStorage.getItem(key);
     if (local) {
-        state.setValue(local);
+        st.setValue(local);
     } else {
-        localStorage.setItem(key, state.getValue());
+        localStorage.setItem(key, st.getValue());
     }
-    state.onChange((value) => localStorage.setItem(key, value));
-    return state;
+    st.onChange((value) => localStorage.setItem(key, value));
+    return st;
 }
