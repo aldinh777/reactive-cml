@@ -15,24 +15,23 @@ export default function (
     const { tree, params, _super } = _children;
     const obj: any = params[props.obj];
     const propnames: PropAlias[] = readAlias(props.as);
-    if (obj instanceof StateMap) {
-        const marker = document.createTextNode('');
-        const destructParams = propAlias(params, propnames, obj.raw);
-        const component: ControlComponent = {
-            elems: intoDom(tree, destructParams, _super)
-        };
-        obj.onUpdate(() => {
-            const { parentNode } = marker;
-            if (parentNode) {
-                const destructParams = propAlias(params, propnames, obj.raw);
-                const newElems = intoDom(tree, destructParams, _super);
-                remove(parentNode, component.elems);
-                insertBefore(parentNode, newElems, marker);
-                component.elems = newElems;
-            }
-        });
-        return [component, marker];
-    } else {
+    if (!(obj instanceof StateMap)) {
         throw ComponentError.invalidCollect('DestructCollect', 'destruct', 'obj', props.obj);
     }
+    const marker = document.createTextNode('');
+    const destructParams = propAlias(params, propnames, obj.raw);
+    const component: ControlComponent = {
+        elems: intoDom(tree, destructParams, _super)
+    };
+    obj.onUpdate(() => {
+        const { parentNode } = marker;
+        if (parentNode) {
+            const destructParams = propAlias(params, propnames, obj.raw);
+            const newElems = intoDom(tree, destructParams, _super);
+            remove(parentNode, component.elems);
+            insertBefore(parentNode, newElems, marker);
+            component.elems = newElems;
+        }
+    });
+    return [component, marker];
 }

@@ -7,3 +7,15 @@ export function stateToggle(initial: boolean) {
     const toggle = () => state.setValue(!state.getValue());
     return [state, open, close, toggle];
 }
+
+export function stateLocalStorage(key: string, initial: string) {
+    const state = new State(initial);
+    const local = localStorage.getItem(key);
+    if (local) {
+        state.setValue(local);
+    } else {
+        localStorage.setItem(key, state.getValue());
+    }
+    state.onChange((value) => localStorage.setItem(key, value));
+    return state;
+}

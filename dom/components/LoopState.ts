@@ -37,31 +37,30 @@ export default function (
     const alias = props.as;
     const destruct: PropAlias[] =
         typeof props.destruct === 'string' ? readAlias(props.destruct) : [];
-    if (list instanceof State) {
-        const marker = document.createTextNode('');
-        const component: ControlComponent = {
-            elems: createFlatListElement(params, alias, destruct, list.getValue(), tree, _super)
-        };
-        list.onChange((items) => {
-            const { elems } = component;
-            const { parentNode } = marker;
-            if (!parentNode) {
-                return;
-            }
-            const newListElements: NodeComponent[] = createFlatListElement(
-                params,
-                alias,
-                destruct,
-                items,
-                tree,
-                _super
-            );
-            remove(parentNode, elems);
-            insertBefore(parentNode, newListElements, marker);
-            component.elems = newListElements;
-        });
-        return [component, marker];
-    } else {
+    if (!(list instanceof State)) {
         throw ComponentError.invalidState('LoopState', 'foreach', 'list', props.list);
     }
+    const marker = document.createTextNode('');
+    const component: ControlComponent = {
+        elems: createFlatListElement(params, alias, destruct, list.getValue(), tree, _super)
+    };
+    list.onChange((items) => {
+        const { elems } = component;
+        const { parentNode } = marker;
+        if (!parentNode) {
+            return;
+        }
+        const newListElements: NodeComponent[] = createFlatListElement(
+            params,
+            alias,
+            destruct,
+            items,
+            tree,
+            _super
+        );
+        remove(parentNode, elems);
+        insertBefore(parentNode, newListElements, marker);
+        component.elems = newListElements;
+    });
+    return [component, marker];
 }
