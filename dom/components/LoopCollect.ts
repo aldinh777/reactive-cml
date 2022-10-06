@@ -31,6 +31,19 @@ function createListElement(
     return result;
 }
 
+function acquireDom(
+    params: Properties,
+    item: any,
+    mapper: WeakMap<object, Node>,
+    children: RCMLResult[],
+    cc?: ComponentChildren
+): NodeComponent[] {
+    if (typeof item === 'object' && mapper.has(item)) {
+        return [mapper.get(item)] as Node[];
+    }
+    return intoDom(children, params, cc);
+}
+
 export default function (
     props: Properties = {},
     _children?: ComponentChildren
@@ -55,13 +68,14 @@ export default function (
     const component: ControlComponent = {
         elems: mirrorList.flatMap((m) => (m ? [m.start, ...m.elems, m.end] : []))
     };
+    const domMapper: WeakMap<object, Node> = new WeakMap();
     list.onUpdate((index, next) => {
         const mirronElement = mirrorList[index];
         const localParams = propAlias(params, destruct, next);
         if (alias) {
             Object.assign(localParams, { [alias]: next });
         }
-        const newElems = intoDom(tree, localParams, _super);
+        const newElems = acquireDom(localParams, next, domMapper, tree, _super);
         if (mirronElement) {
             const { elems, start: startMarker, end: endMarker } = mirronElement;
             const { parentNode } = endMarker;
@@ -139,7 +153,7 @@ export default function (
         if (alias) {
             Object.assign(localParams, { [alias]: inserted });
         }
-        const newElems = intoDom(tree, localParams, _super);
+        const newElems = acquireDom(localParams, inserted, domMapper, tree, _super);
         const mirror: MirrorElement = {
             elems: newElems,
             start: startMarker,
