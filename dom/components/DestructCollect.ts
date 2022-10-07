@@ -1,4 +1,4 @@
-import { StateMap } from '@aldinh777/reactive/collection/StateMap';
+import { StateCollection } from '@aldinh777/reactive/collection/StateCollection';
 import { ComponentChildren, ControlComponent, intoDom, NodeComponent } from '..';
 import { Properties } from '../../util';
 import { propAlias, PropAlias, readAlias } from '../prop-util';
@@ -15,7 +15,7 @@ export default function (
     const { tree, params, _super } = _children;
     const obj: any = params[props.obj];
     const propnames: PropAlias[] = readAlias(props.as);
-    if (!(obj instanceof StateMap)) {
+    if (!(obj instanceof StateCollection && obj.raw instanceof Map)) {
         throw ComponentError.invalidCollect('DestructCollect', 'destruct', 'obj', props.obj);
     }
     const marker = document.createTextNode('');

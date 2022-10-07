@@ -2,8 +2,8 @@ import { State } from '@aldinh777/reactive/state/State';
 import { ComponentChildren, ControlComponent, intoDom, NodeComponent } from '..';
 import { Properties } from '../../util';
 import { remove, insertBefore } from '../dom-util';
-import ComponentError from '../../error/ComponentError';
 import { PropAlias, propAlias, readAlias } from '../prop-util';
+import ComponentError from '../../error/ComponentError';
 
 export default function (
     props: Properties = {},
