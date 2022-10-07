@@ -48,7 +48,7 @@ export default function (
     props: Properties = {},
     _children?: ComponentChildren
 ): NodeComponent[] | void {
-    if (!_children || typeof props.list !== 'string' || typeof props.as !== 'string') {
+    if (!_children || typeof props.list !== 'string') {
         return;
     }
     const { tree, params, _super } = _children;
