@@ -33,7 +33,7 @@ export function simpleDom(tree: RCMLResult[]): NodeComponent[] {
         if (typeof item === 'string') {
             result.push(document.createTextNode(item));
         } else {
-            const [tag, props,, children] = item as Component;
+            const [tag, props, , children] = item as Component;
             const elem = document.createElement(tag);
             for (const prop in props) {
                 const value = props[prop];

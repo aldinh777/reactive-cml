@@ -1,4 +1,4 @@
-import { StateCollection } from '@aldinh777/reactive/collection/StateCollection';
+import { StateList } from '@aldinh777/reactive/collection/StateList';
 import { ComponentChildren, ControlComponent, intoDom, NodeComponent } from '..';
 import { RCMLResult } from '../../src';
 import { Properties } from '../../util';
@@ -55,7 +55,7 @@ export default function (
     const list = params[props.list];
     const alias = props.as;
     const destruct = typeof props.destruct === 'string' ? readAlias(props.destruct) : [];
-    if (!(list instanceof StateCollection && list.raw instanceof Array)) {
+    if (!(list instanceof StateList)) {
         throw ComponentError.invalidCollect('LoopCollect', 'foreach', 'list', props.list);
     }
     const marker = document.createTextNode('');

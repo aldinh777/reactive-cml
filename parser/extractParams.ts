@@ -32,11 +32,7 @@ export default function extractParams(
             par.push(...params);
         } else {
             const localBlacklist = new Set(blacklist);
-            const processedItem = preprocessCML(
-                item,
-                [dep, par, localBlacklist],
-                preprocessors
-            );
+            const processedItem = preprocessCML(item, [dep, par, localBlacklist], preprocessors);
             const { children } = processedItem;
             const [dependencies, params] = extractParams(children, preprocessors, localBlacklist);
             dep = dep.concat(dependencies);

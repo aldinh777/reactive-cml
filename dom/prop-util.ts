@@ -23,5 +23,5 @@ export function readAlias(propsquery: string): PropAlias[] {
         } else {
             return [query, query];
         }
-    });    
+    });
 }

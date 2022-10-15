@@ -1,6 +1,6 @@
 # Reactive CML
 
-> "Last thing the world needs is another JavaScript framework" 
+> "Last thing the world needs is another JavaScript framework"
 
 But this is not **just another javascript framework**, this is another javascript framework **but you write less and clearer code**.
 
@@ -9,6 +9,7 @@ But this is not **just another javascript framework**, this is another javascrip
 Normally, almost every front-end framework use the well known html tag to implement their framework. Just for comparison purpose, here is some simple code with `svelte`.
 
 `App.svelte`
+
 ```svelte
 <script>
 let title = 'Sample App'
@@ -31,6 +32,7 @@ The first problem with it is that it used HTML tags, which is good because a lot
 `Reactive CML`, as the name suggest, instead of using HTML tags, it uses CML tags which is shorter but still keeps the familiarities with usual HTML Tags.
 
 `App.rc`
+
 ```js
 let title = 'Sample App'
 let content = 'Bolditalicunderline'

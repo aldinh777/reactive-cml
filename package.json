@@ -9,11 +9,11 @@
   "author": "aldinh777",
   "license": "ISC",
   "devDependencies": {
-    "@aldinh777/reactive": "^0.26.0",
+    "@aldinh777/reactive": "^0.27.1",
     "@types/node": "^18.7.14",
     "typescript": "^4.7.4"
   },
   "dependencies": {
-    "@aldinh777/cml-parser": "^0.5.2"
+    "@aldinh777/cml-parser": "^0.5.3"
   }
 }
