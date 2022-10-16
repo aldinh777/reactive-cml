@@ -4,6 +4,14 @@
 
 But this is not **just another javascript framework**, this is another javascript framework **but you write less and clearer code**.
 
+## In a Nutshell
+
+-   It's when **svelte** written with **science** instead of **magic**
+-   It's **react** with **ivity**
+-   It's **angular** and **vue** without the **ng** & **v**
+
+> Reactive CML aim to be **simple and clear** to use, while also allowing complex stuff with **low level dom manipulation** that every front-end frameworks are afraid of.
+
 ## Shorter and Faster Write Time
 
 Normally, almost every front-end framework use the well known html tag to implement their framework. Just for comparison purpose, here is some simple code with `svelte`.
@@ -48,4 +56,4 @@ div <
 
 Look at that shorter **146 Bytes** of code. If you write the same code in `svelte` for a Trilion times, **you write 43 Gigabytes less in `Reactive CML`**. You can install two Valorant game with that much storage and still have some left!
 
-Other than the size, it also took me **just half a minute** to write it (again with notepad), half the time you need to write the code with `svelte`. You finish a project early when another svelte developer still write their codes twice the time you need to write Reactive CML code (both with notepad). How Productive!
+Other than it size, it also took **only half a minute** to write it (using notepad), half the time you need to write the code when with `svelte`. That means you finish project earlier while another svelte developer still wasting their precious time writing their codes (using notepad). How Productive!
