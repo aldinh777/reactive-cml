@@ -11,7 +11,7 @@ export default class ComponentError extends Error {
     }
     static invalidState(comp: string, elem: string, prop: string, param: string): ComponentError {
         return new ComponentError(
-            `'${param}' are not a valid State in 'state:${prop}' property of '${elem}}' element`,
+            `'${param}' are not a valid State in 'state:${prop}' property of '${elem}' element`,
             [comp]
         );
     }
