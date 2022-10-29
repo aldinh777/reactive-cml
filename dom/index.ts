@@ -1,4 +1,4 @@
-import { State } from '@aldinh777/reactive/state/State';
+import { State } from '@aldinh777/reactive';
 import { Properties, StaticProperties, TextProp } from '../util';
 import { Component, RCMLResult } from '..';
 import { append, setAttr } from './dom-util';

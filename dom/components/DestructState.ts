@@ -1,4 +1,4 @@
-import { State } from '@aldinh777/reactive/state/State';
+import { State } from '@aldinh777/reactive';
 import { ComponentChildren, ControlComponent, intoDom, NodeComponent } from '..';
 import { Properties } from '../../util';
 import { remove, insertBefore } from '../dom-util';

@@ -1,4 +1,4 @@
-import { State } from '@aldinh777/reactive/state/State';
+import { State } from '@aldinh777/reactive';
 import { ComponentChildren, ControlComponent, intoDom, NodeComponent } from '..';
 import { RCMLResult } from '../../src';
 import { Properties } from '../../util';
