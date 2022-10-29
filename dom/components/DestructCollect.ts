@@ -1,4 +1,4 @@
-import { StateMap } from '@aldinh777/reactive/collection/StateMap';
+import { StateMap } from '@aldinh777/reactive/collection';
 import { ComponentChildren, ControlComponent, intoDom, NodeComponent } from '..';
 import { Properties } from '../../util';
 import { propAlias, PropAlias, readAlias } from '../prop-util';

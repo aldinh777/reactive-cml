@@ -1,5 +1,4 @@
-import { ListViewMapped } from '@aldinh777/reactive/collection/view/ListViewMapped';
-import { StateList } from '@aldinh777/reactive/collection/StateList';
+import { StateList, ListViewMapped } from '@aldinh777/reactive/collection';
 import { ComponentChildren, ControlComponent, intoDom, NodeComponent } from '..';
 import { Properties } from '../../util';
 import { remove, insertBefore } from '../dom-util';
