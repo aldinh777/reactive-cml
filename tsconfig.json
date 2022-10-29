@@ -1,21 +1,13 @@
 {
-  "compilerOptions": {
-    "forceConsistentCasingInFileNames": true,
-    "target": "es5",
-    "module": "commonjs",
-    "lib": [
-      "ES2020",
-      "es7",
-      "es6",
-      "dom"
-    ],
-    "declaration": true,
-    "strict": true,
-    "esModuleInterop": true
-  },
-  "include": [
-    "src",
-    "parser",
-    "dom"
-  ]
+    "compilerOptions": {
+        "declaration": true,
+        "module": "CommonJS",
+        "target": "ES6",
+        "moduleResolution": "node"
+    },
+    "include": [
+        "dom",
+        "parser",
+        "error"
+    ]
 }

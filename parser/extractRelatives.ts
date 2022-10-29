@@ -16,7 +16,7 @@ function recursiveFindRelative(
     }
     const relatives = readdirSync(dirname);
     for (const side of relatives) {
-        if (excludes.includes(side)) {
+        if (excludes.indexOf(side) !== -1) {
             continue;
         }
         const relative = join(dirname, side);
