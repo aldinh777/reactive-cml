@@ -34,9 +34,13 @@ export function extractTextProps(text: string): (string | TextProp)[] {
                 }
             } else if (flagPropname) {
                 if (c === '{') {
+                    const slash = text[i - 1] === '\\';
+                    console.log({ slash });
                     flagPropname = false;
-                    flagWhitespace = true;
-                    stream += '{' + propname;
+                    flagWhitespace = !slash;
+                    flagProp = !slash;
+                    stream +=
+                        '{' + (slash ? propname.slice(0, propname.length - 1) + '{' : propname);
                     propname = '';
                 } else if (c === '}' && propname.match(/^\s*[_$A-Za-z][_$\w]*/)) {
                     flagProp = false;
@@ -70,7 +74,7 @@ export function extractTextProps(text: string): (string | TextProp)[] {
             }
         } else {
             if (c === '\\' && text[i + 1] === '{') {
-                stream += '\\{';
+                stream += '{';
                 i++;
                 continue;
             } else if (c === '{') {
