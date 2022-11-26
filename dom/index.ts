@@ -1,7 +1,7 @@
 import { State } from '@aldinh777/reactive';
 import { Properties, StaticProperties, TextProp } from '../util';
 import { Component, RCMLResult } from '..';
-import { append, setAttr } from './dom-util';
+import { append, setAttr, _elem, _text } from './dom-util';
 import ComponentError from '../error/ComponentError';
 
 type PropertyResult = [props: Properties, events: StaticProperties<Function>];
@@ -80,10 +80,10 @@ export function intoDom(
     const result: NodeComponent[] = [];
     for (const item of tree) {
         if (typeof item === 'string') {
-            result.push(document.createTextNode(item));
+            result.push(_text(item));
         } else if (Reflect.has(item, 'name')) {
             const param = params[(item as TextProp).name];
-            const text = document.createTextNode('');
+            const text = _text('');
             if (param instanceof State) {
                 text.textContent = param.getValue();
                 param.onChange((next) => (text.textContent = next));
@@ -110,7 +110,7 @@ export function intoDom(
                     throw ComponentError.componentCrash(tag, err);
                 }
             } else {
-                const elem = document.createElement(tag);
+                const elem = _elem(tag);
                 processElementProperties(elem, propsComp, eventsComp);
                 append(elem, intoDom(children, params, cc));
                 result.push(elem);
