@@ -66,6 +66,23 @@ function processElementProperties(
     }
 }
 
+function processElementSlots(children: RCMLResult[]) {
+    const slots: Slots = { _children: [] };
+    for (const item of children) {
+        if (item instanceof Array) {
+            const [tag, props, , children] = item;
+            if (tag === 'slot') {
+                if (props.for && typeof props.for === 'string') {
+                    slots[props.for] = children;
+                }
+                continue;
+            }
+        }
+        slots._children.push(item);
+    }
+    return slots;
+}
+
 function createDispatcher(events: StaticProperties<Function>): EventDispatcher {
     return (name: string, ...args: any[]) => {
         const event = events[name];
@@ -99,7 +116,7 @@ export function intoDom(
             const [compProps, compEvents] = processComponentProperties(params, props, events);
             if (tag[0].match(/[A-Z]/)) {
                 const compContext: Context = {
-                    slots: { _children: children },
+                    slots: processElementSlots(children),
                     params: params,
                     _super: context
                 };
