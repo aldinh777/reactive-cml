@@ -1,10 +1,10 @@
 import { State } from '@aldinh777/reactive';
-import { ComponentChildren, ControlComponent, intoDom, NodeComponent } from '..';
+import { Context, NodeComponent, intoDom, ControlComponent } from '..';
+import ComponentError from '../../error/ComponentError';
 import { RCMLResult } from '../../src';
 import { Properties } from '../../util';
 import { remove, insertBefore } from '../dom-util';
-import ComponentError from '../../error/ComponentError';
-import { propAlias, PropAlias, readAlias } from '../prop-util';
+import { PropAlias, propAlias, readAlias } from '../prop-util';
 
 function createFlatListElement(
     params: Properties,
@@ -12,7 +12,7 @@ function createFlatListElement(
     destruct: PropAlias[],
     items: any[],
     tree: RCMLResult[],
-    cc?: ComponentChildren
+    cc?: Context
 ): NodeComponent[] {
     const elems: NodeComponent[] = [];
     for (const item of items) {
@@ -25,14 +25,11 @@ function createFlatListElement(
     return elems;
 }
 
-export default function (
-    props: Properties = {},
-    _children?: ComponentChildren
-): NodeComponent[] | void {
-    if (!_children || typeof props.list !== 'string') {
+export default function (props: Properties = {}, context?: Context): NodeComponent[] | void {
+    if (!context || typeof props.list !== 'string') {
         return;
     }
-    const { tree, params, _super } = _children;
+    const { tree, params, _super } = context;
     const list = params[props.list];
     const alias = props.as;
     const destruct: PropAlias[] =

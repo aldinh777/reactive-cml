@@ -1,17 +1,14 @@
 import { State } from '@aldinh777/reactive';
-import { ComponentChildren, ControlComponent, intoDom, NodeComponent } from '..';
+import { Context, NodeComponent, intoDom, ControlComponent } from '..';
+import ComponentError from '../../error/ComponentError';
 import { Properties } from '../../util';
 import { append, remove, insertBefore } from '../dom-util';
-import ComponentError from '../../error/ComponentError';
 
-export default function (
-    props: Properties = {},
-    _children?: ComponentChildren
-): NodeComponent[] | void {
-    if (!_children || typeof props.val !== 'string') {
+export default function (props: Properties = {}, context?: Context): NodeComponent[] | void {
+    if (!context || typeof props.val !== 'string') {
         return;
     }
-    const { tree, params, _super } = _children;
+    const { tree, params, _super } = context;
     const unless = Reflect.has(props, 'rev');
     let val: State<any> | boolean = params[props.val];
     if (!(val instanceof State)) {

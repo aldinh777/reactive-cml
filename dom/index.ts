@@ -1,25 +1,25 @@
 import { State } from '@aldinh777/reactive';
-import { Properties, StaticProperties, TextProp } from '../util';
-import { Component, RCMLResult } from '..';
-import { append, setAttr, _elem, _text } from './dom-util';
 import ComponentError from '../error/ComponentError';
+import { RCMLResult, Component } from '../src';
+import { Properties, StaticProperties, TextProp } from '../util';
+import { setAttr, _text, _elem, append } from './dom-util';
 
 type PropertyResult = [props: Properties, events: StaticProperties<Function>];
 export type NodeComponent = Node | ControlComponent;
 export type EventDispatcher = (name: string, ...args: any[]) => any;
 export type ReactiveComponent = (
     props: Properties,
-    _children?: ComponentChildren,
+    context?: Context,
     dispatch?: EventDispatcher
 ) => NodeComponent[] | void;
 
 export interface ControlComponent {
     elems: NodeComponent[];
 }
-export interface ComponentChildren {
+export interface Context {
     tree: RCMLResult[];
     params: Properties;
-    _super?: ComponentChildren;
+    _super?: Context;
 }
 
 function processComponentProperties(
@@ -75,7 +75,7 @@ function createDispatcher(events: StaticProperties<Function>): EventDispatcher {
 export function intoDom(
     tree: RCMLResult[],
     params: Properties,
-    cc?: ComponentChildren
+    context?: Context
 ): NodeComponent[] {
     const result: NodeComponent[] = [];
     for (const item of tree) {
@@ -93,16 +93,16 @@ export function intoDom(
             result.push(text);
         } else {
             const [tag, props, events, children] = item as Component;
-            const [propsComp, eventsComp] = processComponentProperties(params, props, events);
+            const [compProps, compEvents] = processComponentProperties(params, props, events);
             if (tag[0].match(/[A-Z]/)) {
-                const chomp: ComponentChildren = {
+                const compContext: Context = {
                     tree: children,
                     params: params,
-                    _super: cc
+                    _super: context
                 };
                 const component: ReactiveComponent = params[tag];
                 try {
-                    const res = component(propsComp, chomp, createDispatcher(eventsComp));
+                    const res = component(compProps, compContext, createDispatcher(compEvents));
                     if (res) {
                         result.push(...res);
                     }
@@ -111,8 +111,8 @@ export function intoDom(
                 }
             } else {
                 const elem = _elem(tag);
-                processElementProperties(elem, propsComp, eventsComp);
-                append(elem, intoDom(children, params, cc));
+                processElementProperties(elem, compProps, compEvents);
+                append(elem, intoDom(children, params, context));
                 result.push(elem);
             }
         }

@@ -1,12 +1,9 @@
-import { ComponentChildren, intoDom, NodeComponent } from '..';
+import { Context, NodeComponent, intoDom } from '..';
 import { Properties } from '../../util';
 
-export default function (
-    _props: Properties = {},
-    _children?: ComponentChildren
-): NodeComponent[] | void {
-    if (_children && _children._super) {
-        const { tree, params, _super } = _children._super;
+export default function (_props: Properties = {}, context?: Context): NodeComponent[] | void {
+    if (context && context._super) {
+        const { tree, params, _super } = context._super;
         return intoDom(tree, params, _super);
     }
 }

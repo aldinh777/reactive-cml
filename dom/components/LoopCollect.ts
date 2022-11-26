@@ -1,23 +1,20 @@
 import { StateList, ListViewMapped } from '@aldinh777/reactive/collection';
-import { ComponentChildren, ControlComponent, intoDom, NodeComponent } from '..';
-import { Properties } from '../../util';
-import { remove, insertBefore } from '../dom-util';
-import { propAlias, readAlias } from '../prop-util';
+import { NodeComponent, Context, intoDom, ControlComponent } from '..';
 import ComponentError from '../../error/ComponentError';
+import { Properties } from '../../util';
+import { insertBefore, remove } from '../dom-util';
+import { readAlias, propAlias } from '../prop-util';
 
 interface MirrorElement {
     elems: NodeComponent[];
     start: Text;
 }
 
-export default function (
-    props: Properties = {},
-    _children?: ComponentChildren
-): NodeComponent[] | void {
-    if (!_children || typeof props.list !== 'string') {
+export default function (props: Properties = {}, context?: Context): NodeComponent[] | void {
+    if (!context || typeof props.list !== 'string') {
         return;
     }
-    const { tree, params, _super } = _children;
+    const { tree, params, _super } = context;
     const list = params[props.list];
     const alias = props.as;
     const destruct = typeof props.destruct === 'string' ? readAlias(props.destruct) : [];

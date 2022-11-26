@@ -1,15 +1,12 @@
-import { ComponentChildren, intoDom, NodeComponent } from '..';
+import { Context, NodeComponent, intoDom } from '..';
 import { Properties } from '../../util';
-import { PropAlias, propAlias, readAlias } from '../prop-util';
+import { PropAlias, readAlias, propAlias } from '../prop-util';
 
-export default function (
-    props: Properties = {},
-    _children?: ComponentChildren
-): NodeComponent[] | void {
-    if (!_children || typeof props.list !== 'string') {
+export default function (props: Properties = {}, context?: Context): NodeComponent[] | void {
+    if (!context || typeof props.list !== 'string') {
         return;
     }
-    const { tree, params, _super } = _children;
+    const { tree, params, _super } = context;
     const list = params[props.list];
     const alias: string = props.as;
     const destruct: PropAlias[] =

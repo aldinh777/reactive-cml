@@ -1,5 +1,5 @@
 import { parseCML } from '@aldinh777/cml-parser';
-import { processRC } from '..';
+import { processRC } from '../src';
 import extractImports from './extractImports';
 import extractParams, { Preprocessor } from './extractParams';
 import extractRelatives from './extractRelatives';
@@ -134,6 +134,6 @@ export function parseReactiveCML(source: string, options: RCMLParserOptions = {}
     }
     const importScript = joinDependencies(mode, autoImports);
     const exportScript = '\n' + (mode === 'require' ? 'module.exports = ' : 'export default ');
-    const resultScript = `function(props={}, _children, dispatch=()=>{}) {\n${script.trim()}\n${outreturn}\n}`;
+    const resultScript = `function(props={}, context, dispatch=()=>{}) {\n${script.trim()}\n${outreturn}\n}`;
     return importScript + exportScript + resultScript;
 }
