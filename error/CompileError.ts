@@ -21,6 +21,9 @@ export default class CompileError extends Error {
             `component '${comp}' has invalid indentifier at ${type} '${prop}' : '${value}'`
         );
     }
+    static invalidProperty(comp: string, prop: string, value: string): CompileError {
+        return CompileError.invalidIdentifier(comp, 'property', prop, value);
+    }
     static invalidComponent(comp: string): CompileError {
         return new CompileError(`invalid component name : '${comp}'`);
     }

@@ -1,14 +1,25 @@
 import { parseCML } from '@aldinh777/cml-parser';
 import { processRC } from '../src';
+import {
+    COMPONENT_CHILDREN,
+    COMPONENT_CONTROL_BASIC,
+    COMPONENT_CONTROL_STATE,
+    COMPONENT_DESTRUCT_BASIC,
+    COMPONENT_DESTRUCT_COLLECTION,
+    COMPONENT_DESTRUCT_STATE,
+    COMPONENT_LIST_BASIC,
+    COMPONENT_LIST_COLLECTION,
+    COMPONENT_LIST_STATE
+} from './constants';
 import extractImports from './extractImports';
 import extractParams, { Preprocessor } from './extractParams';
 import extractRelatives from './extractRelatives';
-import preprocessChildren from './preprocess/preprocess-children';
-import preprocessComponent from './preprocess/preprocess-component';
-import preprocessControl from './preprocess/preprocess-control';
-import preprocessDestruct from './preprocess/preprocess-destruct';
-import preprocessElement from './preprocess/preprocess-element';
-import preprocessList from './preprocess/preprocess-list';
+import preprocessChildren from './preprocess/children';
+import preprocessComponent from './preprocess/component';
+import preprocessControl from './preprocess/control';
+import preprocessDestruct from './preprocess/destruct';
+import preprocessElement from './preprocess/element';
+import preprocessList from './preprocess/list';
 
 type ImportType = 'import' | 'require';
 
@@ -71,15 +82,15 @@ export function parseReactiveCML(source: string, options: RCMLParserOptions = {}
     ];
     const cmlTree = parseCML(cml, trimCML);
     const controlComp = new Set([
-        'Children',
-        'ControlBasic',
-        'ControlState',
-        'DestructBasic',
-        'DestructCollect',
-        'DestructState',
-        'LoopBasic',
-        'LoopCollect',
-        'LoopState'
+        COMPONENT_CHILDREN,
+        COMPONENT_CONTROL_BASIC,
+        COMPONENT_CONTROL_STATE,
+        COMPONENT_DESTRUCT_BASIC,
+        COMPONENT_DESTRUCT_STATE,
+        COMPONENT_DESTRUCT_COLLECTION,
+        COMPONENT_LIST_BASIC,
+        COMPONENT_LIST_STATE,
+        COMPONENT_LIST_COLLECTION
     ]);
     const autoImports: [from: string, imports: string | string[]][] = [...autoImportsOpt];
     const preprocessors: Preprocessor[] = [];
