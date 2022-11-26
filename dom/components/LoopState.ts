@@ -1,26 +1,24 @@
 import { State } from '@aldinh777/reactive';
 import { Context, NodeComponent, intoDom, ControlComponent } from '..';
 import ComponentError from '../../error/ComponentError';
-import { RCMLResult } from '../../src';
 import { Properties } from '../../util';
-import { remove, insertBefore } from '../dom-util';
+import { remove, insertBefore, _text } from '../dom-util';
 import { PropAlias, propAlias, readAlias } from '../prop-util';
 
 function createFlatListElement(
-    params: Properties,
     alias: string,
-    destruct: PropAlias[],
+    extract: PropAlias[],
     items: any[],
-    tree: RCMLResult[],
-    cc?: Context
+    context?: Context
 ): NodeComponent[] {
     const elems: NodeComponent[] = [];
+    const { slots, params, _super } = context;
     for (const item of items) {
-        const localParams = propAlias(params, destruct, item);
+        const localParams = propAlias(params, extract, item);
         if (alias) {
             Object.assign(localParams, { [alias]: item });
         }
-        elems.push(...intoDom(tree, localParams, cc));
+        elems.push(...intoDom(slots._children, localParams, _super));
     }
     return elems;
 }
@@ -29,17 +27,15 @@ export default function (props: Properties = {}, context?: Context): NodeCompone
     if (!context || typeof props.list !== 'string') {
         return;
     }
-    const { tree, params, _super } = context;
-    const list = params[props.list];
+    const list = context.params[props.list];
     const alias = props.as;
-    const destruct: PropAlias[] =
-        typeof props.destruct === 'string' ? readAlias(props.destruct) : [];
+    const extracts: PropAlias[] = typeof props.extract === 'string' ? readAlias(props.extract) : [];
     if (!(list instanceof State)) {
         throw ComponentError.invalidState('LoopState', 'foreach', 'list', props.list);
     }
-    const marker = document.createTextNode('');
+    const marker = _text('');
     const component: ControlComponent = {
-        elems: createFlatListElement(params, alias, destruct, list.getValue(), tree, _super)
+        elems: createFlatListElement(alias, extracts, list.getValue(), context)
     };
     list.onChange((items) => {
         const { elems } = component;
@@ -47,17 +43,10 @@ export default function (props: Properties = {}, context?: Context): NodeCompone
         if (!parentNode) {
             return;
         }
-        const newListElements: NodeComponent[] = createFlatListElement(
-            params,
-            alias,
-            destruct,
-            items,
-            tree,
-            _super
-        );
+        const newElems: NodeComponent[] = createFlatListElement(alias, extracts, items, context);
         remove(parentNode, elems);
-        insertBefore(parentNode, newListElements, marker);
-        component.elems = newListElements;
+        insertBefore(parentNode, newElems, marker);
+        component.elems = newElems;
     });
     return [component, marker];
 }

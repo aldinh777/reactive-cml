@@ -16,8 +16,11 @@ export type ReactiveComponent = (
 export interface ControlComponent {
     elems: NodeComponent[];
 }
+interface Slots extends StaticProperties<RCMLResult[]> {
+    _children: RCMLResult[];
+}
 export interface Context {
-    tree: RCMLResult[];
+    slots: Slots;
     params: Properties;
     _super?: Context;
 }
@@ -49,12 +52,12 @@ function processElementProperties(
     events: StaticProperties<Function>
 ) {
     for (const prop in props) {
-        const propval = props[prop];
-        if (propval instanceof State) {
-            setAttr(elem, prop, propval.getValue());
-            propval.onChange((next) => setAttr(elem, prop, next));
+        const propvalue = props[prop];
+        if (propvalue instanceof State) {
+            setAttr(elem, prop, propvalue.getValue());
+            propvalue.onChange((next) => setAttr(elem, prop, next));
         } else {
-            setAttr(elem, prop, propval);
+            setAttr(elem, prop, propvalue);
         }
     }
     for (const event in events) {
@@ -96,7 +99,7 @@ export function intoDom(
             const [compProps, compEvents] = processComponentProperties(params, props, events);
             if (tag[0].match(/[A-Z]/)) {
                 const compContext: Context = {
-                    tree: children,
+                    slots: { _children: children },
                     params: params,
                     _super: context
                 };

@@ -6,18 +6,18 @@ export default function (props: Properties = {}, context?: Context): NodeCompone
     if (!context || typeof props.list !== 'string') {
         return;
     }
-    const { tree, params, _super } = context;
+    const { slots, params, _super } = context;
     const list = params[props.list];
     const alias: string = props.as;
-    const destruct: PropAlias[] =
-        typeof props.destruct === 'string' ? readAlias(props.destruct) : [];
+    const extracts: PropAlias[] =
+        typeof props.extract === 'string' ? readAlias(props.extract) : [];
     const result: NodeComponent[] = [];
     for (const item of list) {
-        const localParams = propAlias(params, destruct, item);
+        const localParams = propAlias(params, extracts, item);
         if (alias) {
             Object.assign(localParams, { [alias]: item });
         }
-        result.push(...intoDom(tree, localParams, _super));
+        result.push(...intoDom(slots._children, localParams, _super));
     }
     return result;
 }

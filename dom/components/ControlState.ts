@@ -2,51 +2,51 @@ import { State } from '@aldinh777/reactive';
 import { Context, NodeComponent, intoDom, ControlComponent } from '..';
 import ComponentError from '../../error/ComponentError';
 import { Properties } from '../../util';
-import { append, remove, insertBefore } from '../dom-util';
+import { append, remove, insertBefore, _elem, _text } from '../dom-util';
 
 export default function (props: Properties = {}, context?: Context): NodeComponent[] | void {
-    if (!context || typeof props.val !== 'string') {
+    if (!context || typeof props.value !== 'string') {
         return;
     }
-    const { tree, params, _super } = context;
+    const { slots, params, _super } = context;
     const unless = Reflect.has(props, 'rev');
-    let val: State<any> | boolean = params[props.val];
-    if (!(val instanceof State)) {
+    let stateValue: State<any> | boolean = params[props.value];
+    if (!(stateValue instanceof State)) {
         throw ComponentError.invalidState(
             'ControlState',
             unless ? 'unless' : 'if',
-            'val',
-            props.val
+            'value',
+            props.value
         );
     }
     const hasEqual = Reflect.has(props, 'equal');
-    const value = val.getValue();
+    const value = stateValue.getValue();
     if (hasEqual) {
         const eq = props.equal;
         const equalCond = new State(unless ? value != eq : value == eq);
         if (unless) {
-            val.onChange((next) => equalCond.setValue(next != eq));
+            stateValue.onChange((next) => equalCond.setValue(next != eq));
         } else {
-            val.onChange((next) => equalCond.setValue(next == eq));
+            stateValue.onChange((next) => equalCond.setValue(next == eq));
         }
-        val = equalCond;
+        stateValue = equalCond;
     } else {
         if (unless) {
             const cond = new State(!value);
-            val.onChange((next) => cond.setValue(!next));
-            val = cond;
+            stateValue.onChange((next) => cond.setValue(!next));
+            stateValue = cond;
         }
     }
-    const hide = document.createElement('div');
-    const marker = document.createTextNode('');
-    const elements = intoDom(tree, params, _super);
+    const hide = _elem('div');
+    const marker = _text('');
+    const elements = intoDom(slots._children, params, _super);
     const component: ControlComponent = { elems: [] };
-    if (val.getValue()) {
+    if (stateValue.getValue()) {
         component.elems = elements;
     } else {
         append(hide, elements);
     }
-    val.onChange((active) => {
+    stateValue.onChange((active) => {
         const { parentNode } = marker;
         if (!parentNode) {
             return;
