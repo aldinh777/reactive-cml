@@ -23,7 +23,7 @@ export default class ComponentError extends Error {
     }
     static componentCrash(name: string, err: any): ComponentError {
         let reason: string;
-        let trace = DEFAULT_COMPONENT_SET.has(name) ? [name] : [];
+        let trace = DEFAULT_COMPONENT_SET.has(name) ? [] : [name];
         if (err instanceof Error) {
             if (err.name === 'ComponentError') {
                 trace = trace.concat((err as ComponentError).componentTraces);
