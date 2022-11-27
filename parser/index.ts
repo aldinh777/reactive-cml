@@ -75,11 +75,11 @@ export function parseReactiveCML(source: string, options: RCMLParserOptions = {}
     const preprocessors: Preprocessor[] = [];
     if (!cmlPreprocessors || !cmlPreprocessors.disableDefault) {
         preprocessors.push(
-            preprocessComponent,
             preprocessChildren,
             preprocessControl,
             preprocessList,
             preprocessDestruct,
+            preprocessComponent,
             preprocessElement
         );
     }
