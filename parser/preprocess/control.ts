@@ -28,7 +28,7 @@ export default function (item: CMLObject, [dep, par]: Identifiers): CMLObject {
             throw CompileError.invalidProperty(tag, PROP_CONTROL_VALUE, stateName);
         }
         delete props[PROP_STATE_VALUE];
-        props.val = stateName;
+        props.value = stateName;
         item.tag = COMPONENT_CONTROL_STATE;
         dep.push(COMPONENT_CONTROL_STATE);
         par.push(stateName);
