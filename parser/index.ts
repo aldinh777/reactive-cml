@@ -1,16 +1,6 @@
 import { parseCML } from '@aldinh777/cml-parser';
 import { processRC } from '../src';
-import {
-    COMPONENT_CHILDREN,
-    COMPONENT_CONTROL_BASIC,
-    COMPONENT_CONTROL_STATE,
-    COMPONENT_DESTRUCT_BASIC,
-    COMPONENT_DESTRUCT_COLLECTION,
-    COMPONENT_DESTRUCT_STATE,
-    COMPONENT_LIST_BASIC,
-    COMPONENT_LIST_COLLECTION,
-    COMPONENT_LIST_STATE
-} from './constants';
+import { DEFAULT_COMPONENT_SET } from './constants';
 import extractImports from './extractImports';
 import extractParams, { Preprocessor } from './extractParams';
 import extractRelatives from './extractRelatives';
@@ -81,17 +71,6 @@ export function parseReactiveCML(source: string, options: RCMLParserOptions = {}
         source.substring(separatorIndex)
     ];
     const cmlTree = parseCML(cml, trimCML);
-    const controlComp = new Set([
-        COMPONENT_CHILDREN,
-        COMPONENT_CONTROL_BASIC,
-        COMPONENT_CONTROL_STATE,
-        COMPONENT_DESTRUCT_BASIC,
-        COMPONENT_DESTRUCT_STATE,
-        COMPONENT_DESTRUCT_COLLECTION,
-        COMPONENT_LIST_BASIC,
-        COMPONENT_LIST_STATE,
-        COMPONENT_LIST_COLLECTION
-    ]);
     const autoImports: [from: string, imports: string | string[]][] = [...autoImportsOpt];
     const preprocessors: Preprocessor[] = [];
     if (!cmlPreprocessors || !cmlPreprocessors.disableDefault) {
@@ -115,7 +94,7 @@ export function parseReactiveCML(source: string, options: RCMLParserOptions = {}
     for (const [query, from] of imports) {
         autoImports.push([from, query]);
     }
-    for (const dep of dependencies.filter((dep) => controlComp.has(dep))) {
+    for (const dep of dependencies.filter((dep) => DEFAULT_COMPONENT_SET.has(dep))) {
         autoImports.push([`${baseCompPath}/${dep}`, dep]);
     }
     let outreturn: string;
@@ -133,7 +112,7 @@ export function parseReactiveCML(source: string, options: RCMLParserOptions = {}
         const currentImports: string[] = autoImports
             .map((imp) => imp[1])
             .filter((m) => typeof m === 'string') as string[];
-        const deps = dependencies.filter((dep) => !controlComp.has(dep));
+        const deps = dependencies.filter((dep) => !DEFAULT_COMPONENT_SET.has(dep));
         const relativeDependencies = extractRelatives(filename, {
             dependencies: deps,
             exts: extensions || ['.rc', '.js'],
