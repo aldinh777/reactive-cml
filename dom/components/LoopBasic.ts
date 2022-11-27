@@ -17,7 +17,7 @@ export default function (props: Properties = {}, context?: Context): NodeCompone
         if (alias) {
             Object.assign(localParams, { [alias]: item });
         }
-        result.push(...intoDom(slots._children, localParams, _super));
+        result.push(...intoDom(slots._children.elems, localParams, _super));
     }
     return result;
 }

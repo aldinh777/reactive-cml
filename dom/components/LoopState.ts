@@ -18,7 +18,7 @@ function createFlatListElement(
         if (alias) {
             Object.assign(localParams, { [alias]: item });
         }
-        elems.push(...intoDom(slots._children, localParams, _super));
+        elems.push(...intoDom(slots._children.elems, localParams, _super));
     }
     return elems;
 }

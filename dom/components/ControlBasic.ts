@@ -12,12 +12,12 @@ export default function (props: Properties = {}, context?: Context): NodeCompone
     if (hasEqual) {
         const condition = unless ? value != props.equal : value == props.equal;
         if (condition) {
-            return intoDom(slots._children, params, _super);
+            return intoDom(slots._children.elems, params, _super);
         }
     } else {
         const condition = unless ? !value : value;
         if (condition) {
-            return intoDom(slots._children, params, _super);
+            return intoDom(slots._children.elems, params, _super);
         }
     }
 }

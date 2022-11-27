@@ -18,13 +18,13 @@ export default function (props: Properties = {}, context?: Context): NodeCompone
     const marker = _text('');
     const destructParams = propAlias(params, propnames, obj.raw);
     const component: ControlComponent = {
-        elems: intoDom(slots._children, destructParams, _super)
+        elems: intoDom(slots._children.elems, destructParams, _super)
     };
     obj.onUpdate(() => {
         const { parentNode } = marker;
         if (parentNode) {
             const destructParams = propAlias(params, propnames, obj.raw);
-            const newElems = intoDom(slots._children, destructParams, _super);
+            const newElems = intoDom(slots._children.elems, destructParams, _super);
             remove(parentNode, component.elems);
             insertBefore(parentNode, newElems, marker);
             component.elems = newElems;

@@ -12,6 +12,7 @@ export const PROP_CONTROL_OBJECT = 'obj';
 export const PROP_CONTROL_LIST = 'list';
 export const PROP_CONTROL_AS = 'as';
 export const PROP_CONTROL_EXTRACT = 'extract';
+export const PROP_CONTROL_EXPORT ='export';
 
 export const PROP_STATE_VALUE = BINDER_STATE + ':' + PROP_CONTROL_VALUE;
 export const PROP_STATE_OBJECT = BINDER_STATE + ':' + PROP_CONTROL_OBJECT;

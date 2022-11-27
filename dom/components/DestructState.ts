@@ -18,7 +18,7 @@ export default function (props: Properties = {}, context?: Context): NodeCompone
     const marker = _text('');
     const destructParams = propAlias(params, propnames, obj.getValue());
     const component: ControlComponent = {
-        elems: intoDom(slots._children, destructParams, _super)
+        elems: intoDom(slots._children.elems, destructParams, _super)
     };
     obj.onChange((ob) => {
         const { elems } = component;
@@ -28,7 +28,7 @@ export default function (props: Properties = {}, context?: Context): NodeCompone
         }
         remove(parentNode, elems);
         const destructParams = propAlias(params, propnames, ob);
-        const destructElements = intoDom(slots._children, destructParams, _super);
+        const destructElements = intoDom(slots._children.elems, destructParams, _super);
         insertBefore(parentNode, destructElements, marker);
         component.elems = destructElements;
     });

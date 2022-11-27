@@ -1,5 +1,5 @@
 import { NodeComponent } from '.';
-import { RCMLResult, Component } from '../src';
+import { RCResult, Component } from '../src';
 
 export const _doc: Document = document;
 
@@ -32,7 +32,7 @@ export function setAttr(elem: HTMLElement, attr: string, value: any) {
     }
 }
 
-export function simpleDom(tree: RCMLResult[]): NodeComponent[] {
+export function simpleDom(tree: RCResult[]): NodeComponent[] {
     const result: NodeComponent[] = [];
     for (const item of tree) {
         if (typeof item === 'string') {

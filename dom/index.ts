@@ -1,8 +1,9 @@
 import { State } from '@aldinh777/reactive';
 import ComponentError from '../error/ComponentError';
-import { RCMLResult, Component } from '../src';
+import { RCResult, Component } from '../src';
 import { Properties, StaticProperties, TextProp } from '../util';
 import { setAttr, _text, _elem, append } from './dom-util';
+import { PropAlias, readAlias } from './prop-util';
 
 type PropertyResult = [props: Properties, events: StaticProperties<Function>];
 export type NodeComponent = Node | ControlComponent;
@@ -16,11 +17,15 @@ export type ReactiveComponent = (
 export interface ControlComponent {
     elems: NodeComponent[];
 }
-interface Slots extends StaticProperties<RCMLResult[]> {
-    _children: RCMLResult[];
+interface Slot {
+    elems: RCResult[];
+    extract: PropAlias[];
+}
+interface SlotMap extends StaticProperties<Slot> {
+    _children: Slot;
 }
 export interface Context {
-    slots: Slots;
+    slots: SlotMap;
     params: Properties;
     _super?: Context;
 }
@@ -50,7 +55,7 @@ function processElementProperties(
     elem: HTMLElement,
     props: Properties,
     events: StaticProperties<Function>
-) {
+): void {
     for (const prop in props) {
         const propvalue = props[prop];
         if (propvalue instanceof State) {
@@ -66,19 +71,21 @@ function processElementProperties(
     }
 }
 
-function processElementSlots(children: RCMLResult[]) {
-    const slots: Slots = { _children: [] };
+function processElementSlots(children: RCResult[], extract: string | TextProp): SlotMap {
+    const ext: PropAlias[] = typeof extract === 'string' ? readAlias(extract) : [];
+    const slots: SlotMap = { _children: { elems: [], extract: ext } };
     for (const item of children) {
         if (item instanceof Array) {
             const [tag, props, , children] = item;
             if (tag === 'slot') {
+                const ext: PropAlias[] = typeof extract === 'string' ? readAlias(extract) : [];
                 if (props.for && typeof props.for === 'string') {
-                    slots[props.for] = children;
+                    slots[props.for] = { elems: children, extract: ext };
                 }
                 continue;
             }
         }
-        slots._children.push(item);
+        slots._children.elems.push(item);
     }
     return slots;
 }
@@ -92,11 +99,7 @@ function createDispatcher(events: StaticProperties<Function>): EventDispatcher {
     };
 }
 
-export function intoDom(
-    tree: RCMLResult[],
-    params: Properties,
-    context?: Context
-): NodeComponent[] {
+export function intoDom(tree: RCResult[], params: Properties, context?: Context): NodeComponent[] {
     const result: NodeComponent[] = [];
     for (const item of tree) {
         if (typeof item === 'string') {
@@ -114,9 +117,10 @@ export function intoDom(
         } else {
             const [tag, props, events, children] = item as Component;
             const [compProps, compEvents] = processComponentProperties(params, props, events);
+            const slots = processElementSlots(children, props.extract);
             if (tag[0].match(/[A-Z]/)) {
                 const compContext: Context = {
-                    slots: processElementSlots(children),
+                    slots: slots,
                     params: params,
                     _super: context
                 };

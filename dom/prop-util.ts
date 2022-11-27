@@ -1,6 +1,6 @@
 import { Properties } from '../util';
 
-export type PropAlias = string[];
+export type PropAlias = [prop: string, alias: string];
 
 export function propAlias(
     params: Properties,

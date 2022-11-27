@@ -6,7 +6,6 @@ import {
     COMPONENT_LIST_STATE,
     PROP_COLLECTION_LIST,
     PROP_CONTROL_AS,
-    PROP_CONTROL_EXTRACT,
     PROP_CONTROL_LIST,
     PROP_STATE_LIST,
     TAG_FOREACH
@@ -20,21 +19,7 @@ export default function (item: CMLObject, [dep, par, bl]: Identifiers): CMLObjec
         return item;
     }
     const localItem = props[PROP_CONTROL_AS];
-    const extracts = props[PROP_CONTROL_EXTRACT];
     bl?.add(localItem);
-    if (extracts) {
-        const propnames = extracts.split(/\s+/).map((s: string) => {
-            const matches = s.match(/(.+):(.+)/);
-            if (matches) {
-                return matches[2];
-            } else {
-                return s;
-            }
-        });
-        for (const prop of propnames) {
-            bl?.add(prop);
-        }
-    }
     if (Reflect.has(props, PROP_STATE_LIST)) {
         const state = props[PROP_STATE_LIST];
         if (!state) {

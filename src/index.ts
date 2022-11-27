@@ -1,13 +1,13 @@
 import { CMLObject, CMLTree } from '@aldinh777/cml-parser';
 import { extractTextProps, StaticProperties, TextProp } from '../util';
 
-export type RCMLResult = string | TextProp | Component;
+export type RCResult = string | TextProp | Component;
 
 export type Component = [
     tag: string,
     props: StaticProperties<string | TextProp>,
     events: StaticProperties<string>,
-    children: RCMLResult[]
+    children: RCResult[]
 ];
 
 function processComponent(node: CMLObject): Component {
@@ -32,8 +32,8 @@ function processComponent(node: CMLObject): Component {
     return comp;
 }
 
-export function processRC(tree: CMLTree): RCMLResult[] {
-    const result: RCMLResult[] = [];
+export function processRC(tree: CMLTree): RCResult[] {
+    const result: RCResult[] = [];
     for (const node of tree) {
         if (typeof node === 'string') {
             result.push(...extractTextProps(node));

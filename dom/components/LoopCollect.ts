@@ -28,7 +28,7 @@ export default function (props: Properties = {}, context?: Context): NodeCompone
             Object.assign(localParams, { [alias]: item });
         }
         return {
-            elems: intoDom(slots._children, localParams, _super),
+            elems: intoDom(slots._children.elems, localParams, _super),
             start: _text('')
         };
     });

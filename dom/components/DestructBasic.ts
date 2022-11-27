@@ -10,5 +10,5 @@ export default function (props: Properties = {}, context?: Context): NodeCompone
     const obj = params[props.obj];
     const propnames: PropAlias[] = readAlias(props.extract);
     const localparams = propAlias(params, propnames, obj);
-    return intoDom(slots._children, localparams, _super);
+    return intoDom(slots._children.elems, localparams, _super);
 }

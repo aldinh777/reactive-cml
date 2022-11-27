@@ -5,7 +5,6 @@ import {
     COMPONENT_DESTRUCT_COLLECTION,
     COMPONENT_DESTRUCT_STATE,
     PROP_COLLECTION_OBJECT,
-    PROP_CONTROL_EXTRACT,
     PROP_CONTROL_OBJECT,
     PROP_STATE_OBJECT,
     TAG_DESTRUCT
@@ -13,22 +12,10 @@ import {
 import { Identifiers } from '../extractParams';
 import { isInvalidIdentifier } from '../parser-util';
 
-export default function (item: CMLObject, [dep, par, bl]: Identifiers): CMLObject {
+export default function (item: CMLObject, [dep, par]: Identifiers): CMLObject {
     const { tag, props } = item;
     if (tag !== TAG_DESTRUCT) {
         return item;
-    }
-    const extracts = props[PROP_CONTROL_EXTRACT];
-    const propnames = extracts.split(/\s+/).map((s: string) => {
-        const matches = s.match(/(.+):(.+)/);
-        if (matches) {
-            return matches[2];
-        } else {
-            return s;
-        }
-    });
-    for (const prop of propnames) {
-        bl?.add(prop);
     }
     if (Reflect.has(props, PROP_STATE_OBJECT)) {
         const state = props[PROP_STATE_OBJECT];
