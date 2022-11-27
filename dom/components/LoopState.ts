@@ -31,7 +31,7 @@ export default function (props: Properties = {}, context?: Context): NodeCompone
     const alias = props.as;
     const extracts: PropAlias[] = typeof props.extract === 'string' ? readAlias(props.extract) : [];
     if (!(list instanceof State)) {
-        throw ComponentError.invalidState('LoopState', 'foreach', 'list', props.list);
+        throw ComponentError.invalidState('foreach', 'list', props.list);
     }
     const marker = _text('');
     const component: ControlComponent = {

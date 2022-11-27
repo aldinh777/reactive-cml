@@ -19,7 +19,7 @@ export default function (props: Properties = {}, context?: Context): NodeCompone
     const alias = props.as;
     const extracts = typeof props.extract === 'string' ? readAlias(props.extract) : [];
     if (!(list instanceof StateList)) {
-        throw ComponentError.invalidCollect('LoopCollect', 'foreach', 'list', props.list);
+        throw ComponentError.invalidCollect('foreach', 'list', props.list);
     }
     const marker = _text('');
     const listElement: ListViewMapped<any, MirrorElement> = new ListViewMapped(list, (item) => {

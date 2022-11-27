@@ -2,27 +2,25 @@ export default class ComponentError extends Error {
     reason: string;
     compTrace: string[];
 
-    constructor(msg: string, trace: string[], reason?: string) {
+    constructor(msg: string, trace: string[] = [], reason?: string) {
         super(msg);
         this.name = 'ComponentError';
         this.compTrace = trace;
         this.reason = reason === undefined ? msg : reason;
         this.message = msg + `\ntrace  : ${trace.join(' > ')}` + `\nreason :\n    ${this.reason}`;
     }
-    static invalidState(comp: string, elem: string, prop: string, param: string): ComponentError {
+    static invalidState(elem: string, prop: string, param: string): ComponentError {
         return new ComponentError(
-            `'${param}' are not a valid State in 'state:${prop}' property of '${elem}' element`,
-            [comp]
+            `'${param}' are not a valid State in 'state:${prop}' property of '${elem}' element`
         );
     }
-    static invalidCollect(comp: string, elem: string, prop: string, param: string): ComponentError {
+    static invalidCollect(elem: string, prop: string, param: string): ComponentError {
         return new ComponentError(
-            `'${param}' are not a valid StateCollection in 'collect:${prop}' property of '${elem}' component`,
-            [comp]
+            `'${param}' are not a valid StateCollection in 'collect:${prop}' property of '${elem}' element`
         );
     }
     static componentCrash(comp: string, err: any): ComponentError {
-        let reason;
+        let reason: string;
         let trace = [comp];
         if (err instanceof Error) {
             if (err.name === 'ComponentError') {
