@@ -78,7 +78,8 @@ function processElementSlots(children: RCResult[], extract: string | TextProp): 
         if (item instanceof Array) {
             const [tag, props, , children] = item;
             if (tag === 'slot') {
-                const ext: PropAlias[] = typeof extract === 'string' ? readAlias(extract) : [];
+                const ext: PropAlias[] =
+                    typeof props.extract === 'string' ? readAlias(props.extract) : [];
                 if (props.for && typeof props.for === 'string') {
                     slots[props.for] = { elems: children, extract: ext };
                 }
