@@ -8,6 +8,6 @@ export default function (props: Properties = {}, context?: Context): NodeCompone
             slotname = props.name;
         }
         const { slots, params, _super } = context._super;
-        return intoDom(slots[slotname], params, _super);
+        return intoDom(slots[slotname] || [], params, _super);
     }
 }
