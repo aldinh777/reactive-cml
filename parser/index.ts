@@ -8,6 +8,7 @@ import preprocessChildren from './preprocess/children';
 import preprocessComponent from './preprocess/component';
 import preprocessControl from './preprocess/control';
 import preprocessDestruct from './preprocess/destruct';
+import preprocessExtract from './preprocess/extract';
 import preprocessElement from './preprocess/element';
 import preprocessList from './preprocess/list';
 
@@ -80,6 +81,7 @@ export function parseReactiveCML(source: string, options: RCMLParserOptions = {}
             preprocessList,
             preprocessDestruct,
             preprocessComponent,
+            preprocessExtract,
             preprocessElement
         );
     }

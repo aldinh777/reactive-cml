@@ -3,6 +3,7 @@ export const TAG_UNLESS = 'unless';
 export const TAG_FOREACH = 'foreach';
 export const TAG_DESTRUCT = 'destruct';
 export const TAG_CHILDREN = 'children';
+export const TAG_SLOT = 'slot';
 
 export const BINDER_STATE = 'state';
 export const BINDER_COLLECTION = 'collect';
