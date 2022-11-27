@@ -2,7 +2,9 @@ import { CMLObject } from '@aldinh777/cml-parser';
 import CompileError from '../../error/CompileError';
 import {
     COMPONENT_DESTRUCT_BASIC,
+    COMPONENT_DESTRUCT_COLLECTION,
     COMPONENT_DESTRUCT_STATE,
+    PROP_COLLECTION_OBJECT,
     PROP_CONTROL_EXTRACT,
     PROP_CONTROL_OBJECT,
     PROP_STATE_OBJECT,
@@ -41,8 +43,8 @@ export default function (item: CMLObject, [dep, par, bl]: Identifiers): CMLObjec
         item.tag = COMPONENT_DESTRUCT_STATE;
         dep.push(COMPONENT_DESTRUCT_STATE);
         par.push(state);
-    } else if (Reflect.has(props, PROP_STATE_OBJECT)) {
-        const collect = props[PROP_STATE_OBJECT];
+    } else if (Reflect.has(props, PROP_COLLECTION_OBJECT)) {
+        const collect = props[PROP_COLLECTION_OBJECT];
         if (!collect) {
             throw CompileError.statementRequire(TAG_DESTRUCT, PROP_CONTROL_OBJECT);
         }
@@ -51,8 +53,8 @@ export default function (item: CMLObject, [dep, par, bl]: Identifiers): CMLObjec
         }
         delete props[PROP_STATE_OBJECT];
         props.obj = collect;
-        item.tag = COMPONENT_DESTRUCT_STATE;
-        dep.push(COMPONENT_DESTRUCT_STATE);
+        item.tag = COMPONENT_DESTRUCT_COLLECTION;
+        dep.push(COMPONENT_DESTRUCT_COLLECTION);
         par.push(collect);
     } else {
         const obj = props[PROP_CONTROL_OBJECT];

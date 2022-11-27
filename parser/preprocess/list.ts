@@ -2,6 +2,7 @@ import { CMLObject } from '@aldinh777/cml-parser';
 import CompileError from '../../error/CompileError';
 import {
     COMPONENT_LIST_BASIC,
+    COMPONENT_LIST_COLLECTION,
     COMPONENT_LIST_STATE,
     PROP_COLLECTION_LIST,
     PROP_CONTROL_AS,
@@ -57,8 +58,8 @@ export default function (item: CMLObject, [dep, par, bl]: Identifiers): CMLObjec
         }
         delete props[PROP_COLLECTION_LIST];
         props.list = collect;
-        item.tag = COMPONENT_LIST_STATE;
-        dep.push(COMPONENT_LIST_STATE);
+        item.tag = COMPONENT_LIST_COLLECTION;
+        dep.push(COMPONENT_LIST_COLLECTION);
         par.push(collect);
     } else {
         const list = props[PROP_CONTROL_LIST];
