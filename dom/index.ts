@@ -17,16 +17,11 @@ export type ReactiveComponent = (
 export interface ControlComponent {
     elems: NodeComponent[];
 }
-interface Slot {
-    elems: RCResult[];
-    extract: PropAlias[];
-}
-interface SlotMap extends StaticProperties<Slot> {
-    _children: Slot;
-}
 export interface Context {
-    slots: SlotMap;
     params: Properties;
+    extracts: PropAlias[];
+    children: RCResult[];
+    slotname?: string;
     _super?: Context;
 }
 
@@ -71,26 +66,6 @@ function processElementProperties(
     }
 }
 
-function processElementSlots(children: RCResult[], extract: string | TextProp): SlotMap {
-    const ext: PropAlias[] = typeof extract === 'string' ? readAlias(extract) : [];
-    const slots: SlotMap = { _children: { elems: [], extract: ext } };
-    for (const item of children) {
-        if (item instanceof Array) {
-            const [tag, props, , children] = item;
-            if (tag === 'slot') {
-                const extract = props.extract;
-                const slotext: PropAlias[] = typeof extract === 'string' ? readAlias(extract) : [];
-                if (props.for && typeof props.for === 'string') {
-                    slots[props.for] = { elems: children, extract: slotext };
-                }
-                continue;
-            }
-        }
-        slots._children.elems.push(item);
-    }
-    return slots;
-}
-
 function createDispatcher(events: StaticProperties<Function>): EventDispatcher {
     return (name: string, ...args: any[]) => {
         const event = events[name];
@@ -118,10 +93,11 @@ export function intoDom(tree: RCResult[], params: Properties, context?: Context)
         } else {
             const [tag, props, events, children] = item as Component;
             const [compProps, compEvents] = processComponentProperties(params, props, events);
-            const slots = processElementSlots(children, props.extract);
+            const extracts = typeof props.extract === 'string' ? readAlias(props.extract) : [];
             if (tag[0].match(/[A-Z]/)) {
                 const compContext: Context = {
-                    slots: slots,
+                    children: children,
+                    extracts: context?.extracts.concat(extracts) || [],
                     params: params,
                     _super: context
                 };

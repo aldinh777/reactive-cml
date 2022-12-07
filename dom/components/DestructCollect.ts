@@ -9,7 +9,7 @@ export default function (props: Properties = {}, context?: Context): NodeCompone
     if (!context || typeof props.obj !== 'string' || typeof props.extract !== 'string') {
         return;
     }
-    const { slots, params, _super } = context;
+    const { children, params, _super } = context;
     const obj: any = params[props.obj];
     const propnames: PropAlias[] = readAlias(props.extract);
     if (!(obj instanceof StateMap)) {
@@ -18,13 +18,13 @@ export default function (props: Properties = {}, context?: Context): NodeCompone
     const marker = _text('');
     const destructParams = propAlias(params, propnames, obj.raw);
     const component: ControlComponent = {
-        elems: intoDom(slots._children.elems, destructParams, _super)
+        elems: intoDom(children, destructParams, _super)
     };
     obj.onUpdate(() => {
         const { parentNode } = marker;
         if (parentNode) {
             const destructParams = propAlias(params, propnames, obj.raw);
-            const newElems = intoDom(slots._children.elems, destructParams, _super);
+            const newElems = intoDom(children, destructParams, _super);
             remove(parentNode, component.elems);
             insertBefore(parentNode, newElems, marker);
             component.elems = newElems;

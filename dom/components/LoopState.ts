@@ -12,13 +12,13 @@ function createFlatListElement(
     context?: Context
 ): NodeComponent[] {
     const elems: NodeComponent[] = [];
-    const { slots, params, _super } = context;
+    const { children, params, _super } = context;
     for (const item of items) {
         const localParams = propAlias(params, extract, item);
         if (alias) {
             Object.assign(localParams, { [alias]: item });
         }
-        elems.push(...intoDom(slots._children.elems, localParams, _super));
+        elems.push(...intoDom(children, localParams, _super));
     }
     return elems;
 }

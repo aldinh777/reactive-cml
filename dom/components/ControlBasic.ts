@@ -5,19 +5,19 @@ export default function (props: Properties = {}, context?: Context): NodeCompone
     if (!context || typeof props.value !== 'string') {
         return;
     }
-    const { slots, params, _super } = context;
+    const { children, params, _super } = context;
     const unless = Reflect.has(props, 'rev');
     const hasEqual = Reflect.has(props, 'equal');
     const value = params[props.value];
     if (hasEqual) {
         const condition = unless ? value != props.equal : value == props.equal;
         if (condition) {
-            return intoDom(slots._children.elems, params, _super);
+            return intoDom(children, params, _super);
         }
     } else {
         const condition = unless ? !value : value;
         if (condition) {
-            return intoDom(slots._children.elems, params, _super);
+            return intoDom(children, params, _super);
         }
     }
 }

@@ -8,7 +8,7 @@ export default function (props: Properties = {}, context?: Context): NodeCompone
     if (!context || typeof props.value !== 'string') {
         return;
     }
-    const { slots, params, _super } = context;
+    const { children, params, _super } = context;
     const unless = Reflect.has(props, 'rev');
     let stateValue: State<any> | boolean = params[props.value];
     if (!(stateValue instanceof State)) {
@@ -34,7 +34,7 @@ export default function (props: Properties = {}, context?: Context): NodeCompone
     }
     const hide = _elem('div');
     const marker = _text('');
-    const elements = intoDom(slots._children.elems, params, _super);
+    const elements = intoDom(children, params, _super);
     const component: ControlComponent = { elems: [] };
     if (stateValue.getValue()) {
         component.elems = elements;

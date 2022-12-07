@@ -14,7 +14,7 @@ export default function (props: Properties = {}, context?: Context): NodeCompone
     if (!context || typeof props.list !== 'string') {
         return;
     }
-    const { slots, params, _super } = context;
+    const { children, params, _super } = context;
     const list = params[props.list];
     const alias = props.as;
     const extracts = typeof props.extract === 'string' ? readAlias(props.extract) : [];
@@ -28,7 +28,7 @@ export default function (props: Properties = {}, context?: Context): NodeCompone
             Object.assign(localParams, { [alias]: item });
         }
         return {
-            elems: intoDom(slots._children.elems, localParams, _super),
+            elems: intoDom(children, localParams, _super),
             start: _text('')
         };
     });
