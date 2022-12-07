@@ -5,6 +5,7 @@ import extractImports from './extractImports';
 import extractParams, { Preprocessor } from './extractParams';
 import extractRelatives from './extractRelatives';
 import preprocessChildren from './preprocess/children';
+import preprocessSlot from './preprocess/slot';
 import preprocessComponent from './preprocess/component';
 import preprocessControl from './preprocess/control';
 import preprocessDestruct from './preprocess/destruct';
@@ -77,6 +78,7 @@ export function parseReactiveCML(source: string, options: RCMLParserOptions = {}
     if (!cmlPreprocessors || !cmlPreprocessors.disableDefault) {
         preprocessors.push(
             preprocessChildren,
+            preprocessSlot,
             preprocessControl,
             preprocessList,
             preprocessDestruct,

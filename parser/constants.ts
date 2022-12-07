@@ -13,7 +13,7 @@ export const PROP_CONTROL_OBJECT = 'obj';
 export const PROP_CONTROL_LIST = 'list';
 export const PROP_CONTROL_AS = 'as';
 export const PROP_CONTROL_EXTRACT = 'extract';
-export const PROP_CONTROL_EXPORT ='export';
+export const PROP_CONTROL_EXPORT = 'export';
 
 export const PROP_STATE_VALUE = BINDER_STATE + ':' + PROP_CONTROL_VALUE;
 export const PROP_STATE_OBJECT = BINDER_STATE + ':' + PROP_CONTROL_OBJECT;
@@ -30,9 +30,11 @@ export const COMPONENT_LIST_BASIC = 'LoopBasic';
 export const COMPONENT_LIST_STATE = 'LoopState';
 export const COMPONENT_LIST_COLLECTION = 'LoopCollect';
 export const COMPONENT_CHILDREN = 'Children';
+export const COMPONENT_SLOT = 'Slot';
 
 export const DEFAULT_COMPONENT_SET = new Set([
     COMPONENT_CHILDREN,
+    COMPONENT_SLOT,
     COMPONENT_CONTROL_BASIC,
     COMPONENT_CONTROL_STATE,
     COMPONENT_DESTRUCT_BASIC,
