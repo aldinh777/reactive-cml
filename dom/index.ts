@@ -3,7 +3,6 @@ import ComponentError from '../error/ComponentError';
 import { RCResult, Component } from '../src';
 import { Properties, StaticProperties, TextProp } from '../util';
 import { setAttr, _text, _elem, append } from './dom-util';
-import { PropAlias, readAlias } from './prop-util';
 
 type PropertyResult = [props: Properties, events: StaticProperties<Function>];
 export type NodeComponent = Node | ControlComponent;
@@ -19,7 +18,6 @@ export interface ControlComponent {
 }
 export interface Context {
     params: Properties;
-    extracts: PropAlias[];
     children: RCResult[];
     slotname?: string;
     _super?: Context;
@@ -93,11 +91,9 @@ export function intoDom(tree: RCResult[], params: Properties, context?: Context)
         } else {
             const [tag, props, events, children] = item as Component;
             const [compProps, compEvents] = processComponentProperties(params, props, events);
-            const extracts = typeof props.extract === 'string' ? readAlias(props.extract) : [];
             if (tag[0].match(/[A-Z]/)) {
                 const compContext: Context = {
                     children: children,
-                    extracts: context?.extracts.concat(extracts) || [],
                     params: params,
                     _super: context
                 };
