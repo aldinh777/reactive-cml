@@ -2,19 +2,23 @@
 
 > "Last thing the world needs is another JavaScript framework"
 
-But this is not **just another javascript framework**, this is another javascript framework **but you write less and clearer code**.
+But this is not **just another javascript framework**, this is another javascript framework **but you write less and clearer code!** (hopefully...)
 
 ## In a Nutshell
 
--   It's when **svelte** written with **science** instead of **magic**
 -   It's **react** with **ivity**
 -   It's **angular** and **vue** without the **ng** & **v**
+-   It's when **svelte** are written using **science** instead of **magic**
 
-> Reactive CML aim to be **simple and clear** to use, while also allowing complex stuff with **low level dom manipulation** that every front-end frameworks are afraid of.
+> Reactive CML aim to be **simple and clear** to use, while still allows complex stuff with **low level dom manipulation** which every front-end frameworks are afraid of
+
+_but... isn't the point of ui library is so you don't need to care about that dom stuff?_
+
+aaa... uhmm... well... let's just move on for now!
 
 ## Shorter and Faster Write Time
 
-Normally, almost every front-end framework use the well known html tag to implement their framework. Just for comparison purpose, here is some simple code with `svelte`.
+Normally, almost every front-end framework use the well known html tag to implement their framework. For comparison, let's try to write some simple code using `svelte`.
 
 `App.svelte`
 
@@ -33,11 +37,11 @@ let content = 'Bolditalicunderline'
 </div>
 ```
 
-This worth **189 Bytes** of code, how memory expensive that is! and worse, it took me **almost a minute** to write that code (with notepad).
+This code worth **189 Bytes** of code. How memory expensive that is! and worse, it took **almost a minute** to write that piece of code (with notepad).
 
-The first problem with it is that it used HTML tags, which is good because a lot of web developer familiar with tags but as you know it, you have to write a tag twice, for the opening (`<div>`) and the closing (`</div>`), making the size double than it supposed to be.
+The first problem with it is that it used HTML tags, which is good because a lot of web developer familiar with tags but as you know it, you have to write a tag twice, one for the opening (`<div>`) and one for the closing (`</div>`), making the size double than what it have to be.
 
-`Reactive CML`, as the name suggest, instead of using HTML tags, it uses CML tags which is shorter but still keeps the familiarities with usual HTML Tags.
+`Reactive CML`, as the name suggest, instead of using HTML tags, it uses CML tags which is shorter and still keeps the familiarities with HTML Tags.
 
 `App.rc`
 
@@ -54,6 +58,6 @@ div <
 >
 ```
 
-Look at that shorter **146 Bytes** of code. If you write the same code in `svelte` for a Trilion times, **you write 43 Gigabytes less in `Reactive CML`**. You can install two Valorant game with that much storage and still have some left!
+Bless me, Look at that shorter **146 Bytes** of code. If you write the same code in `svelte` for a Trilion times, **you write 43 Gigabytes less in `Reactive CML`**. You can install two Valorant game with that much storage and still have some left!
 
 Other than it size, it also took **only half a minute** to write it (using notepad), half the time you need to write the code when with `svelte`. That means you finish project earlier while another svelte developer still wasting their precious time writing their codes (using notepad). How Productive!
