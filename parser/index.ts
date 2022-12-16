@@ -61,7 +61,7 @@ export function parseReactiveCML(source: string, options: RCMLParserOptions = {}
 
     const [importIndex, imports] = extractImports(source);
     let separatorIndex: number = source.length;
-    const matchResult = source.match(/(div|span)(\s+.*=".*")*\s*</);
+    const matchResult = source.match(/(div|span|component)(\s+.*=".*")*\s*</);
     if (matchResult) {
         const matchIndex = matchResult.index;
         if (typeof matchIndex === 'number') {

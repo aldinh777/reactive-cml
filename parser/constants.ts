@@ -4,6 +4,7 @@ export const TAG_FOREACH = 'foreach';
 export const TAG_DESTRUCT = 'destruct';
 export const TAG_CHILDREN = 'children';
 export const TAG_SLOT = 'slot';
+export const TAG_COMPONENT = 'component';
 
 export const BINDER_STATE = 'state';
 export const BINDER_COLLECTION = 'collect';
@@ -31,10 +32,12 @@ export const COMPONENT_LIST_STATE = 'LoopState';
 export const COMPONENT_LIST_COLLECTION = 'LoopCollect';
 export const COMPONENT_CHILDREN = 'Children';
 export const COMPONENT_SLOT = 'Slot';
+export const COMPONENT_COMPONENT = 'Component';
 
 export const DEFAULT_COMPONENT_SET = new Set([
     COMPONENT_CHILDREN,
     COMPONENT_SLOT,
+    COMPONENT_COMPONENT,
     COMPONENT_CONTROL_BASIC,
     COMPONENT_CONTROL_STATE,
     COMPONENT_DESTRUCT_BASIC,
