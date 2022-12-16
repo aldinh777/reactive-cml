@@ -12,6 +12,6 @@ export default function (props: Properties = {}, context?: Context): NodeCompone
         const childrenParams = propAlias(localParams, extracts, localParams);
         const output = intoDom(children, childrenParams, _super);
         _super.slotname = prevSlotName;
-        return output;
+        return output.length ? output : intoDom(context.children, context.params, context._super);
     }
 }
