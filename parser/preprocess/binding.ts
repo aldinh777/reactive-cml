@@ -11,6 +11,7 @@ export default function (item: CMLObject, [, par]: Identifiers) {
             const type = match[1] === 'on' ? 'event' : 'property';
             const prop = match[2];
             const param = props[key].trim();
+            props[key] = param;
             if (!param) {
                 throw CompileError.emptyBindedProperty(tag, type, prop);
             }

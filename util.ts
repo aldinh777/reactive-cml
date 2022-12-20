@@ -44,7 +44,7 @@ export function extractTextProps(text: string): (string | TextProp)[] {
                     propname = '';
                 } else if (c === '}' && propname.match(/^\s*[_$A-Za-z][_$\w]*/)) {
                     flagProp = false;
-                    result.push(stream, { name: propname });
+                    result.push(stream, { name: propname.trim() });
                     stream = '';
                     propname = '';
                 } else if (c.match(/\s/)) {
@@ -61,7 +61,7 @@ export function extractTextProps(text: string): (string | TextProp)[] {
             } else {
                 if (c === '}' && propname.match(/^\s*[_$A-Za-z][_$\w]*/)) {
                     flagProp = false;
-                    result.push(stream, { name: propname });
+                    result.push(stream, { name: propname.trim() });
                     stream = '';
                     propname = '';
                 } else if (c.match(/\s/)) {

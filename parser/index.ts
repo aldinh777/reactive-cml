@@ -10,7 +10,7 @@ import preprocessComponent from './preprocess/component';
 import preprocessControl from './preprocess/control';
 import preprocessDestruct from './preprocess/destruct';
 import preprocessExtract from './preprocess/extract';
-import preprocessElement from './preprocess/element';
+import preprocessBinding from './preprocess/binding';
 import preprocessList from './preprocess/list';
 
 type ImportType = 'import' | 'require';
@@ -84,7 +84,7 @@ export function parseReactiveCML(source: string, options: RCMLParserOptions = {}
             preprocessDestruct,
             preprocessComponent,
             preprocessExtract,
-            preprocessElement
+            preprocessBinding
         );
     }
     if (cmlPreprocessors && cmlPreprocessors.customPreprocessor) {
