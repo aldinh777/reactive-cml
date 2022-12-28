@@ -104,12 +104,12 @@ export function intoDom(tree: RCResult[], params: Properties, context?: Context)
     for (const item of tree) {
         if (typeof item === 'string') {
             result.push(_text(item));
-        } else if (Reflect.has(item, 'name')) {
+        } else if (has(item, 'name')) {
             const param = params[(item as TextProp).name];
             const text = _text('');
             if (isReactive(param)) {
                 text.textContent = param.getValue();
-                param.onChange((next) => (text.textContent = next));
+                param.onChange((next: string) => (text.textContent = next));
             } else {
                 text.textContent = param;
             }

@@ -7,7 +7,7 @@ export default function (item: CMLObject, [, , bl]: Identifiers): CMLObject {
     if (tag[0] === tag[0].toUpperCase() && tag[0].match(/\w/)) {
         const extracts = props[PROP_CONTROL_EXTRACT];
         if (!extracts) {
-            return;
+            return item;
         }
         const propnames = extracts.split(/\s+/).map((s: string) => {
             const matches = s.match(/(.+):(.+)/);

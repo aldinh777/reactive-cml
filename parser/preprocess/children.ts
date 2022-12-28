@@ -15,7 +15,7 @@ export default function (item: CMLObject, [dep, par]: Identifiers): CMLObject {
         dep.push(COMPONENT_CHILDREN);
         const exported: string = props[PROP_CONTROL_EXPORT] || '';
         if (!exported) {
-            return;
+            return item;
         }
         for (const exp of exported.split(/\s/)) {
             if (isInvalidIdentifier(exp)) {
