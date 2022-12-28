@@ -17,11 +17,6 @@ export function propAlias(
 export function readAlias(propsquery: string): PropAlias[] {
     return propsquery.split(/\s+/).map((query) => {
         const matches = query.match(/(.+):(.+)/);
-        if (matches) {
-            const [_, prop, alias] = matches;
-            return [prop, alias];
-        } else {
-            return [query, query];
-        }
+        return matches ? [matches[1], matches[2]] : [query, query];
     });
 }

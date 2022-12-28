@@ -1,5 +1,5 @@
-import { State } from '@aldinh777/reactive';
 import ComponentError from '../error/ComponentError';
+import { DEFAULT_COMPONENT_SET } from '../parser/constants';
 import { RCResult, Component } from '../src';
 import { Properties, StaticProperties, TextProp } from '../util';
 import { setAttr, _text, _elem, append } from './dom-util';
@@ -46,6 +46,14 @@ function processComponentProperties(
     return [propsComp, eventsComp];
 }
 
+function has(obj: any, key: string) {
+    return typeof obj === 'object' && Reflect.has(obj, key);
+}
+
+function isReactive(item: any) {
+    return has(item, 'getValue') && has(item, 'onChange');
+}
+
 function processElementProperties(
     elem: HTMLElement,
     props: Properties,
@@ -53,9 +61,9 @@ function processElementProperties(
 ): void {
     for (const prop in props) {
         const propvalue = props[prop];
-        if (propvalue instanceof State) {
+        if (isReactive(propvalue)) {
             setAttr(elem, prop, propvalue.getValue());
-            propvalue.onChange((next) => setAttr(elem, prop, next));
+            propvalue.onChange((next: any) => setAttr(elem, prop, next));
         } else {
             setAttr(elem, prop, propvalue);
         }
@@ -75,6 +83,22 @@ function createDispatcher(events: StaticProperties<Function>): EventDispatcher {
     };
 }
 
+function crash(name: string, err: any): ComponentError {
+    let reason: string;
+    let trace = DEFAULT_COMPONENT_SET.has(name) ? [] : [name];
+    if (err instanceof Error) {
+        if (err.name === 'ComponentError') {
+            trace = trace.concat((err as ComponentError).componentTraces);
+            reason = (err as ComponentError).reason;
+        } else {
+            reason = err.stack;
+        }
+    } else {
+        reason = err || '?';
+    }
+    return new ComponentError(`Crash at component '${name}'.`, trace, reason);
+}
+
 export function intoDom(tree: RCResult[], params: Properties, context?: Context): NodeComponent[] {
     const result: NodeComponent[] = [];
     for (const item of tree) {
@@ -83,7 +107,7 @@ export function intoDom(tree: RCResult[], params: Properties, context?: Context)
         } else if (Reflect.has(item, 'name')) {
             const param = params[(item as TextProp).name];
             const text = _text('');
-            if (param instanceof State) {
+            if (isReactive(param)) {
                 text.textContent = param.getValue();
                 param.onChange((next) => (text.textContent = next));
             } else {
@@ -108,7 +132,7 @@ export function intoDom(tree: RCResult[], params: Properties, context?: Context)
                         result.push(...res);
                     }
                 } catch (err) {
-                    throw ComponentError.componentCrash(tag, err);
+                    throw crash(tag, err);
                 }
             } else {
                 const elem = _elem(tag);

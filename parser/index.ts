@@ -35,7 +35,7 @@ function dependify(dep: string | string[]): string {
     if (typeof dep === 'string') {
         return dep;
     } else {
-        return `{ ${dep.join(',')} }`;
+        return `{${dep.join(',')}}`;
     }
 }
 

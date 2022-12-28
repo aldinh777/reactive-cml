@@ -6,18 +6,15 @@ export default function (item: CMLObject, [, , bl]: Identifiers): CMLObject {
     const { tag, props } = item;
     if (tag[0] === tag[0].toUpperCase() && tag[0].match(/\w/)) {
         const extracts = props[PROP_CONTROL_EXTRACT];
-        if (extracts) {
-            const propnames = extracts.split(/\s+/).map((s: string) => {
-                const matches = s.match(/(.+):(.+)/);
-                if (matches) {
-                    return matches[2];
-                } else {
-                    return s;
-                }
-            });
-            for (const prop of propnames) {
-                bl?.add(prop);
-            }
+        if (!extracts) {
+            return;
+        }
+        const propnames = extracts.split(/\s+/).map((s: string) => {
+            const matches = s.match(/(.+):(.+)/);
+            return matches ? matches[2] : s;
+        });
+        for (const prop of propnames) {
+            bl?.add(prop);
         }
     }
     return item;

@@ -25,11 +25,11 @@ export const insertBefore = _r((par, item, bef) => par.insertBefore(item, bef as
 export function setAttr(elem: HTMLElement, attr: string, value: any) {
     if (elem.hasAttribute(attr)) {
         elem.setAttribute(attr, value);
-    } else {
-        const att = _doc.createAttribute(attr);
-        att.value = value;
-        elem.setAttributeNode(att);
+        return;
     }
+    const att = _doc.createAttribute(attr);
+    att.value = value;
+    elem.setAttributeNode(att);
 }
 
 export function simpleDom(tree: RCResult[]): NodeComponent[] {
@@ -37,16 +37,16 @@ export function simpleDom(tree: RCResult[]): NodeComponent[] {
     for (const item of tree) {
         if (typeof item === 'string') {
             result.push(_text(item));
-        } else {
-            const [tag, props, , children] = item as Component;
-            const elem = _elem(tag);
-            for (const prop in props) {
-                const value = props[prop];
-                setAttr(elem, prop, value);
-            }
-            append(elem, simpleDom(children));
-            result.push(elem);
+            continue;
         }
+        const [tag, props, , children] = item as Component;
+        const elem = _elem(tag);
+        for (const prop in props) {
+            const value = props[prop];
+            setAttr(elem, prop, value);
+        }
+        append(elem, simpleDom(children));
+        result.push(elem);
     }
     return result;
 }

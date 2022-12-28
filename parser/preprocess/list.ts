@@ -10,8 +10,7 @@ import {
     PROP_STATE_LIST,
     TAG_FOREACH
 } from '../constants';
-import { Identifiers } from '../extractParams';
-import { isInvalidIdentifier } from '../parser-util';
+import { Identifiers, isInvalidIdentifier } from '../extractParams';
 
 export default function (item: CMLObject, [dep, par, bl]: Identifiers): CMLObject {
     const { tag, props } = item;

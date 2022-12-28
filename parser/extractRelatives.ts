@@ -49,7 +49,7 @@ export default function extractRelatives(
         if (existingImports.includes(dep)) {
             continue;
         }
-        let depResult;
+        let depResult: string;
         for (const dir of includes) {
             depResult = recursiveFindRelative(dir, dep, exts, excludes);
             if (depResult) {

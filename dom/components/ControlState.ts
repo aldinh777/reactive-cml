@@ -12,7 +12,11 @@ export default function (props: Properties = {}, context?: Context): NodeCompone
     const unless = Reflect.has(props, 'rev');
     let stateValue: State<any> | boolean = params[props.value];
     if (!(stateValue instanceof State)) {
-        throw ComponentError.invalidState(unless ? 'unless' : 'if', 'value', props.value);
+        throw new ComponentError(
+            `'${props.value}' are not a valid State in 'state:value' property of '${
+                unless ? 'unless' : 'if'
+            }' element`
+        );
     }
     const hasEqual = Reflect.has(props, 'equal');
     const value = stateValue.getValue();

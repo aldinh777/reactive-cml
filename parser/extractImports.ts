@@ -1,105 +1,96 @@
 export type ImportsResult = [query: string, from: string];
 
-enum ImportFlag {
-    start,
-    from,
-    find
-}
-enum ModeFlag {
-    none,
-    import,
-    require
-}
+type ImportFlag = 'start' | 'from' | 'find';
+type ModeFlag = 'none' | 'import' | 'require';
 
 export default function extractImports(source: string): [number, ImportsResult[]] {
-    let endIndex: number = 0;
-    let imports: ImportsResult[] = [];
-    let flag: ImportFlag = ImportFlag.start;
-    let mode: ModeFlag = ModeFlag.none;
-    let imp: string = '';
-    let impos: string = '';
-    for (let i = 0; i < source.length; i++) {
-        const chr = source[i];
-        if (mode === ModeFlag.import) {
-            if (chr.match(/\s/)) {
-                if (!imp) {
-                    continue;
-                }
-                if (flag === ImportFlag.start) {
-                    if (imp === 'from') {
-                        flag = ImportFlag.from;
-                    } else {
-                        impos += imp;
-                    }
-                } else if (flag === ImportFlag.from) {
-                    const from = imp.match(/(['"`])(.+)\1/);
-                    if (from) {
-                        imports.push([impos, from[2]]);
-                        flag = ImportFlag.start;
-                        mode = ModeFlag.none;
-                        endIndex = i;
-                        impos = '';
-                        imp = '';
-                    } else {
-                        return [endIndex, imports];
-                    }
-                }
-                imp = '';
-            } else {
-                imp += chr;
+    let sourceImportEndIndex: number = 0;
+    let importResults: ImportsResult[] = [];
+    let importFlag: ImportFlag = 'start';
+    let importMode: ModeFlag = 'none';
+    let textComparator: string = '';
+    let expectedImport: string = '';
+    for (let sourceIndex = 0; sourceIndex < source.length; sourceIndex++) {
+        const currentCharacter = source[sourceIndex];
+        if (importMode === 'import') {
+            if (!currentCharacter.match(/\s/)) {
+                textComparator += currentCharacter;
+                continue;
             }
-        } else if (mode === ModeFlag.require) {
-            if (flag === ImportFlag.start) {
-                if (chr === '=') {
-                    flag = ImportFlag.find;
-                } else {
-                    impos += chr;
-                }
-            } else if (flag === ImportFlag.find) {
-                if (chr.match(/\s/)) {
+            if (!textComparator) {
+                continue;
+            }
+            if (importFlag === 'start') {
+                if (textComparator === 'from') {
+                    importFlag = 'from';
                     continue;
-                } else if (chr.match(/[A-Za-z]/)) {
-                    imp += chr;
-                } else if (imp === 'require') {
-                    flag = ImportFlag.from;
-                    imp = chr;
-                } else {
-                    return [endIndex, imports];
                 }
-            } else if (flag === ImportFlag.from) {
-                if (chr.match(/[\n\r;]/)) {
-                    const from = imp.match(/\(\s*(['"])(.+)\1\s*\)/);
-                    if (from) {
-                        imports.push([impos, from[2]]);
-                        flag = ImportFlag.start;
-                        mode = ModeFlag.none;
-                        endIndex = i;
-                        impos = '';
-                        imp = '';
-                    } else {
-                        return [endIndex, imports];
-                    }
-                } else {
-                    imp += chr;
+                expectedImport += textComparator;
+            } else if (importFlag === 'from') {
+                const matchedImport = textComparator.match(/(['"`])(.+)\1/);
+                if (!matchedImport) {
+                    return [sourceImportEndIndex, importResults];
                 }
+                importResults.push([expectedImport, matchedImport[2]]);
+                importFlag = 'start';
+                importMode = 'none';
+                sourceImportEndIndex = sourceIndex;
+                expectedImport = '';
+                textComparator = '';
+            }
+            textComparator = '';
+        } else if (importMode === 'require') {
+            if (importFlag === 'start') {
+                if (currentCharacter === '=') {
+                    importFlag = 'find';
+                    continue;
+                }
+                expectedImport += currentCharacter;
+            } else if (importFlag === 'find') {
+                if (currentCharacter.match(/\s/)) {
+                    continue;
+                }
+                if (currentCharacter.match(/[A-Za-z]/)) {
+                    textComparator += currentCharacter;
+                } else if (textComparator === 'require') {
+                    importFlag = 'from';
+                    textComparator = currentCharacter;
+                } else {
+                    return [sourceImportEndIndex, importResults];
+                }
+            } else if (importFlag === 'from') {
+                if (!currentCharacter.match(/[\n\r;]/)) {
+                    textComparator += currentCharacter;
+                    continue;
+                }
+                const matchedImport = textComparator.match(/\(\s*(['"])(.+)\1\s*\)/);
+                if (!matchedImport) {
+                    return [sourceImportEndIndex, importResults];
+                }
+                importResults.push([expectedImport, matchedImport[2]]);
+                importFlag = 'start';
+                importMode = 'none';
+                sourceImportEndIndex = sourceIndex;
+                expectedImport = '';
+                textComparator = '';
             }
         } else {
-            if (chr.match(/[\s;]/)) {
-                if (!imp) {
+            if (currentCharacter.match(/[\s;]/)) {
+                if (!textComparator) {
                     continue;
                 }
-                if (imp === 'import') {
-                    mode = ModeFlag.import;
-                } else if (imp === 'const') {
-                    mode = ModeFlag.require;
+                if (textComparator === 'import') {
+                    importMode = 'import';
+                } else if (textComparator === 'const') {
+                    importMode = 'require';
                 } else {
-                    return [endIndex, imports];
+                    return [sourceImportEndIndex, importResults];
                 }
-                imp = '';
+                textComparator = '';
             } else {
-                imp += chr;
+                textComparator += currentCharacter;
             }
         }
     }
-    return [endIndex, imports];
+    return [sourceImportEndIndex, importResults];
 }

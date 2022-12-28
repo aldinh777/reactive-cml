@@ -13,7 +13,9 @@ export default function (props: Properties = {}, context?: Context): NodeCompone
     const obj: any = params[props.obj];
     const propnames: PropAlias[] = readAlias(props.extract);
     if (!(obj instanceof StateMap)) {
-        throw ComponentError.invalidCollect('destruct', 'obj', props.obj);
+        throw new ComponentError(
+            `'${props.obj}' are not a valid StateCollection in 'collect:obj' property of 'destruct' element`
+        );
     }
     const marker = _text('');
     const destructParams = propAlias(params, propnames, obj.raw);

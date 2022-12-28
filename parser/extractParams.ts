@@ -1,9 +1,16 @@
 import { CMLObject, CMLTree } from '@aldinh777/cml-parser';
 import { extractTextProps, TextProp } from '../util';
-import { undupe } from './parser-util';
 
 export type Identifiers = [dependencies: string[], params: string[], blacklist?: Set<string>];
 export type Preprocessor = (node: CMLObject, ids: Identifiers) => CMLObject;
+
+export function isInvalidIdentifier(id: string): RegExpMatchArray | null {
+    return id.match(/(^\d|[^\w_$])/);
+}
+
+function undupe<T>(array: T[]): T[] {
+    return Array.from(new Set(array));
+}
 
 function preprocessCML(
     item: CMLObject,
@@ -30,14 +37,14 @@ export default function extractParams(
                 .filter((i) => typeof i !== 'string')
                 .map((tp) => (tp as TextProp).name);
             par.push(...params);
-        } else {
-            const localBlacklist = new Set(blacklist);
-            const processedItem = preprocessCML(item, [dep, par, localBlacklist], preprocessors);
-            const { children } = processedItem;
-            const [dependencies, params] = extractParams(children, preprocessors, localBlacklist);
-            dep = dep.concat(dependencies);
-            par = par.concat(params);
+            continue;
         }
+        const localBlacklist = new Set(blacklist);
+        const processedItem = preprocessCML(item, [dep, par, localBlacklist], preprocessors);
+        const { children } = processedItem;
+        const [dependencies, params] = extractParams(children, preprocessors, localBlacklist);
+        dep = dep.concat(dependencies);
+        par = par.concat(params);
     }
     dep = undupe(dep);
     par = undupe(par).filter((param) => !blacklist.has(param));

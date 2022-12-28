@@ -17,15 +17,15 @@ function processComponent(node: CMLObject): Component {
     for (const prop in props) {
         const value = props[prop];
         const matches = prop.match(/(on|bind):(.+)/);
-        if (matches) {
-            const [, type, attr] = matches;
-            if (type === 'bind') {
-                propsComp[attr] = { name: value };
-            } else {
-                eventsComp[attr] = value;
-            }
-        } else {
+        if (!matches) {
             propsComp[prop] = value;
+            continue;
+        }
+        const [, type, attr] = matches;
+        if (type === 'bind') {
+            propsComp[attr] = { name: value };
+        } else {
+            eventsComp[attr] = value;
         }
     }
     const comp: Component = [tag, propsComp, eventsComp, processRC(children)];
