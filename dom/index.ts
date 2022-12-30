@@ -101,7 +101,7 @@ export function intoDom(tree: RCResult[], params: Properties, context?: Context)
             if (tag[0].match(/[A-Z]/)) {
                 const compContext: Context = {
                     children: children,
-                    extracts: context?.extracts.concat(extracts) || [],
+                    extracts: context?.extracts?.concat(extracts) || [],
                     params: params,
                     _super: context
                 };
