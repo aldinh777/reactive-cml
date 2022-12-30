@@ -39,9 +39,9 @@ export default function (props: Properties = {}, context?: Context): NodeCompone
     const hide = _elem('div');
     const marker = _text('');
     const elements = intoDom(children, params, _super);
-    const component: ControlComponent = { elems: [] };
+    const component: ControlComponent = { items: [] };
     if (stateValue.getValue()) {
-        component.elems = elements;
+        component.items = elements;
     } else {
         append(hide, elements);
     }
@@ -53,11 +53,11 @@ export default function (props: Properties = {}, context?: Context): NodeCompone
         if (active) {
             remove(hide, elements);
             insertBefore(parentNode, elements, marker);
-            component.elems = elements;
+            component.items = elements;
         } else {
             remove(parentNode, elements);
             append(hide, elements);
-            component.elems = [];
+            component.items = [];
         }
     });
     return [component, marker];

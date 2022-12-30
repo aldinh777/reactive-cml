@@ -11,16 +11,16 @@ function createFlatListElement(
     items: any[],
     context?: Context
 ): NodeComponent[] {
-    const elems: NodeComponent[] = [];
+    const components: NodeComponent[] = [];
     const { children, params, _super } = context;
     for (const item of items) {
         const localParams = propAlias(params, extract, item);
         if (alias) {
             Object.assign(localParams, { [alias]: item });
         }
-        elems.push(...intoDom(children, localParams, _super));
+        components.push(...intoDom(children, localParams, _super));
     }
-    return elems;
+    return components;
 }
 
 export default function (props: Properties = {}, context?: Context): NodeComponent[] | void {
@@ -37,18 +37,17 @@ export default function (props: Properties = {}, context?: Context): NodeCompone
     }
     const marker = _text('');
     const component: ControlComponent = {
-        elems: createFlatListElement(alias, extracts, list.getValue(), context)
+        items: createFlatListElement(alias, extracts, list.getValue(), context)
     };
     list.onChange((items) => {
-        const { elems } = component;
         const { parentNode } = marker;
         if (!parentNode) {
             return;
         }
         const newElems: NodeComponent[] = createFlatListElement(alias, extracts, items, context);
-        remove(parentNode, elems);
+        remove(parentNode, component.items);
         insertBefore(parentNode, newElems, marker);
-        component.elems = newElems;
+        component.items = newElems;
     });
     return [component, marker];
 }

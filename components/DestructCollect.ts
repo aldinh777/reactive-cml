@@ -20,16 +20,16 @@ export default function (props: Properties = {}, context?: Context): NodeCompone
     const marker = _text('');
     const destructParams = propAlias(params, propnames, obj.raw);
     const component: ControlComponent = {
-        elems: intoDom(children, destructParams, _super)
+        items: intoDom(children, destructParams, _super)
     };
     obj.onUpdate(() => {
         const { parentNode } = marker;
         if (parentNode) {
             const destructParams = propAlias(params, propnames, obj.raw);
-            const newElems = intoDom(children, destructParams, _super);
-            remove(parentNode, component.elems);
-            insertBefore(parentNode, newElems, marker);
-            component.elems = newElems;
+            const newitems = intoDom(children, destructParams, _super);
+            remove(parentNode, component.items);
+            insertBefore(parentNode, newitems, marker);
+            component.items = newitems;
         }
     });
     return [component, marker];

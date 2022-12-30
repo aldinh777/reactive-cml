@@ -107,7 +107,7 @@ export function parseReactiveCML(source: string, options: RCMLParserOptions = {}
         outreturn = `return intoDom(${rcJson}, {${fullparams.join()}}, context)`;
     } else if (rcResult.length > 0) {
         autoImports.push(['@aldinh777/reactive-cml/dom/dom-util', ['simpleDom']]);
-        outreturn = `return simpleDom(${rcJson})`;
+        outreturn = `return simpleDom(${rcJson}, context)`;
     } else {
         outreturn = '';
     }
@@ -128,6 +128,6 @@ export function parseReactiveCML(source: string, options: RCMLParserOptions = {}
     }
     const importScript = joinDependencies(mode, autoImports);
     const exportScript = '\n' + (mode === 'require' ? 'module.exports = ' : 'export default ');
-    const resultScript = `function(props={}, context, dispatch=()=>{}) {\n${script.trim()}\n${outreturn}\n}`;
+    const resultScript = `function(props={}, context={}, dispatch=()=>{}) {\n${script.trim()}\n${outreturn}\n}`;
     return importScript + exportScript + resultScript;
 }

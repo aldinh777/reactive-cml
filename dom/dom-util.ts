@@ -1,4 +1,4 @@
-import { NodeComponent } from '.';
+import { Context, NodeComponent } from '.';
 import { RCResult, Component } from '../src';
 
 export const _doc: Document = document;
@@ -6,33 +6,47 @@ export const _doc: Document = document;
 export const _text = (text: string): Text => _doc.createTextNode(text);
 export const _elem = (tag: string): HTMLElement => _doc.createElement(tag);
 
-function _r(handler: (par: Node, item: Node, bef?: Node) => any) {
-    return function recurse(parent: Node, items: NodeComponent[], before?: Node) {
-        for (const item of items) {
-            if (item instanceof Node) {
-                handler(parent, item, before);
+function _r(handler: (parentNode: Node, item: Node, nodeBefore?: Node) => any) {
+    return function recurse(parent: Node, components: NodeComponent[], before?: Node) {
+        for (const component of components) {
+            if (component instanceof Node) {
+                handler(parent, component, before);
             } else {
-                recurse(parent, item.elems, before);
+                recurse(parent, component.items, before);
             }
         }
     };
 }
 
-export const append = _r((par, item) => par.appendChild(item));
-export const remove = _r((par, item) => par.removeChild(item));
-export const insertBefore = _r((par, item, bef) => par.insertBefore(item, bef as Node));
+export const append = _r((parentNode, item) => parentNode.appendChild(item));
+export const remove = _r((parentNode, item) => parentNode.removeChild(item));
+export const insertBefore = _r((parentNode, item, nodeBefore) =>
+    parentNode.insertBefore(item, nodeBefore as Node)
+);
 
-export function setAttr(elem: HTMLElement, attr: string, value: any) {
-    if (elem.hasAttribute(attr)) {
-        elem.setAttribute(attr, value);
+export function setAttr(element: HTMLElement, attribute: string, value: any) {
+    if (element.hasAttribute(attribute)) {
+        element.setAttribute(attribute, value);
         return;
     }
-    const att = _doc.createAttribute(attr);
+    const att = _doc.createAttribute(attribute);
     att.value = value;
-    elem.setAttributeNode(att);
+    element.setAttributeNode(att);
 }
 
-export function simpleDom(tree: RCResult[]): NodeComponent[] {
+export function prepareLifecycle(result: NodeComponent[], context?: Context): NodeComponent {
+    const mountHandler = context?.onMount;
+    const dismountHandler = context?.onDismount;
+    const onMount = context?.lifecycle?.onMount || [];
+    const onDismount = context?.lifecycle?.onDismount || [];
+    return {
+        items: result,
+        onMount: mountHandler ? [...onMount, mountHandler] : onMount,
+        onDismount: dismountHandler ? [...onDismount, dismountHandler] : onDismount
+    };
+}
+
+export function simpleDom(tree: RCResult[], context?: Context): NodeComponent[] {
     const result: NodeComponent[] = [];
     for (const item of tree) {
         if (typeof item === 'string') {
@@ -48,5 +62,5 @@ export function simpleDom(tree: RCResult[]): NodeComponent[] {
         append(elem, simpleDom(children));
         result.push(elem);
     }
-    return result;
+    return context?.onMount || context?.onDismount ? [prepareLifecycle(result, context)] : result;
 }
