@@ -125,16 +125,41 @@ export function intoDom(
                 delete context?.onMount;
                 delete context?.onDismount;
                 processElementProperties(elem, compProps, compEvents);
-                append(
-                    elem,
-                    intoDom(children, params, context, executeLifecycle),
-                    executeLifecycle
-                );
+                const componentResult = intoDom(children, params, context, executeLifecycle);
+                const mountHandlers: (() => void)[] = [];
+                const dismountHandlers: (() => void)[] = [];
+                for (const component of componentResult) {
+                    if (!(component instanceof Node)) {
+                        if (component.onMount) {
+                            mountHandlers.push(component.onMount);
+                        }
+                        if (component.onDismount) {
+                            dismountHandlers.push(component.onDismount);
+                        }
+                    }
+                }
+                append(elem, componentResult, executeLifecycle);
                 if (context) {
                     context.onMount = temp.mount;
                     context.onDismount = temp.dismount;
                 }
-                result.push(elem);
+                if (mountHandlers.length + dismountHandlers.length) {
+                    result.push({
+                        items: [elem],
+                        onMount() {
+                            for (const mountHandler of mountHandlers) {
+                                mountHandler();
+                            }
+                        },
+                        onDismount() {
+                            for (const dismountHandler of dismountHandlers) {
+                                dismountHandler();
+                            }
+                        }
+                    });
+                } else {
+                    result.push(elem);
+                }
             }
         }
     }
