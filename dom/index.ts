@@ -117,7 +117,7 @@ export function intoDom(tree: RCResult[], params: Properties, context?: Context)
             } else {
                 const elem = _elem(tag);
                 processElementProperties(elem, compProps, compEvents);
-                append(elem, intoDom(children, params, context), false);
+                append(elem, intoDom(children, params, context));
                 result.push(elem);
             }
         }
