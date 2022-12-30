@@ -69,11 +69,18 @@ export function simpleDom(tree: RCResult[], context?: Context): NodeComponent[] 
         }
         const [tag, props, , children] = item as Component;
         const elem = _elem(tag);
+        const temp = { mount: context?.onMount, dismount: context?.onDismount };
+        delete context?.onMount;
+        delete context?.onDismount;
         for (const prop in props) {
             const value = props[prop];
             setAttr(elem, prop, value);
         }
         append(elem, simpleDom(children));
+        if (context) {
+            context.onMount = temp.mount;
+            context.onDismount = temp.dismount;
+        }
         result.push(elem);
     }
     return context?.onMount || context?.onDismount
