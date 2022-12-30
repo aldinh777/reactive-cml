@@ -58,6 +58,6 @@ div <
 >
 ```
 
-Bless me, Look at that shorter **146 Bytes** of code. If you write the same code in `svelte` for a Trilion times, **you write 43 Gigabytes less in `Reactive CML`**. You can install two Valorant game with that much storage and still have some left!
+Bless me, Look at that shorter **146 Bytes** of code. If you write the same code in `svelte` for a Trilion times, **you write 43 Gigabytes less in `Reactive CML`**. You can install bunch of games with that much storage and still have some left!
 
 Other than it size, it also took **only half a minute** to write it (using notepad), half the time you need to write the code when with `svelte`. That means you finish project earlier while another svelte developer still wasting their precious time writing their codes (using notepad). How Productive!
