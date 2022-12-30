@@ -43,7 +43,7 @@ export default function (props: Properties = {}, context?: Context): NodeCompone
     if (stateValue.getValue()) {
         component.items = elements;
     } else {
-        append(hide, elements);
+        append(hide, elements, false);
     }
     stateValue.onChange((active) => {
         const { parentNode } = marker;
@@ -51,12 +51,12 @@ export default function (props: Properties = {}, context?: Context): NodeCompone
             return;
         }
         if (active) {
-            remove(hide, elements);
+            remove(hide, elements, false);
             insertBefore(parentNode, elements, marker);
             component.items = elements;
         } else {
             remove(parentNode, elements);
-            append(hide, elements);
+            append(hide, elements, false);
             component.items = [];
         }
     });
