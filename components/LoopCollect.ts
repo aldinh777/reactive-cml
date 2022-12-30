@@ -1,9 +1,9 @@
 import { StateList, ListViewMapped } from '@aldinh777/reactive/collection';
-import { NodeComponent, Context, intoDom, ControlComponent } from '..';
-import ComponentError from '../../error/ComponentError';
-import { Properties } from '../../util';
-import { insertBefore, remove, _text } from '../dom-util';
-import { readAlias, propAlias } from '../prop-util';
+import { NodeComponent, Context, intoDom, ControlComponent } from '../dom';
+import ComponentError from '../error/ComponentError';
+import { Properties } from '../util';
+import { insertBefore, remove, _text } from '../dom/dom-util';
+import { readAlias, propAlias } from '../dom/prop-util';
 
 interface MirrorElement {
     elems: NodeComponent[];

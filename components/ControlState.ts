@@ -1,8 +1,8 @@
 import { State } from '@aldinh777/reactive';
-import { Context, NodeComponent, intoDom, ControlComponent } from '..';
-import ComponentError from '../../error/ComponentError';
-import { Properties } from '../../util';
-import { append, remove, insertBefore, _elem, _text } from '../dom-util';
+import { Context, NodeComponent, intoDom, ControlComponent } from '../dom';
+import ComponentError from '../error/ComponentError';
+import { Properties } from '../util';
+import { append, remove, insertBefore, _elem, _text } from '../dom/dom-util';
 
 export default function (props: Properties = {}, context?: Context): NodeComponent[] | void {
     if (!context || typeof props.value !== 'string') {

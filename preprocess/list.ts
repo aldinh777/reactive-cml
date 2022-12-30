@@ -1,5 +1,5 @@
 import { CMLObject } from '@aldinh777/cml-parser';
-import CompileError from '../../error/CompileError';
+import CompileError from '../error/CompileError';
 import {
     COMPONENT_LIST_BASIC,
     COMPONENT_LIST_COLLECTION,
@@ -10,7 +10,7 @@ import {
     PROP_STATE_LIST,
     TAG_FOREACH
 } from '../constants';
-import { Identifiers, isInvalidIdentifier } from '../extractParams';
+import { Identifiers, isInvalidIdentifier } from '../parser/extractParams';
 
 export default function (item: CMLObject, [dep, par, bl]: Identifiers): CMLObject {
     const { tag, props } = item;

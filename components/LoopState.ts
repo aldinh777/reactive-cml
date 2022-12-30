@@ -1,9 +1,9 @@
 import { State } from '@aldinh777/reactive';
-import { Context, NodeComponent, intoDom, ControlComponent } from '..';
-import ComponentError from '../../error/ComponentError';
-import { Properties } from '../../util';
-import { remove, insertBefore, _text } from '../dom-util';
-import { PropAlias, propAlias, readAlias } from '../prop-util';
+import { Context, NodeComponent, intoDom, ControlComponent } from '../dom';
+import ComponentError from '../error/ComponentError';
+import { Properties } from '../util';
+import { remove, insertBefore, _text } from '../dom/dom-util';
+import { PropAlias, propAlias, readAlias } from '../dom/prop-util';
 
 function createFlatListElement(
     alias: string,

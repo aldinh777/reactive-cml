@@ -1,5 +1,5 @@
-import { Context, NodeComponent, intoDom } from '..';
-import { Properties } from '../../util';
+import { Context, NodeComponent, intoDom } from '../dom';
+import { Properties } from '../util';
 
 export default function (props: Properties = {}, context?: Context): NodeComponent[] | void {
     if (!context || typeof props.value !== 'string') {

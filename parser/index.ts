@@ -1,17 +1,17 @@
 import { parseCML } from '@aldinh777/cml-parser';
 import { processRC } from '../src';
-import { DEFAULT_COMPONENT_SET } from './constants';
+import { DEFAULT_COMPONENT_SET } from '../constants';
 import extractImports from './extractImports';
 import extractParams, { Preprocessor } from './extractParams';
 import extractRelatives from './extractRelatives';
-import preprocessChildren from './preprocess/children';
-import preprocessSlot from './preprocess/slot';
-import preprocessComponent from './preprocess/component';
-import preprocessControl from './preprocess/control';
-import preprocessDestruct from './preprocess/destruct';
-import preprocessExtract from './preprocess/extract';
-import preprocessBinding from './preprocess/binding';
-import preprocessList from './preprocess/list';
+import preprocessChildren from '../preprocess/children';
+import preprocessSlot from '../preprocess/slot';
+import preprocessComponent from '../preprocess/component';
+import preprocessControl from '../preprocess/control';
+import preprocessDestruct from '../preprocess/destruct';
+import preprocessExtract from '../preprocess/extract';
+import preprocessBinding from '../preprocess/binding';
+import preprocessList from '../preprocess/list';
 
 type ImportType = 'import' | 'require';
 
@@ -94,7 +94,7 @@ export function parseReactiveCML(source: string, options: RCMLParserOptions = {}
     const fullparams = params.concat(dependencies);
     const rcResult = processRC(cmlTree);
     const rcJson = JSON.stringify(rcResult, null, 2);
-    const baseCompPath = '@aldinh777/reactive-cml/dom/components';
+    const baseCompPath = '@aldinh777/reactive-cml/components';
     for (const [query, from] of imports) {
         autoImports.push([from, query]);
     }

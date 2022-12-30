@@ -1,9 +1,9 @@
 import { StateMap } from '@aldinh777/reactive/collection';
-import { Context, NodeComponent, ControlComponent, intoDom } from '..';
-import ComponentError from '../../error/ComponentError';
-import { Properties } from '../../util';
-import { remove, insertBefore, _text } from '../dom-util';
-import { PropAlias, readAlias, propAlias } from '../prop-util';
+import { Context, NodeComponent, ControlComponent, intoDom } from '../dom';
+import ComponentError from '../error/ComponentError';
+import { Properties } from '../util';
+import { remove, insertBefore, _text } from '../dom/dom-util';
+import { PropAlias, readAlias, propAlias } from '../dom/prop-util';
 
 export default function (props: Properties = {}, context?: Context): NodeComponent[] | void {
     if (!context || typeof props.obj !== 'string' || typeof props.extract !== 'string') {

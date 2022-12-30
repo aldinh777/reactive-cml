@@ -9,5 +9,5 @@
         "dom",
         "parser",
         "error"
-    ]
+, "components", "preprocess", "constants.ts", "constants.ts"    ]
 }
