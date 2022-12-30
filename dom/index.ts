@@ -116,8 +116,15 @@ export function intoDom(tree: RCResult[], params: Properties, context?: Context)
                 }
             } else {
                 const elem = _elem(tag);
+                const temp = { mount: context?.onMount, dismount: context?.onDismount };
+                delete context?.onMount;
+                delete context?.onDismount;
                 processElementProperties(elem, compProps, compEvents);
                 append(elem, intoDom(children, params, context));
+                if (context) {
+                    context.onMount = temp.mount;
+                    context.onDismount = temp.dismount;
+                }
                 result.push(elem);
             }
         }
