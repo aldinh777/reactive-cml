@@ -105,11 +105,9 @@ export function parseReactiveCML(source: string, options: RCMLParserOptions = {}
     if (fullparams.length > 0) {
         autoImports.push(['@aldinh777/reactive-cml/dom', ['intoDom']]);
         outreturn = `return intoDom(${rcJson}, {${fullparams.join()}}, context)`;
-    } else if (rcResult.length > 0) {
+    } else {
         autoImports.push(['@aldinh777/reactive-cml/dom/dom-util', ['simpleDom']]);
         outreturn = `return simpleDom(${rcJson}, context)`;
-    } else {
-        outreturn = '';
     }
     if (relativeImports) {
         const { filename, extensions, excludes, includes } = relativeImports;

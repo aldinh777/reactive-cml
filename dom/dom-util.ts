@@ -1,4 +1,4 @@
-import { Context, NodeComponent } from '.';
+import { ComponentLifecycle, Context, NodeComponent } from '.';
 import { RCResult, Component } from '../src';
 
 export const _doc: Document = document;
@@ -6,13 +6,13 @@ export const _doc: Document = document;
 export const _text = (text: string): Text => _doc.createTextNode(text);
 export const _elem = (tag: string): HTMLElement => _doc.createElement(tag);
 
-function _r(handler: (parentNode: Node, item: Node, nodeBefore?: Node) => any) {
-    return function recurse(parent: Node, components: NodeComponent[], before?: Node) {
+function _r(handler: (parentNode: Node, item: Node, ...handlerRest: any[]) => any) {
+    return function recurse(parent: Node, components: NodeComponent[], ...recurseRest: any[]) {
         for (const component of components) {
             if (component instanceof Node) {
-                handler(parent, component, before);
+                handler(parent, component, ...recurseRest);
             } else {
-                recurse(parent, component.items, before);
+                recurse(parent, component.items, ...recurseRest);
             }
         }
     };
@@ -34,13 +34,12 @@ export function setAttr(element: HTMLElement, attribute: string, value: any) {
     element.setAttributeNode(att);
 }
 
-export function prepareLifecycle(result: NodeComponent[], context?: Context): NodeComponent {
+export function prepareLifecycle(context?: Context): ComponentLifecycle {
     const mountHandler = context?.onMount;
     const dismountHandler = context?.onDismount;
     const onMount = context?.lifecycle?.onMount || [];
     const onDismount = context?.lifecycle?.onDismount || [];
     return {
-        items: result,
         onMount: mountHandler ? [...onMount, mountHandler] : onMount,
         onDismount: dismountHandler ? [...onDismount, dismountHandler] : onDismount
     };
@@ -62,5 +61,7 @@ export function simpleDom(tree: RCResult[], context?: Context): NodeComponent[] 
         append(elem, simpleDom(children));
         result.push(elem);
     }
-    return context?.onMount || context?.onDismount ? [prepareLifecycle(result, context)] : result;
+    return context?.onMount || context?.onDismount
+        ? [{ items: result, ...prepareLifecycle(context) }]
+        : result;
 }

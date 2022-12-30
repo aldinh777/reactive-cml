@@ -126,5 +126,7 @@ export function intoDom(tree: RCResult[], params: Properties, context?: Context)
             }
         }
     }
-    return context?.onMount || context?.onDismount ? [prepareLifecycle(result, context)] : result;
+    return context?.onMount || context?.onDismount
+        ? [{ items: result, ...prepareLifecycle(context) }]
+        : result;
 }
