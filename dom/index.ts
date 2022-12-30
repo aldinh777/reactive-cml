@@ -1,7 +1,7 @@
 import { RCResult, Component } from '../src';
 import { Properties, StaticProperties, TextProp } from '../util';
 import { isReactive, has, crash } from './additional-util';
-import { setAttr, _text, _elem, append, prepareLifecycle } from './dom-util';
+import { setAttr, _text, _elem, append } from './dom-util';
 import { PropAlias, readAlias } from './prop-util';
 
 type PropertyResult = [props: Properties, events: StaticProperties<Function>];
@@ -13,20 +13,16 @@ export type ReactiveComponent = (
     dispatch?: EventDispatcher
 ) => NodeComponent[] | void;
 
-export interface ComponentLifecycle {
-    onMount?: (() => void)[];
-    onDismount?: (() => void)[];
-}
-
-export interface ControlComponent extends ComponentLifecycle {
+export interface ControlComponent {
     items: NodeComponent[];
+    onMount?(): void;
+    onDismount?(): void;
 }
 
 export interface Context {
     params?: Properties;
     extracts?: PropAlias[];
     children?: RCResult[];
-    lifecycle?: ComponentLifecycle;
     onMount?(): void;
     onDismount?(): void;
     slotname?: string;
@@ -127,6 +123,6 @@ export function intoDom(tree: RCResult[], params: Properties, context?: Context)
         }
     }
     return context?.onMount || context?.onDismount
-        ? [{ items: result, ...prepareLifecycle(context) }]
+        ? [{ items: result, onMount: context?.onMount, onDismount: context?.onDismount }]
         : result;
 }

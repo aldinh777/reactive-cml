@@ -1,4 +1,4 @@
-import { ComponentLifecycle, Context, NodeComponent } from '.';
+import { Context, NodeComponent } from '.';
 import { RCResult, Component } from '../src';
 
 export const _doc: Document = document;
@@ -6,23 +6,49 @@ export const _doc: Document = document;
 export const _text = (text: string): Text => _doc.createTextNode(text);
 export const _elem = (tag: string): HTMLElement => _doc.createElement(tag);
 
-function _r(handler: (parentNode: Node, item: Node, ...handlerRest: any[]) => any) {
-    return function recurse(parent: Node, components: NodeComponent[], ...recurseRest: any[]) {
-        for (const component of components) {
-            if (component instanceof Node) {
-                handler(parent, component, ...recurseRest);
-            } else {
-                recurse(parent, component.items, ...recurseRest);
-            }
+export function append(parentNode: Node, components: NodeComponent[], runMountHandler = true) {
+    for (const component of components) {
+        if (component instanceof Node) {
+            parentNode.appendChild(component);
+            continue;
         }
-    };
+        append(parentNode, component.items, runMountHandler);
+        if (component.onMount && runMountHandler) {
+            component.onMount();
+        }
+    }
 }
 
-export const append = _r((parentNode, item) => parentNode.appendChild(item));
-export const remove = _r((parentNode, item) => parentNode.removeChild(item));
-export const insertBefore = _r((parentNode, item, nodeBefore) =>
-    parentNode.insertBefore(item, nodeBefore as Node)
-);
+export function remove(parentNode: Node, components: NodeComponent[], runDismountHandler = true) {
+    for (const component of components) {
+        if (component instanceof Node) {
+            parentNode.removeChild(component);
+            continue;
+        }
+        remove(parentNode, component.items, runDismountHandler);
+        if (component.onDismount && runDismountHandler) {
+            component.onDismount();
+        }
+    }
+}
+
+export function insertBefore(
+    parentNode: Node,
+    components: NodeComponent[],
+    nodeBefore: Node,
+    runMountHandler = true
+) {
+    for (const component of components) {
+        if (component instanceof Node) {
+            parentNode.insertBefore(component, nodeBefore);
+            continue;
+        }
+        append(parentNode, component.items, runMountHandler);
+        if (component.onMount && runMountHandler) {
+            component.onMount();
+        }
+    }
+}
 
 export function setAttr(element: HTMLElement, attribute: string, value: any) {
     if (element.hasAttribute(attribute)) {
@@ -32,17 +58,6 @@ export function setAttr(element: HTMLElement, attribute: string, value: any) {
     const att = _doc.createAttribute(attribute);
     att.value = value;
     element.setAttributeNode(att);
-}
-
-export function prepareLifecycle(context?: Context): ComponentLifecycle {
-    const mountHandler = context?.onMount;
-    const dismountHandler = context?.onDismount;
-    const onMount = context?.lifecycle?.onMount || [];
-    const onDismount = context?.lifecycle?.onDismount || [];
-    return {
-        onMount: mountHandler ? [...onMount, mountHandler] : onMount,
-        onDismount: dismountHandler ? [...onDismount, dismountHandler] : onDismount
-    };
 }
 
 export function simpleDom(tree: RCResult[], context?: Context): NodeComponent[] {
@@ -62,6 +77,6 @@ export function simpleDom(tree: RCResult[], context?: Context): NodeComponent[] 
         result.push(elem);
     }
     return context?.onMount || context?.onDismount
-        ? [{ items: result, ...prepareLifecycle(context) }]
+        ? [{ items: result, onMount: context?.onMount, onDismount: context?.onDismount }]
         : result;
 }
