@@ -43,7 +43,7 @@ export function insertBefore(
             parentNode.insertBefore(component, nodeBefore);
             continue;
         }
-        append(parentNode, component.items, runMountHandler);
+        insertBefore(parentNode, component.items, nodeBefore, runMountHandler);
         if (component.onMount && runMountHandler) {
             component.onMount();
         }
