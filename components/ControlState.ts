@@ -48,7 +48,7 @@ export default function (props: Properties = {}, context?: Context): NodeCompone
                 mountHandlers.push(elem.onMount);
             }
         }
-        context.onMount = function () {
+        component.onMount = function () {
             for (const mountHandler of mountHandlers) {
                 mountHandler();
             }
