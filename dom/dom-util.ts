@@ -28,7 +28,7 @@ export function remove(parentNode: Node, components: NodeComponent[], runDismoun
             parentNode.removeChild(component);
             continue;
         }
-        remove(parentNode || component.root, component.items, runDismounter);
+        remove(component.root || parentNode, component.items, runDismounter);
         if (component.root) {
             parentNode.removeChild(component.root);
         }
@@ -49,7 +49,7 @@ export function insertBefore(
             parentNode.insertBefore(component, nodeBefore);
             continue;
         }
-        insertBefore(parentNode, component.items, nodeBefore, runMounter);
+        insertBefore(component.root || parentNode, component.items, nodeBefore, runMounter);
         if (component.root) {
             parentNode.insertBefore(component.root, nodeBefore);
         }
