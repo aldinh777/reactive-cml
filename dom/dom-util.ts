@@ -12,10 +12,10 @@ export function append(parentNode: Node, components: NodeComponent[], runMounter
             parentNode.appendChild(component);
             continue;
         }
-        append(component.root || parentNode, component.items, runMounter);
         if (component.root) {
             parentNode.appendChild(component.root);
         }
+        append(component.root || parentNode, component.items, runMounter);
         if (runMounter && component.mount) {
             component.mount();
         }
@@ -28,10 +28,10 @@ export function remove(parentNode: Node, components: NodeComponent[], runDismoun
             parentNode.removeChild(component);
             continue;
         }
-        remove(component.root || parentNode, component.items, runDismounter);
         if (component.root) {
             parentNode.removeChild(component.root);
         }
+        remove(component.root || parentNode, component.items, runDismounter);
         if (runDismounter && component.dismount) {
             component.dismount();
         }
@@ -49,10 +49,10 @@ export function insertBefore(
             parentNode.insertBefore(component, nodeBefore);
             continue;
         }
-        insertBefore(component.root || parentNode, component.items, nodeBefore, runMounter);
         if (component.root) {
             parentNode.insertBefore(component.root, nodeBefore);
         }
+        insertBefore(component.root || parentNode, component.items, nodeBefore, runMounter);
         if (runMounter && component.mount) {
             component.mount();
         }
