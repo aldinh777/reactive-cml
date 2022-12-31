@@ -81,10 +81,13 @@ function createDispatcher(events: StaticProperties<Function>): EventDispatcher {
     };
 }
 
-export function intoDom(tree: RCResult[], params: Properties, context?: Context): NodeComponent[] {
+export function intoDom(
+    tree: RCResult[],
+    params: Properties,
+    context?: Context,
+    isRoot: boolean = true
+): NodeComponent[] {
     const result: NodeComponent[] = [];
-    const onMount = context?.onMount;
-    const onDismount = context?.onDismount;
     for (const item of tree) {
         if (typeof item === 'string') {
             result.push(_text(item));
@@ -122,7 +125,7 @@ export function intoDom(tree: RCResult[], params: Properties, context?: Context)
             } else {
                 const elem = _elem(tag);
                 processElementProperties(elem, compProps, compEvents);
-                const componentResult = intoDom(children, params, context);
+                const componentResult = intoDom(children, params, context, false);
                 const everyoneIsNode = componentResult.some((item) => item instanceof Node);
                 if (everyoneIsNode) {
                     append(elem, componentResult);
@@ -131,7 +134,7 @@ export function intoDom(tree: RCResult[], params: Properties, context?: Context)
             }
         }
     }
-    return onMount || onDismount
-        ? [{ items: result, mount: onMount, dismount: onDismount }]
+    return isRoot
+        ? [{ items: result, mount: context?.onMount, dismount: context?.onDismount }]
         : result;
 }
