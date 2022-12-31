@@ -52,7 +52,7 @@ export function insertBefore(
         if (component.root) {
             parentNode.insertBefore(component.root, nodeBefore);
         }
-        insertBefore(component.root || parentNode, component.items, nodeBefore, runMounter);
+        append(component.root || parentNode, component.items, runMounter);
         if (runMounter && component.mount) {
             component.mount();
         }
