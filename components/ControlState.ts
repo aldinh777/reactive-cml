@@ -38,7 +38,7 @@ export default function (props: Properties = {}, context?: Context): NodeCompone
     }
     const hide = _elem('div');
     const marker = _text('');
-    const elements = intoDom(children, params, _super, false);
+    const elements = intoDom(children, params, _super);
     const component: ControlComponent = { items: [] };
     if (stateValue.getValue()) {
         component.items = elements;

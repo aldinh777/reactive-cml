@@ -79,12 +79,7 @@ function createDispatcher(events: StaticProperties<Function>): EventDispatcher {
     };
 }
 
-export function intoDom(
-    tree: RCResult[],
-    params: Properties,
-    context?: Context,
-    executeLifecycle: boolean = true
-): NodeComponent[] {
+export function intoDom(tree: RCResult[], params: Properties, context?: Context): NodeComponent[] {
     const result: NodeComponent[] = [];
     for (const item of tree) {
         if (typeof item === 'string') {
@@ -125,7 +120,7 @@ export function intoDom(
                 delete context?.onMount;
                 delete context?.onDismount;
                 processElementProperties(elem, compProps, compEvents);
-                const componentResult = intoDom(children, params, context, executeLifecycle);
+                const componentResult = intoDom(children, params, context);
                 const mountHandlers: (() => void)[] = [];
                 const dismountHandlers: (() => void)[] = [];
                 for (const component of componentResult) {
@@ -138,7 +133,7 @@ export function intoDom(
                         }
                     }
                 }
-                append(elem, componentResult, executeLifecycle);
+                append(elem, componentResult, false);
                 if (context) {
                     context.onMount = temp.mount;
                     context.onDismount = temp.dismount;
