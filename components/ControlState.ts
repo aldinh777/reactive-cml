@@ -42,6 +42,17 @@ export default function (props: Properties = {}, context?: Context): NodeCompone
     const component: ControlComponent = { items: [] };
     if (stateValue.getValue()) {
         component.items = elements;
+        const mountHandlers = [];
+        for (const elem of elements) {
+            if (!(elem instanceof Node) && elem.onMount) {
+                mountHandlers.push(elem.onMount);
+            }
+        }
+        context.onMount = function () {
+            for (const mountHandler of mountHandlers) {
+                mountHandler();
+            }
+        };
     } else {
         append(hide, elements, false);
     }

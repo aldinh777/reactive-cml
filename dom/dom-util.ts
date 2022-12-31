@@ -76,7 +76,7 @@ export function simpleDom(tree: RCResult[], context?: Context): NodeComponent[] 
             const value = props[prop];
             setAttr(elem, prop, value);
         }
-        append(elem, simpleDom(children));
+        append(elem, simpleDom(children), false);
         if (context) {
             context.onMount = temp.mount;
             context.onDismount = temp.dismount;
