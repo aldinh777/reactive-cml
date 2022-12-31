@@ -43,14 +43,25 @@ export default function (props: Properties = {}, context?: Context): NodeCompone
     if (stateValue.getValue()) {
         component.items = elements;
         const mountHandlers = [];
+        const dismountHandlers = [];
         for (const elem of elements) {
-            if (!(elem instanceof Node) && elem.onMount) {
-                mountHandlers.push(elem.onMount);
+            if (!(elem instanceof Node)) {
+                if (elem.onMount) {
+                    mountHandlers.push(elem.onMount);
+                }
+                if (elem.onDismount) {
+                    dismountHandlers.push(elem.onDismount);
+                }
             }
         }
         component.onMount = function () {
             for (const mountHandler of mountHandlers) {
                 mountHandler();
+            }
+        };
+        component.onDismount = function () {
+            for (const dismountHandler of dismountHandlers) {
+                dismountHandler();
             }
         };
     } else {
