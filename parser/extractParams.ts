@@ -35,7 +35,7 @@ export default function extractParams(
         if (typeof item === 'string') {
             const params = extractTextProps(item)
                 .filter((i) => typeof i !== 'string')
-                .map((tp) => (tp as TextProp).name);
+                .map(([propname]) => propname);
             par.push(...params);
             continue;
         }

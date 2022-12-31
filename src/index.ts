@@ -23,7 +23,7 @@ function processComponent(node: CMLObject): Component {
         }
         const [, type, attr] = matches;
         if (type === 'bind') {
-            propsComp[attr] = { name: value };
+            propsComp[attr] = [value];
         } else {
             eventsComp[attr] = value;
         }

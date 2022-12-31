@@ -1,6 +1,6 @@
 import { RCResult, Component } from '../src';
 import { Properties, StaticProperties, TextProp } from '../util';
-import { isReactive, has, crash } from './additional-util';
+import { isReactive, crash } from './additional-util';
 import { setAttr, _text, _elem, append } from './dom-util';
 import { PropAlias, readAlias } from './prop-util';
 
@@ -9,14 +9,15 @@ export type NodeComponent = Node | ControlComponent;
 export type EventDispatcher = (name: string, ...args: any[]) => any;
 export type ReactiveComponent = (
     props: Properties,
-    context?: Context,
+    component?: Context,
     dispatch?: EventDispatcher
 ) => NodeComponent[] | void;
 
 export interface ControlComponent {
     items: NodeComponent[];
-    onMount?(): void;
-    onDismount?(): void;
+    root?: Node;
+    mount?(): void;
+    dismount?(): void;
 }
 
 export interface Context {
@@ -41,7 +42,8 @@ function processComponentProperties(
         if (typeof value === 'string') {
             propsComp[prop] = value;
         } else {
-            propsComp[prop] = params[value.name];
+            const [propname] = value;
+            propsComp[prop] = params[propname];
         }
     }
     for (const event in events) {
@@ -81,11 +83,14 @@ function createDispatcher(events: StaticProperties<Function>): EventDispatcher {
 
 export function intoDom(tree: RCResult[], params: Properties, context?: Context): NodeComponent[] {
     const result: NodeComponent[] = [];
+    const onMount = context?.onMount;
+    const onDismount = context?.onDismount;
     for (const item of tree) {
         if (typeof item === 'string') {
             result.push(_text(item));
-        } else if (has(item, 'name')) {
-            const param = params[(item as TextProp).name];
+        } else if (item.length === 1) {
+            const [propname] = item;
+            const param = params[propname];
             const text = _text('');
             if (isReactive(param)) {
                 text.textContent = param.getValue();
@@ -116,49 +121,17 @@ export function intoDom(tree: RCResult[], params: Properties, context?: Context)
                 }
             } else {
                 const elem = _elem(tag);
-                const temp = { mount: context?.onMount, dismount: context?.onDismount };
-                delete context?.onMount;
-                delete context?.onDismount;
                 processElementProperties(elem, compProps, compEvents);
                 const componentResult = intoDom(children, params, context);
-                const mountHandlers: (() => void)[] = [];
-                const dismountHandlers: (() => void)[] = [];
-                for (const component of componentResult) {
-                    if (!(component instanceof Node)) {
-                        if (component.onMount) {
-                            mountHandlers.push(component.onMount);
-                        }
-                        if (component.onDismount) {
-                            dismountHandlers.push(component.onDismount);
-                        }
-                    }
-                }
-                append(elem, componentResult, false);
-                if (context) {
-                    context.onMount = temp.mount;
-                    context.onDismount = temp.dismount;
-                }
-                if (mountHandlers.length + dismountHandlers.length) {
-                    result.push({
-                        items: [elem],
-                        onMount() {
-                            for (const mountHandler of mountHandlers) {
-                                mountHandler();
-                            }
-                        },
-                        onDismount() {
-                            for (const dismountHandler of dismountHandlers) {
-                                dismountHandler();
-                            }
-                        }
-                    });
-                } else {
-                    result.push(elem);
-                }
+                const everyoneIsNode = componentResult.some((item) => item instanceof Node);
+                const thatThing = everyoneIsNode
+                    ? componentResult
+                    : [{ root: elem, items: componentResult }];
+                append(elem, thatThing);
             }
         }
     }
-    return context?.onMount || context?.onDismount
-        ? [{ items: result, onMount: context?.onMount, onDismount: context?.onDismount }]
+    return onMount || onDismount
+        ? [{ items: result, mount: onMount, dismount: onDismount }]
         : result;
 }

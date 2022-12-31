@@ -3,9 +3,7 @@ export type Properties = StaticProperties<any>;
 export interface StaticProperties<T> {
     [key: string]: T;
 }
-export interface TextProp {
-    name: string;
-}
+export type TextProp = [name: string];
 
 export function extractTextProps(text: string): (string | TextProp)[] {
     const extractedResult: (string | TextProp)[] = [];
@@ -57,7 +55,7 @@ export function extractTextProps(text: string): (string | TextProp)[] {
                 propertyName = '';
             } else if (currentCharacter === '}' && propertyName.match(/^\s*[_$A-Za-z][_$\w]*/)) {
                 isInProperty = false;
-                extractedResult.push(streamPropertyName, { name: propertyName.trim() });
+                extractedResult.push(streamPropertyName, [propertyName.trim()]);
                 streamPropertyName = '';
                 propertyName = '';
             } else if (currentCharacter.match(/\s/)) {
@@ -74,7 +72,7 @@ export function extractTextProps(text: string): (string | TextProp)[] {
         } else {
             if (currentCharacter === '}' && propertyName.match(/^\s*[_$A-Za-z][_$\w]*/)) {
                 isInProperty = false;
-                extractedResult.push(streamPropertyName, { name: propertyName.trim() });
+                extractedResult.push(streamPropertyName, [propertyName.trim()]);
                 streamPropertyName = '';
                 propertyName = '';
             } else if (currentCharacter.match(/\s/)) {
