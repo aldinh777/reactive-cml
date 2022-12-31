@@ -124,10 +124,10 @@ export function intoDom(tree: RCResult[], params: Properties, context?: Context)
                 processElementProperties(elem, compProps, compEvents);
                 const componentResult = intoDom(children, params, context);
                 const everyoneIsNode = componentResult.some((item) => item instanceof Node);
-                const thatThing = everyoneIsNode
-                    ? componentResult
-                    : [{ root: elem, items: componentResult }];
-                result.push(...thatThing);
+                if (everyoneIsNode) {
+                    append(elem, componentResult);
+                }
+                result.push(everyoneIsNode ? elem : { root: elem, items: componentResult });
             }
         }
     }
