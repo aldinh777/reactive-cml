@@ -1,6 +1,6 @@
 {
   "name": "@aldinh777/reactive-cml",
-  "version": "0.13.12",
+  "version": "0.13.13",
   "description": "Adding Reactivity to CML",
   "main": "src/index.js",
   "scripts": {
