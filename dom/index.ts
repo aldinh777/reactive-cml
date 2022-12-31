@@ -127,7 +127,7 @@ export function intoDom(tree: RCResult[], params: Properties, context?: Context)
                 const thatThing = everyoneIsNode
                     ? componentResult
                     : [{ root: elem, items: componentResult }];
-                append(elem, thatThing);
+                result.push(...thatThing);
             }
         }
     }
