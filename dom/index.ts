@@ -103,7 +103,7 @@ export function intoDom(
     tree: RCResult[],
     params: Properties,
     context?: Context,
-    isRoot: boolean = true
+    isRoot: boolean = false
 ): NodeComponent[] {
     const result: NodeComponent[] = [];
     for (const item of tree) {
@@ -143,7 +143,7 @@ export function intoDom(
             } else {
                 const elem = _elem(tag);
                 processElementProperties(elem, compProps, compEvents);
-                const componentResult = intoDom(children, params, context, false);
+                const componentResult = intoDom(children, params, context);
                 const everyoneIsNode = componentResult.every((item) => item instanceof Node);
                 append(elem, componentResult);
                 result.push(everyoneIsNode ? elem : { root: elem, items: componentResult });

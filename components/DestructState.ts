@@ -1,6 +1,6 @@
 import { isState } from '@aldinh777/reactive-utils/validator';
 import { Context, NodeComponent, ControlComponent, intoDom } from '../dom';
-import { _text, remove, append } from '../dom/dom-util';
+import { _text, dismount, remove, mount, append } from '../dom/dom-util';
 import { PropAlias, readAlias, propAlias } from '../dom/prop-util';
 import ComponentError from '../error/ComponentError';
 import { Properties } from '../util';
@@ -17,21 +17,29 @@ export default function (props: Properties = {}, component: Context = {}): NodeC
             `'${props.obj}' are not a valid State in 'state:obj' property of 'destruct' element`
         );
     }
+    let isMounted = false;
     const marker = _text('');
     const destructParams = propAlias(params, propnames, obj.getValue());
     const result: ControlComponent = {
-        items: intoDom(children, destructParams, _super)
+        items: intoDom(children, destructParams, _super),
+        mount: () => (isMounted = true),
+        dismount: () => (isMounted = false)
     };
     obj.onChange((ob: Properties | Map<string, any>) => {
         const { parentNode } = marker;
         if (!parentNode) {
             return;
         }
-        remove(parentNode, result.items);
         const destructParams = propAlias(params, propnames, ob);
-        const destructElements = intoDom(children, destructParams, _super);
-        append(parentNode, destructElements, marker);
-        result.items = destructElements;
+        const elements = intoDom(children, destructParams, _super);
+        if (isMounted) {
+            dismount(parentNode, result.items);
+            mount(parentNode, elements, marker);
+        } else {
+            remove(parentNode, result.items);
+            append(parentNode, elements, marker);
+        }
+        result.items = elements;
     });
     return [result, marker];
 }

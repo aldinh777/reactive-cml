@@ -1,6 +1,6 @@
 import { isState } from '@aldinh777/reactive-utils/validator';
 import { Context, NodeComponent, intoDom, ControlComponent } from '../dom';
-import { _text, remove, append } from '../dom/dom-util';
+import { _text, dismount, remove, mount, append } from '../dom/dom-util';
 import { PropAlias, propAlias, readAlias } from '../dom/prop-util';
 import ComponentError from '../error/ComponentError';
 import { Properties } from '../util';
@@ -35,19 +35,27 @@ export default function (props: Properties = {}, component: Context = {}): NodeC
             `'${props.list}' are not a valid State in 'state:list' property of 'foreach' element`
         );
     }
+    let isMounted = false;
     const marker = _text('');
     const result: ControlComponent = {
-        items: createFlatListElement(alias, extracts, list.getValue(), component)
+        items: createFlatListElement(alias, extracts, list.getValue(), component),
+        mount: () => (isMounted = true),
+        dismount: () => (isMounted = false)
     };
-    list.onChange((items) => {
+    list.onChange((items: any[]) => {
         const { parentNode } = marker;
         if (!parentNode) {
             return;
         }
-        const newElems: NodeComponent[] = createFlatListElement(alias, extracts, items, component);
-        remove(parentNode, result.items);
-        append(parentNode, newElems, marker);
-        result.items = newElems;
+        const elements: NodeComponent[] = createFlatListElement(alias, extracts, items, component);
+        if (isMounted) {
+            dismount(parentNode, result.items);
+            mount(parentNode, elements, marker);
+        } else {
+            remove(parentNode, result.items);
+            append(parentNode, elements, marker);
+        }
+        result.items = elements;
     });
     return [result, marker];
 }

@@ -1,7 +1,7 @@
 import { ListViewMapped } from '@aldinh777/reactive/collection/view/ListViewMapped';
 import { isList } from '@aldinh777/reactive-utils/validator';
 import { NodeComponent, Context, intoDom, ControlComponent } from '../dom';
-import { _text, append, remove } from '../dom/dom-util';
+import { _text, append, remove, mount, dismount } from '../dom/dom-util';
 import { readAlias, propAlias } from '../dom/prop-util';
 import ComponentError from '../error/ComponentError';
 import { Properties } from '../util';
@@ -24,8 +24,9 @@ export default function (props: Properties = {}, component: Context = {}): NodeC
             `'${props.list}' are not a valid StateCollection in 'collect:list' property of 'foreach' element`
         );
     }
+    let isMounted = false;
     const marker = _text('');
-    const listElement: ListViewMapped<any, MirrorElement> = new ListViewMapped(list, (item) => {
+    const listMirror: ListViewMapped<any, MirrorElement> = new ListViewMapped(list, (item) => {
         const localParams = propAlias(params, extracts, item);
         if (alias) {
             Object.assign(localParams, { [alias]: item });
@@ -35,38 +36,47 @@ export default function (props: Properties = {}, component: Context = {}): NodeC
             start: _text('')
         };
     });
+    const mappedElement: ListViewMapped<MirrorElement, NodeComponent> = new ListViewMapped(
+        listMirror,
+        (mirror) => ({ items: mirror ? [mirror.start, ...mirror.items] : [] })
+    );
     const result: ControlComponent = {
-        items: listElement.raw.flatMap((m) => (m ? [m.start, ...m.items] : []))
+        items: mappedElement.raw,
+        mount: () => (isMounted = true),
+        dismount: () => (isMounted = false)
     };
-    listElement.onUpdate((_, next, prev: MirrorElement) => {
+    listMirror.onUpdate((_, next, prev: MirrorElement) => {
         const { parentNode } = prev.start;
         if (parentNode) {
-            append(parentNode, [next.start, ...next.items], prev.start);
-            remove(parentNode, [prev.start, ...prev.items]);
-        }
-        const startIndex = result.items.indexOf(prev.start);
-        if (startIndex !== -1) {
-            result.items.splice(startIndex, prev.items.length + 2, next.start, ...next.items);
+            if (isMounted) {
+                mount(parentNode, [next.start, ...next.items], prev.start);
+                dismount(parentNode, [prev.start, ...prev.items]);
+            } else {
+                append(parentNode, [next.start, ...next.items], prev.start);
+                remove(parentNode, [prev.start, ...prev.items]);
+            }
         }
     });
-    listElement.onInsert((index, inserted) => {
-        const nextElem = listElement.get(index + 1);
+    listMirror.onInsert((index, inserted) => {
+        const nextElem = listMirror.get(index + 1);
         const nextMarker = nextElem ? nextElem.start : marker;
         const { parentNode } = marker;
         if (parentNode) {
-            append(parentNode, [inserted.start, ...inserted.items], nextMarker);
+            if (isMounted) {
+                mount(parentNode, [inserted.start, ...inserted.items], nextMarker);
+            } else {
+                append(parentNode, [inserted.start, ...inserted.items], nextMarker);
+            }
         }
-        const startIndex = nextElem ? result.items.indexOf(nextElem.start) : 0;
-        result.items.splice(startIndex, 0, inserted.start, ...inserted.items);
     });
-    listElement.onDelete((_, deleted) => {
+    listMirror.onDelete((_, deleted) => {
         const { parentNode } = deleted.start;
         if (parentNode) {
-            remove(parentNode, [deleted.start, ...deleted.items]);
-        }
-        const startIndex = result.items.indexOf(deleted.start);
-        if (startIndex !== -1) {
-            result.items.splice(startIndex, deleted.items.length + 2);
+            if (isMounted) {
+                dismount(parentNode, [deleted.start, ...deleted.items]);
+            } else {
+                remove(parentNode, [deleted.start, ...deleted.items]);
+            }
         }
     });
     return [result, marker];

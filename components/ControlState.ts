@@ -38,15 +38,11 @@ export default function (props: Properties = {}, component: Context = {}): NodeC
     let isMounted = false;
     const hide = _elem('div');
     const marker = _text('');
-    const elements = intoDom(children, params, _super, false);
+    const elements = intoDom(children, params, _super);
     const result: ControlComponent = {
         items: [],
-        mount() {
-            isMounted = true;
-        },
-        dismount() {
-            isMounted = false;
-        }
+        mount: () => (isMounted = true),
+        dismount: () => (isMounted = false)
     };
     if (isActive.getValue()) {
         result.items = elements;
@@ -65,7 +61,6 @@ export default function (props: Properties = {}, component: Context = {}): NodeC
             } else {
                 append(parentNode, elements, marker);
             }
-            result.items = elements;
         } else {
             if (isMounted) {
                 dismount(parentNode, elements);
@@ -73,8 +68,8 @@ export default function (props: Properties = {}, component: Context = {}): NodeC
                 remove(parentNode, elements);
             }
             append(hide, elements);
-            result.items = [];
         }
+        result.items = active ? elements : [];
     });
     return [result, marker];
 }

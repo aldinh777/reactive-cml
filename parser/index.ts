@@ -110,7 +110,7 @@ export function parseReactiveCML(
             ? pathify(filepath, LOCAL_INTODOM_PATH)
             : DEFAULT_INTODOM_PATH;
         autoImports.push([domifiedPath, ['intoDom']]);
-        outreturn = `return intoDom(${rcJson}, {${fullparams.join()}}, component)`;
+        outreturn = `return intoDom(${rcJson}, {${fullparams.join()}}, component, true)`;
     } else {
         const domifiedPath = options._localDebug
             ? pathify(filepath, LOCAL_SIMPLEDOM_PATH)
