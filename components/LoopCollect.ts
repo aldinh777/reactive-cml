@@ -11,11 +11,11 @@ interface MirrorElement {
     start: Text;
 }
 
-export default function (props: Properties = {}, context?: Context): NodeComponent[] | void {
-    if (!context || typeof props.list !== 'string') {
+export default function (props: Properties = {}, component: Context = {}): NodeComponent[] | void {
+    if (typeof props.list !== 'string') {
         return;
     }
-    const { children, params, _super } = context;
+    const { children, params, _super } = component;
     const list = params[props.list];
     const alias = props.as;
     const extracts = typeof props.extract === 'string' ? readAlias(props.extract) : [];
@@ -35,7 +35,7 @@ export default function (props: Properties = {}, context?: Context): NodeCompone
             start: _text('')
         };
     });
-    const component: ControlComponent = {
+    const result: ControlComponent = {
         items: listElement.raw.flatMap((m) => (m ? [m.start, ...m.items] : []))
     };
     listElement.onUpdate((_, next, prev: MirrorElement) => {
@@ -44,9 +44,9 @@ export default function (props: Properties = {}, context?: Context): NodeCompone
             append(parentNode, [next.start, ...next.items], prev.start);
             remove(parentNode, [prev.start, ...prev.items]);
         }
-        const startIndex = component.items.indexOf(prev.start);
+        const startIndex = result.items.indexOf(prev.start);
         if (startIndex !== -1) {
-            component.items.splice(startIndex, prev.items.length + 2, next.start, ...next.items);
+            result.items.splice(startIndex, prev.items.length + 2, next.start, ...next.items);
         }
     });
     listElement.onInsert((index, inserted) => {
@@ -56,18 +56,18 @@ export default function (props: Properties = {}, context?: Context): NodeCompone
         if (parentNode) {
             append(parentNode, [inserted.start, ...inserted.items], nextMarker);
         }
-        const startIndex = nextElem ? component.items.indexOf(nextElem.start) : 0;
-        component.items.splice(startIndex, 0, inserted.start, ...inserted.items);
+        const startIndex = nextElem ? result.items.indexOf(nextElem.start) : 0;
+        result.items.splice(startIndex, 0, inserted.start, ...inserted.items);
     });
     listElement.onDelete((_, deleted) => {
         const { parentNode } = deleted.start;
         if (parentNode) {
             remove(parentNode, [deleted.start, ...deleted.items]);
         }
-        const startIndex = component.items.indexOf(deleted.start);
+        const startIndex = result.items.indexOf(deleted.start);
         if (startIndex !== -1) {
-            component.items.splice(startIndex, deleted.items.length + 2);
+            result.items.splice(startIndex, deleted.items.length + 2);
         }
     });
-    return [component, marker];
+    return [result, marker];
 }

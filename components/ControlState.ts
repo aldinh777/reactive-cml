@@ -5,11 +5,11 @@ import { _elem, _text, append, remove, mount, dismount } from '../dom/dom-util';
 import ComponentError from '../error/ComponentError';
 import { Properties } from '../util';
 
-export default function (props: Properties = {}, context?: Context): NodeComponent[] | void {
-    if (!context || typeof props.value !== 'string') {
+export default function (props: Properties = {}, component: Context = {}): NodeComponent[] | void {
+    if (typeof props.value !== 'string') {
         return;
     }
-    const { children, params, _super } = context;
+    const { children, params, _super } = component;
     const unless = has(props, ['rev']);
     let isActive: State<any> = params[props.value];
     if (!isState(isActive)) {
@@ -39,7 +39,7 @@ export default function (props: Properties = {}, context?: Context): NodeCompone
     const hide = _elem('div');
     const marker = _text('');
     const elements = intoDom(children, params, _super, false);
-    const component: ControlComponent = {
+    const result: ControlComponent = {
         items: [],
         mount() {
             isMounted = true;
@@ -49,7 +49,7 @@ export default function (props: Properties = {}, context?: Context): NodeCompone
         }
     };
     if (isActive.getValue()) {
-        component.items = elements;
+        result.items = elements;
     } else {
         append(hide, elements);
     }
@@ -65,7 +65,7 @@ export default function (props: Properties = {}, context?: Context): NodeCompone
             } else {
                 append(parentNode, elements, marker);
             }
-            component.items = elements;
+            result.items = elements;
         } else {
             if (isMounted) {
                 dismount(parentNode, elements);
@@ -73,8 +73,8 @@ export default function (props: Properties = {}, context?: Context): NodeCompone
                 remove(parentNode, elements);
             }
             append(hide, elements);
-            component.items = [];
+            result.items = [];
         }
     });
-    return [component, marker];
+    return [result, marker];
 }

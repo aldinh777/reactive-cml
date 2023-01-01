@@ -2,11 +2,11 @@ import { has } from '@aldinh777/reactive-utils/validator';
 import { Context, NodeComponent, intoDom } from '../dom';
 import { Properties } from '../util';
 
-export default function (props: Properties = {}, context?: Context): NodeComponent[] | void {
-    if (!context || typeof props.value !== 'string') {
+export default function (props: Properties = {}, component: Context = {}): NodeComponent[] | void {
+    if (typeof props.value !== 'string') {
         return;
     }
-    const { children, params, _super } = context;
+    const { children, params, _super } = component;
     const unless = has(props, ['rev']);
     const hasEqual = has(props, ['equal']);
     const value = params[props.value];

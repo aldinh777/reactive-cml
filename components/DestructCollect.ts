@@ -5,11 +5,11 @@ import { PropAlias, readAlias, propAlias } from '../dom/prop-util';
 import ComponentError from '../error/ComponentError';
 import { Properties } from '../util';
 
-export default function (props: Properties = {}, context?: Context): NodeComponent[] | void {
-    if (!context || typeof props.obj !== 'string' || typeof props.extract !== 'string') {
+export default function (props: Properties = {}, component: Context = {}): NodeComponent[] | void {
+    if (typeof props.obj !== 'string' || typeof props.extract !== 'string') {
         return;
     }
-    const { children, params, _super } = context;
+    const { children, params, _super } = component;
     const obj: any = params[props.obj];
     const propnames: PropAlias[] = readAlias(props.extract);
     if (!isMap(obj)) {
@@ -19,7 +19,7 @@ export default function (props: Properties = {}, context?: Context): NodeCompone
     }
     const marker = _text('');
     const destructParams = propAlias(params, propnames, obj.raw);
-    const component: ControlComponent = {
+    const result: ControlComponent = {
         items: intoDom(children, destructParams, _super)
     };
     obj.onUpdate(() => {
@@ -27,10 +27,10 @@ export default function (props: Properties = {}, context?: Context): NodeCompone
         if (parentNode) {
             const destructParams = propAlias(params, propnames, obj.raw);
             const newitems = intoDom(children, destructParams, _super);
-            remove(parentNode, component.items);
+            remove(parentNode, result.items);
             append(parentNode, newitems, marker);
-            component.items = newitems;
+            result.items = newitems;
         }
     });
-    return [component, marker];
+    return [result, marker];
 }

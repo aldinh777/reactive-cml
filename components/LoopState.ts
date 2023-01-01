@@ -1,9 +1,9 @@
-import { isState } from "@aldinh777/reactive-utils/validator";
-import { Context, NodeComponent, intoDom, ControlComponent } from "../dom";
-import { _text, remove, append } from "../dom/dom-util";
-import { PropAlias, propAlias, readAlias } from "../dom/prop-util";
-import ComponentError from "../error/ComponentError";
-import { Properties } from "../util";
+import { isState } from '@aldinh777/reactive-utils/validator';
+import { Context, NodeComponent, intoDom, ControlComponent } from '../dom';
+import { _text, remove, append } from '../dom/dom-util';
+import { PropAlias, propAlias, readAlias } from '../dom/prop-util';
+import ComponentError from '../error/ComponentError';
+import { Properties } from '../util';
 
 function createFlatListElement(
     alias: string,
@@ -23,11 +23,11 @@ function createFlatListElement(
     return components;
 }
 
-export default function (props: Properties = {}, context?: Context): NodeComponent[] | void {
-    if (!context || typeof props.list !== 'string') {
+export default function (props: Properties = {}, component: Context = {}): NodeComponent[] | void {
+    if (typeof props.list !== 'string') {
         return;
     }
-    const list = context.params[props.list];
+    const list = component.params[props.list];
     const alias = props.as;
     const extracts: PropAlias[] = typeof props.extract === 'string' ? readAlias(props.extract) : [];
     if (!isState(list)) {
@@ -36,18 +36,18 @@ export default function (props: Properties = {}, context?: Context): NodeCompone
         );
     }
     const marker = _text('');
-    const component: ControlComponent = {
-        items: createFlatListElement(alias, extracts, list.getValue(), context)
+    const result: ControlComponent = {
+        items: createFlatListElement(alias, extracts, list.getValue(), component)
     };
     list.onChange((items) => {
         const { parentNode } = marker;
         if (!parentNode) {
             return;
         }
-        const newElems: NodeComponent[] = createFlatListElement(alias, extracts, items, context);
-        remove(parentNode, component.items);
+        const newElems: NodeComponent[] = createFlatListElement(alias, extracts, items, component);
+        remove(parentNode, result.items);
         append(parentNode, newElems, marker);
-        component.items = newElems;
+        result.items = newElems;
     });
-    return [component, marker];
+    return [result, marker];
 }

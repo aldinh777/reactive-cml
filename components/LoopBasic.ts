@@ -2,15 +2,14 @@ import { Context, NodeComponent, intoDom } from '../dom';
 import { PropAlias, readAlias, propAlias } from '../dom/prop-util';
 import { Properties } from '../util';
 
-export default function (props: Properties = {}, context?: Context): NodeComponent[] | void {
-    if (!context || typeof props.list !== 'string') {
+export default function (props: Properties = {}, component: Context = {}): NodeComponent[] | void {
+    if (typeof props.list !== 'string') {
         return;
     }
-    const { children, params, _super } = context;
+    const { children, params, _super } = component;
     const list = params[props.list];
     const alias: string = props.as;
-    const extracts: PropAlias[] =
-        typeof props.extract === 'string' ? readAlias(props.extract) : [];
+    const extracts: PropAlias[] = typeof props.extract === 'string' ? readAlias(props.extract) : [];
     const result: NodeComponent[] = [];
     for (const item of list) {
         const localParams = propAlias(params, extracts, item);

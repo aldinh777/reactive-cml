@@ -28,10 +28,10 @@ export interface RCMLParserOptions {
 
 const DEFAULT_COMPONENT_PATH = '@aldinh777/reactive-cml/components';
 const DEFAULT_INTODOM_PATH = '@aldinh777/reactive-cml/dom';
-const DEFAULT_SIMPLEDON_PATH = '@aldinh777/reactive-cml/dom/dom-utils';
+const DEFAULT_SIMPLEDON_PATH = '@aldinh777/reactive-cml/dom/dom-util';
 const LOCAL_COMPONENT_PATH = join(__dirname, '../components');
 const LOCAL_INTODOM_PATH = join(__dirname, '../dom');
-const LOCAL_SIMPLEDOM_PATH = join(__dirname, '../dom/dom-utils');
+const LOCAL_SIMPLEDOM_PATH = join(__dirname, '../dom/dom-util');
 
 function pathify(target: string | void, source: string): string {
     return './' + (target ? relative(dirname(target), source) : source).replace(/\\/g, '/');
@@ -110,13 +110,13 @@ export function parseReactiveCML(
             ? pathify(filepath, LOCAL_INTODOM_PATH)
             : DEFAULT_INTODOM_PATH;
         autoImports.push([domifiedPath, ['intoDom']]);
-        outreturn = `return intoDom(${rcJson}, {${fullparams.join()}}, context)`;
+        outreturn = `return intoDom(${rcJson}, {${fullparams.join()}}, component)`;
     } else {
         const domifiedPath = options._localDebug
             ? pathify(filepath, LOCAL_SIMPLEDOM_PATH)
             : DEFAULT_SIMPLEDON_PATH;
         autoImports.push([domifiedPath, ['simpleDom']]);
-        outreturn = `return simpleDom(${rcJson}, context)`;
+        outreturn = `return simpleDom(${rcJson}, component)`;
     }
     if (relativeImports) {
         const { filename, extensions, excludes, includes } = relativeImports;
@@ -135,6 +135,6 @@ export function parseReactiveCML(
     }
     const importScript = joinDependencies(mode, autoImports);
     const exportScript = '\n' + (mode === 'require' ? 'module.exports = ' : 'export default ');
-    const resultScript = `function(props={}, context={}, dispatch=()=>{}) {\n${script.trim()}\n${outreturn}\n}`;
+    const resultScript = `function(props={}, component={}, dispatch=()=>{}) {\n${script.trim()}\n${outreturn}\n}`;
     return importScript + exportScript + resultScript;
 }
