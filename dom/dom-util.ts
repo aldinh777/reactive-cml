@@ -8,11 +8,7 @@ export const _elem = (tag: string): HTMLElement => _doc.createElement(tag);
 
 export function mount(target: null | Node, components: NodeComponent[], nodeBefore?: Node) {
     if (target) {
-        if (nodeBefore) {
-            insertBefore(target, components, nodeBefore);
-        } else {
-            append(target, components);
-        }
+        append(target, components, nodeBefore);
     }
     for (const component of components) {
         if (!(component instanceof Node)) {
@@ -38,38 +34,30 @@ export function dismount(target: null | Node, components: NodeComponent[]) {
     }
 }
 
-export function append(parentNode: Node, components: NodeComponent[]) {
+export function append(parentNode: Node, components: NodeComponent[], nodeBefore?: Node) {
     for (const component of components) {
-        if (component instanceof Node) {
-            parentNode.appendChild(component);
-        } else if (component.root) {
-            parentNode.appendChild(component.root);
+        const isNode = component instanceof Node;
+        const item = isNode ? component : component.root;
+        if (isNode || item) {
+            if (nodeBefore) {
+                parentNode.insertBefore(item, nodeBefore);
+            } else {
+                parentNode.appendChild(item);
+            }
         } else {
-            append(parentNode, component.items);
+            append(parentNode, component.items, nodeBefore);
         }
     }
 }
 
 export function remove(parentNode: Node, components: NodeComponent[]) {
     for (const component of components) {
-        if (component instanceof Node) {
-            parentNode.removeChild(component);
-        } else if (component.root) {
-            parentNode.removeChild(component.root);
+        const isNode = component instanceof Node;
+        const item = isNode ? component : component.root;
+        if (isNode || item) {
+            parentNode.removeChild(item);
         } else {
             remove(parentNode, component.items);
-        }
-    }
-}
-
-export function insertBefore(parentNode: Node, components: NodeComponent[], nodeBefore: Node) {
-    for (const component of components) {
-        if (component instanceof Node) {
-            parentNode.insertBefore(component, nodeBefore);
-        } else if (component.root) {
-            parentNode.insertBefore(component.root, nodeBefore);
-        } else {
-            insertBefore(parentNode, component.items, nodeBefore);
         }
     }
 }

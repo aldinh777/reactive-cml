@@ -1,18 +1,11 @@
-import { dirname, join, relative } from 'path';
 import { parseCML } from '@aldinh777/cml-parser';
-import { processRC } from '../src';
+import { join, relative, dirname } from 'path';
 import { DEFAULT_COMPONENT_SET } from '../constants';
+import { DEFAULT_PREPROCESSOR } from '../preprocess';
+import { processRC } from '../src';
 import extractImports from './extractImports';
 import extractParams, { Preprocessor } from './extractParams';
 import extractRelatives from './extractRelatives';
-import preprocessChildren from '../preprocess/children';
-import preprocessSlot from '../preprocess/slot';
-import preprocessComponent from '../preprocess/component';
-import preprocessControl from '../preprocess/control';
-import preprocessDestruct from '../preprocess/destruct';
-import preprocessExtract from '../preprocess/extract';
-import preprocessBinding from '../preprocess/binding';
-import preprocessList from '../preprocess/list';
 
 type ImportType = 'import' | 'require';
 
@@ -93,16 +86,7 @@ export function parseReactiveCML(
     const autoImports: [from: string, imports: string | string[]][] = [...autoImportsOpt];
     const preprocessors: Preprocessor[] = [];
     if (!cmlPreprocessors || !cmlPreprocessors.disableDefault) {
-        preprocessors.push(
-            preprocessChildren,
-            preprocessSlot,
-            preprocessControl,
-            preprocessList,
-            preprocessDestruct,
-            preprocessComponent,
-            preprocessExtract,
-            preprocessBinding
-        );
+        preprocessors.push(...DEFAULT_PREPROCESSOR);
     }
     if (cmlPreprocessors && cmlPreprocessors.customPreprocessor) {
         preprocessors.push(...cmlPreprocessors.customPreprocessor);

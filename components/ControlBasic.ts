@@ -1,3 +1,4 @@
+import { has } from '@aldinh777/reactive-utils/validator';
 import { Context, NodeComponent, intoDom } from '../dom';
 import { Properties } from '../util';
 
@@ -6,8 +7,8 @@ export default function (props: Properties = {}, context?: Context): NodeCompone
         return;
     }
     const { children, params, _super } = context;
-    const unless = Reflect.has(props, 'rev');
-    const hasEqual = Reflect.has(props, 'equal');
+    const unless = has(props, ['rev']);
+    const hasEqual = has(props, ['equal']);
     const value = params[props.value];
     if (hasEqual) {
         const condition = unless ? value != props.equal : value == props.equal;

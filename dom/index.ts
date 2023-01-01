@@ -1,6 +1,8 @@
+import { isState } from '@aldinh777/reactive-utils/validator';
+import { DEFAULT_COMPONENT_SET } from '../constants';
+import ComponentError from '../error/ComponentError';
 import { RCResult, Component } from '../src';
 import { Properties, StaticProperties, TextProp } from '../util';
-import { isReactive, crash } from './additional-util';
 import { setAttr, _text, _elem, append } from './dom-util';
 import { PropAlias, readAlias } from './prop-util';
 
@@ -59,7 +61,7 @@ function processElementProperties(
 ): void {
     for (const prop in props) {
         const propvalue = props[prop];
-        if (isReactive(propvalue)) {
+        if (isState(propvalue)) {
             setAttr(elem, prop, propvalue.getValue());
             propvalue.onChange((next: any) => setAttr(elem, prop, next));
         } else {
@@ -81,6 +83,22 @@ function createDispatcher(events: StaticProperties<Function>): EventDispatcher {
     };
 }
 
+function crash(name: string, err: any): ComponentError {
+    let reason: string;
+    let trace = DEFAULT_COMPONENT_SET.has(name) ? [] : [name];
+    if (err instanceof Error) {
+        if (err.name === 'ComponentError') {
+            trace = trace.concat((err as ComponentError).componentTraces);
+            reason = (err as ComponentError).reason;
+        } else {
+            reason = err.stack;
+        }
+    } else {
+        reason = err || '?';
+    }
+    return new ComponentError(`Crash at component '${name}'.`, trace, reason);
+}
+
 export function intoDom(
     tree: RCResult[],
     params: Properties,
@@ -95,7 +113,7 @@ export function intoDom(
             const [propname] = item;
             const param = params[propname];
             const text = _text('');
-            if (isReactive(param)) {
+            if (isState(param)) {
                 text.textContent = param.getValue();
                 param.onChange((next: string) => (text.textContent = next));
             } else {

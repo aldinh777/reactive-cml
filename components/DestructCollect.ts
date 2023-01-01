@@ -1,9 +1,9 @@
-import { StateMap } from '@aldinh777/reactive/collection';
+import { isMap } from '@aldinh777/reactive-utils/validator';
 import { Context, NodeComponent, ControlComponent, intoDom } from '../dom';
+import { _text, remove, append } from '../dom/dom-util';
+import { PropAlias, readAlias, propAlias } from '../dom/prop-util';
 import ComponentError from '../error/ComponentError';
 import { Properties } from '../util';
-import { remove, insertBefore, _text } from '../dom/dom-util';
-import { PropAlias, readAlias, propAlias } from '../dom/prop-util';
 
 export default function (props: Properties = {}, context?: Context): NodeComponent[] | void {
     if (!context || typeof props.obj !== 'string' || typeof props.extract !== 'string') {
@@ -12,7 +12,7 @@ export default function (props: Properties = {}, context?: Context): NodeCompone
     const { children, params, _super } = context;
     const obj: any = params[props.obj];
     const propnames: PropAlias[] = readAlias(props.extract);
-    if (!(obj instanceof StateMap)) {
+    if (!isMap(obj)) {
         throw new ComponentError(
             `'${props.obj}' are not a valid StateCollection in 'collect:obj' property of 'destruct' element`
         );
@@ -28,7 +28,7 @@ export default function (props: Properties = {}, context?: Context): NodeCompone
             const destructParams = propAlias(params, propnames, obj.raw);
             const newitems = intoDom(children, destructParams, _super);
             remove(parentNode, component.items);
-            insertBefore(parentNode, newitems, marker);
+            append(parentNode, newitems, marker);
             component.items = newitems;
         }
     });

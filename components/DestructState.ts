@@ -1,9 +1,9 @@
-import { State } from '@aldinh777/reactive';
+import { isState } from '@aldinh777/reactive-utils/validator';
 import { Context, NodeComponent, ControlComponent, intoDom } from '../dom';
+import { _text, remove, append } from '../dom/dom-util';
+import { PropAlias, readAlias, propAlias } from '../dom/prop-util';
 import ComponentError from '../error/ComponentError';
 import { Properties } from '../util';
-import { remove, insertBefore, _text } from '../dom/dom-util';
-import { PropAlias, readAlias, propAlias } from '../dom/prop-util';
 
 export default function (props: Properties = {}, context?: Context): NodeComponent[] | void {
     if (!context || typeof props.obj !== 'string' || typeof props.extract !== 'string') {
@@ -12,7 +12,7 @@ export default function (props: Properties = {}, context?: Context): NodeCompone
     const { children, params, _super } = context;
     const obj: any = params[props.obj];
     const propnames: PropAlias[] = readAlias(props.extract);
-    if (!(obj instanceof State)) {
+    if (!isState(obj)) {
         throw new ComponentError(
             `'${props.obj}' are not a valid State in 'state:obj' property of 'destruct' element`
         );
@@ -30,7 +30,7 @@ export default function (props: Properties = {}, context?: Context): NodeCompone
         remove(parentNode, component.items);
         const destructParams = propAlias(params, propnames, ob);
         const destructElements = intoDom(children, destructParams, _super);
-        insertBefore(parentNode, destructElements, marker);
+        append(parentNode, destructElements, marker);
         component.items = destructElements;
     });
     return [component, marker];

@@ -1,9 +1,9 @@
-import { State } from '@aldinh777/reactive';
-import { Context, NodeComponent, intoDom, ControlComponent } from '../dom';
-import ComponentError from '../error/ComponentError';
-import { Properties } from '../util';
-import { remove, insertBefore, _text } from '../dom/dom-util';
-import { PropAlias, propAlias, readAlias } from '../dom/prop-util';
+import { isState } from "@aldinh777/reactive-utils/validator";
+import { Context, NodeComponent, intoDom, ControlComponent } from "../dom";
+import { _text, remove, append } from "../dom/dom-util";
+import { PropAlias, propAlias, readAlias } from "../dom/prop-util";
+import ComponentError from "../error/ComponentError";
+import { Properties } from "../util";
 
 function createFlatListElement(
     alias: string,
@@ -30,7 +30,7 @@ export default function (props: Properties = {}, context?: Context): NodeCompone
     const list = context.params[props.list];
     const alias = props.as;
     const extracts: PropAlias[] = typeof props.extract === 'string' ? readAlias(props.extract) : [];
-    if (!(list instanceof State)) {
+    if (!isState(list)) {
         throw new ComponentError(
             `'${props.list}' are not a valid State in 'state:list' property of 'foreach' element`
         );
@@ -46,7 +46,7 @@ export default function (props: Properties = {}, context?: Context): NodeCompone
         }
         const newElems: NodeComponent[] = createFlatListElement(alias, extracts, items, context);
         remove(parentNode, component.items);
-        insertBefore(parentNode, newElems, marker);
+        append(parentNode, newElems, marker);
         component.items = newElems;
     });
     return [component, marker];

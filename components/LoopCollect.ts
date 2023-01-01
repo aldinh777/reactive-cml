@@ -1,9 +1,10 @@
-import { StateList, ListViewMapped } from '@aldinh777/reactive/collection';
+import { ListViewMapped } from '@aldinh777/reactive/collection/view/ListViewMapped';
+import { isList } from '@aldinh777/reactive-utils/validator';
 import { NodeComponent, Context, intoDom, ControlComponent } from '../dom';
+import { _text, append, remove } from '../dom/dom-util';
+import { readAlias, propAlias } from '../dom/prop-util';
 import ComponentError from '../error/ComponentError';
 import { Properties } from '../util';
-import { insertBefore, remove, _text } from '../dom/dom-util';
-import { readAlias, propAlias } from '../dom/prop-util';
 
 interface MirrorElement {
     items: NodeComponent[];
@@ -18,7 +19,7 @@ export default function (props: Properties = {}, context?: Context): NodeCompone
     const list = params[props.list];
     const alias = props.as;
     const extracts = typeof props.extract === 'string' ? readAlias(props.extract) : [];
-    if (!(list instanceof StateList)) {
+    if (!isList(list)) {
         throw new ComponentError(
             `'${props.list}' are not a valid StateCollection in 'collect:list' property of 'foreach' element`
         );
@@ -40,7 +41,7 @@ export default function (props: Properties = {}, context?: Context): NodeCompone
     listElement.onUpdate((_, next, prev: MirrorElement) => {
         const { parentNode } = prev.start;
         if (parentNode) {
-            insertBefore(parentNode, [next.start, ...next.items], prev.start);
+            append(parentNode, [next.start, ...next.items], prev.start);
             remove(parentNode, [prev.start, ...prev.items]);
         }
         const startIndex = component.items.indexOf(prev.start);
@@ -53,7 +54,7 @@ export default function (props: Properties = {}, context?: Context): NodeCompone
         const nextMarker = nextElem ? nextElem.start : marker;
         const { parentNode } = marker;
         if (parentNode) {
-            insertBefore(parentNode, [inserted.start, ...inserted.items], nextMarker);
+            append(parentNode, [inserted.start, ...inserted.items], nextMarker);
         }
         const startIndex = nextElem ? component.items.indexOf(nextElem.start) : 0;
         component.items.splice(startIndex, 0, inserted.start, ...inserted.items);

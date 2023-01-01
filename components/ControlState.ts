@@ -1,7 +1,7 @@
 import { State } from '@aldinh777/reactive';
+import { has, isState } from '@aldinh777/reactive-utils/validator';
 import { Context, NodeComponent, intoDom, ControlComponent } from '../dom';
-import { isReactive } from '../dom/additional-util';
-import { _elem, _text, mount, dismount, append, remove, insertBefore } from '../dom/dom-util';
+import { _elem, _text, append, remove, mount, dismount } from '../dom/dom-util';
 import ComponentError from '../error/ComponentError';
 import { Properties } from '../util';
 
@@ -10,16 +10,16 @@ export default function (props: Properties = {}, context?: Context): NodeCompone
         return;
     }
     const { children, params, _super } = context;
-    const unless = Reflect.has(props, 'rev');
+    const unless = has(props, ['rev']);
     let isActive: State<any> = params[props.value];
-    if (!isReactive(isActive)) {
+    if (!isState(isActive)) {
         throw new ComponentError(
             `'${props.value}' are not a valid State in 'state:value' property of '${
                 unless ? 'unless' : 'if'
             }' element`
         );
     }
-    const hasEqual = Reflect.has(props, 'equal');
+    const hasEqual = has(props, ['equal']);
     const value = isActive.getValue();
     if (hasEqual) {
         const eq = props.equal;
@@ -63,7 +63,7 @@ export default function (props: Properties = {}, context?: Context): NodeCompone
             if (isMounted) {
                 mount(parentNode, elements, marker);
             } else {
-                insertBefore(parentNode, elements, marker);
+                append(parentNode, elements, marker);
             }
             component.items = elements;
         } else {
