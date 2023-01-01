@@ -1,3 +1,4 @@
+import { dirname, join, relative } from 'path';
 import { parseCML } from '@aldinh777/cml-parser';
 import { processRC } from '../src';
 import { DEFAULT_COMPONENT_SET } from '../constants';
@@ -29,6 +30,18 @@ export interface RCMLParserOptions {
         customPreprocessor?: Preprocessor[];
         disableDefault?: boolean;
     };
+    _localDebug?: boolean;
+}
+
+const DEFAULT_COMPONENT_PATH = '@aldinh777/reactive-cml/components';
+const DEFAULT_INTODOM_PATH = '@aldinh777/reactive-cml/dom';
+const DEFAULT_SIMPLEDON_PATH = '@aldinh777/reactive-cml/dom/dom-utils';
+const LOCAL_COMPONENT_PATH = join(__dirname, '../components');
+const LOCAL_INTODOM_PATH = join(__dirname, '../dom');
+const LOCAL_SIMPLEDOM_PATH = join(__dirname, '../dom/dom-utils');
+
+function pathify(target: string | void, source: string): string {
+    return './' + (target ? relative(dirname(target), source) : source).replace(/\\/g, '/');
 }
 
 function dependify(dep: string | string[]): string {
@@ -52,7 +65,11 @@ function joinDependencies(mode: ImportType, dependencies: [string, string | stri
     return dependencies.map(([from, imports]) => importify(imports, from, mode)).join('');
 }
 
-export function parseReactiveCML(source: string, options: RCMLParserOptions = {}): string {
+export function parseReactiveCML(
+    source: string,
+    options: RCMLParserOptions = {},
+    filepath?: string
+): string {
     const mode = options.mode || 'import';
     const trimCML = !(options.trimCML === false);
     const autoImportsOpt = options.autoImports || [];
@@ -94,19 +111,27 @@ export function parseReactiveCML(source: string, options: RCMLParserOptions = {}
     const fullparams = params.concat(dependencies);
     const rcResult = processRC(cmlTree);
     const rcJson = JSON.stringify(rcResult, null, 2);
-    const baseCompPath = '@aldinh777/reactive-cml/components';
     for (const [query, from] of imports) {
         autoImports.push([from, query]);
     }
     for (const dep of dependencies.filter((dep) => DEFAULT_COMPONENT_SET.has(dep))) {
-        autoImports.push([`${baseCompPath}/${dep}`, dep]);
+        const componentPath = options._localDebug
+            ? pathify(filepath, LOCAL_COMPONENT_PATH)
+            : DEFAULT_COMPONENT_PATH;
+        autoImports.push([`${componentPath}/${dep}`, dep]);
     }
     let outreturn: string;
     if (fullparams.length > 0) {
-        autoImports.push(['@aldinh777/reactive-cml/dom', ['intoDom']]);
+        const domifiedPath = options._localDebug
+            ? pathify(filepath, LOCAL_INTODOM_PATH)
+            : DEFAULT_INTODOM_PATH;
+        autoImports.push([domifiedPath, ['intoDom']]);
         outreturn = `return intoDom(${rcJson}, {${fullparams.join()}}, context)`;
     } else {
-        autoImports.push(['@aldinh777/reactive-cml/dom/dom-util', ['simpleDom']]);
+        const domifiedPath = options._localDebug
+            ? pathify(filepath, LOCAL_SIMPLEDOM_PATH)
+            : DEFAULT_SIMPLEDON_PATH;
+        autoImports.push([domifiedPath, ['simpleDom']]);
         outreturn = `return simpleDom(${rcJson}, context)`;
     }
     if (relativeImports) {

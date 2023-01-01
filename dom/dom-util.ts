@@ -6,55 +6,70 @@ export const _doc: Document = document;
 export const _text = (text: string): Text => _doc.createTextNode(text);
 export const _elem = (tag: string): HTMLElement => _doc.createElement(tag);
 
-export function append(parentNode: Node, components: NodeComponent[], runMounter = true) {
+export function mount(target: null | Node, components: NodeComponent[], nodeBefore?: Node) {
+    if (target) {
+        if (nodeBefore) {
+            insertBefore(target, components, nodeBefore);
+        } else {
+            append(target, components);
+        }
+    }
+    for (const component of components) {
+        if (!(component instanceof Node)) {
+            if (component.mount) {
+                component.mount();
+            }
+            mount(null, component.items);
+        }
+    }
+}
+
+export function dismount(target: null | Node, components: NodeComponent[]) {
+    if (target) {
+        remove(target, components);
+    }
+    for (const component of components) {
+        if (!(component instanceof Node)) {
+            if (component.dismount) {
+                component.dismount();
+            }
+            dismount(null, component.items);
+        }
+    }
+}
+
+export function append(parentNode: Node, components: NodeComponent[]) {
     for (const component of components) {
         if (component instanceof Node) {
             parentNode.appendChild(component);
-            continue;
-        }
-        if (component.root) {
+        } else if (component.root) {
             parentNode.appendChild(component.root);
-        }
-        append(component.root || parentNode, component.items, runMounter);
-        if (runMounter && component.mount) {
-            component.mount();
+        } else {
+            append(parentNode, component.items);
         }
     }
 }
 
-export function remove(parentNode: Node, components: NodeComponent[], runDismounter = true) {
+export function remove(parentNode: Node, components: NodeComponent[]) {
     for (const component of components) {
         if (component instanceof Node) {
             parentNode.removeChild(component);
-            continue;
-        }
-        if (component.root) {
+        } else if (component.root) {
             parentNode.removeChild(component.root);
-        }
-        remove(component.root || parentNode, component.items, runDismounter);
-        if (runDismounter && component.dismount) {
-            component.dismount();
+        } else {
+            remove(parentNode, component.items);
         }
     }
 }
 
-export function insertBefore(
-    parentNode: Node,
-    components: NodeComponent[],
-    nodeBefore: Node,
-    runMounter = true
-) {
+export function insertBefore(parentNode: Node, components: NodeComponent[], nodeBefore: Node) {
     for (const component of components) {
         if (component instanceof Node) {
             parentNode.insertBefore(component, nodeBefore);
-            continue;
-        }
-        if (component.root) {
+        } else if (component.root) {
             parentNode.insertBefore(component.root, nodeBefore);
-        }
-        append(component.root || parentNode, component.items, runMounter);
-        if (runMounter && component.mount) {
-            component.mount();
+        } else {
+            insertBefore(parentNode, component.items, nodeBefore);
         }
     }
 }
@@ -84,7 +99,7 @@ export function simpleDom(tree: RCResult[], component?: Context): NodeComponent[
             const value = props[prop];
             setAttr(elem, prop, value);
         }
-        append(elem, simpleDom(children), false);
+        append(elem, simpleDom(children));
         result.push(elem);
     }
     return onMount || onDismount

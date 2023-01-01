@@ -1,8 +1,9 @@
 import { State } from '@aldinh777/reactive';
 import { Context, NodeComponent, intoDom, ControlComponent } from '../dom';
+import { isReactive } from '../dom/additional-util';
+import { _elem, _text, mount, dismount, append, remove, insertBefore } from '../dom/dom-util';
 import ComponentError from '../error/ComponentError';
 import { Properties } from '../util';
-import { append, remove, insertBefore, _elem, _text } from '../dom/dom-util';
 
 export default function (props: Properties = {}, context?: Context): NodeComponent[] | void {
     if (!context || typeof props.value !== 'string') {
@@ -10,8 +11,8 @@ export default function (props: Properties = {}, context?: Context): NodeCompone
     }
     const { children, params, _super } = context;
     const unless = Reflect.has(props, 'rev');
-    let stateValue: State<any> | boolean = params[props.value];
-    if (!(stateValue instanceof State)) {
+    let isActive: State<any> = params[props.value];
+    if (!isReactive(isActive)) {
         throw new ComponentError(
             `'${props.value}' are not a valid State in 'state:value' property of '${
                 unless ? 'unless' : 'if'
@@ -19,42 +20,59 @@ export default function (props: Properties = {}, context?: Context): NodeCompone
         );
     }
     const hasEqual = Reflect.has(props, 'equal');
-    const value = stateValue.getValue();
+    const value = isActive.getValue();
     if (hasEqual) {
         const eq = props.equal;
         const equalCond = new State(unless ? value != eq : value == eq);
         if (unless) {
-            stateValue.onChange((next) => equalCond.setValue(next != eq));
+            isActive.onChange((next) => equalCond.setValue(next != eq));
         } else {
-            stateValue.onChange((next) => equalCond.setValue(next == eq));
+            isActive.onChange((next) => equalCond.setValue(next == eq));
         }
-        stateValue = equalCond;
+        isActive = equalCond;
     } else if (unless) {
         const cond = new State(!value);
-        stateValue.onChange((next) => cond.setValue(!next));
-        stateValue = cond;
+        isActive.onChange((next) => cond.setValue(!next));
+        isActive = cond;
     }
+    let isMounted = false;
     const hide = _elem('div');
     const marker = _text('');
     const elements = intoDom(children, params, _super, false);
-    const component: ControlComponent = { items: [] };
-    if (stateValue.getValue()) {
+    const component: ControlComponent = {
+        items: [],
+        mount() {
+            isMounted = true;
+        },
+        dismount() {
+            isMounted = false;
+        }
+    };
+    if (isActive.getValue()) {
         component.items = elements;
     } else {
-        append(hide, elements, false);
+        append(hide, elements);
     }
-    stateValue.onChange((active) => {
+    isActive.onChange((active) => {
         const { parentNode } = marker;
         if (!parentNode) {
             return;
         }
         if (active) {
-            remove(hide, elements, false);
-            insertBefore(parentNode, elements, marker);
+            remove(hide, elements);
+            if (isMounted) {
+                mount(parentNode, elements, marker);
+            } else {
+                insertBefore(parentNode, elements, marker);
+            }
             component.items = elements;
         } else {
-            remove(parentNode, elements);
-            append(hide, elements, false);
+            if (isMounted) {
+                dismount(parentNode, elements);
+            } else {
+                remove(parentNode, elements);
+            }
+            append(hide, elements);
             component.items = [];
         }
     });

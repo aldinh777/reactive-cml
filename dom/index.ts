@@ -126,10 +126,8 @@ export function intoDom(
                 const elem = _elem(tag);
                 processElementProperties(elem, compProps, compEvents);
                 const componentResult = intoDom(children, params, context, false);
-                const everyoneIsNode = componentResult.some((item) => item instanceof Node);
-                if (everyoneIsNode) {
-                    append(elem, componentResult);
-                }
+                const everyoneIsNode = componentResult.every((item) => item instanceof Node);
+                append(elem, componentResult);
                 result.push(everyoneIsNode ? elem : { root: elem, items: componentResult });
             }
         }

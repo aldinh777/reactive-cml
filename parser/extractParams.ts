@@ -1,5 +1,5 @@
 import { CMLObject, CMLTree } from '@aldinh777/cml-parser';
-import { extractTextProps, TextProp } from '../util';
+import { extractTextProps } from '../util';
 
 export type Identifiers = [dependencies: string[], params: string[], blacklist?: Set<string>];
 export type Preprocessor = (node: CMLObject, ids: Identifiers) => CMLObject;
