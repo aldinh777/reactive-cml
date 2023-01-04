@@ -15,7 +15,7 @@ import preprocessList from './preprocessor/list';
 const DEFAULT_COMPONENT_PATH = '@aldinh777/reactive-cml/dom/components';
 const DEFAULT_INTODOM_PATH = '@aldinh777/reactive-cml/dom';
 const DEFAULT_SIMPLEDON_PATH = '@aldinh777/reactive-cml/dom/dom-util';
-const LOCAL_COMPONENT_PATH = join(__dirname, '../components');
+const LOCAL_COMPONENT_PATH = join(__dirname, '../dom/components');
 const LOCAL_INTODOM_PATH = join(__dirname, '../dom');
 const LOCAL_SIMPLEDOM_PATH = join(__dirname, '../dom/dom-util');
 
