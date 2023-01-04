@@ -34,7 +34,7 @@ export const COMPONENT_CHILDREN = 'Children';
 export const COMPONENT_SLOT = 'Slot';
 export const COMPONENT_COMPONENT = 'Component';
 
-export const DEFAULT_COMPONENT_SET = new Set([
+export const DEFAULT_COMPONENT_SET = [
     COMPONENT_CHILDREN,
     COMPONENT_SLOT,
     COMPONENT_COMPONENT,
@@ -46,4 +46,4 @@ export const DEFAULT_COMPONENT_SET = new Set([
     COMPONENT_LIST_BASIC,
     COMPONENT_LIST_STATE,
     COMPONENT_LIST_COLLECTION
-]);
+];

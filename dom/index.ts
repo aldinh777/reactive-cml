@@ -1,5 +1,5 @@
 import { isState } from '@aldinh777/reactive-utils/validator';
-import { DEFAULT_COMPONENT_SET } from '../constants';
+import { DEFAULT_COMPONENT_SET } from './constants';
 import ComponentError from '../error/ComponentError';
 import { RCResult, Component } from '../src';
 import { Properties, StaticProperties, TextProp } from '../util';
@@ -85,7 +85,7 @@ function createDispatcher(events: StaticProperties<Function>): EventDispatcher {
 
 function crash(name: string, err: any): ComponentError {
     let reason: string;
-    let trace = DEFAULT_COMPONENT_SET.has(name) ? [] : [name];
+    let trace = DEFAULT_COMPONENT_SET.includes(name) ? [] : [name];
     if (err instanceof Error) {
         if (err.name === 'ComponentError') {
             trace = trace.concat((err as ComponentError).componentTraces);

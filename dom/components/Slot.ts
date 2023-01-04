@@ -1,6 +1,6 @@
-import { Context, NodeComponent, intoDom } from '../dom';
-import { propAlias } from '../dom/prop-util';
-import { Properties } from '../util';
+import { Context, NodeComponent, intoDom } from '..';
+import { propAlias } from '../prop-util';
+import { Properties } from '../../util';
 
 export default function (props: Properties = {}, component: Context = {}): NodeComponent[] | void {
     if (component._super) {

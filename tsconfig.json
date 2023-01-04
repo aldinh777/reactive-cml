@@ -6,10 +6,9 @@
         "moduleResolution": "node"
     },
     "include": [
+        "src",
         "dom",
         "parser",
-        "error",
-        "components",
-        "preprocess"
+        "error"
     ]
 }

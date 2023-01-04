@@ -1,10 +1,10 @@
 import { ListViewMapped } from '@aldinh777/reactive/collection/view/ListViewMapped';
 import { isList } from '@aldinh777/reactive-utils/validator';
-import { NodeComponent, Context, intoDom, ControlComponent } from '../dom';
-import { _text, append, remove, mount, dismount } from '../dom/dom-util';
-import { readAlias, propAlias } from '../dom/prop-util';
-import ComponentError from '../error/ComponentError';
-import { Properties } from '../util';
+import { NodeComponent, Context, intoDom, ControlComponent } from '..';
+import { _text, append, remove, mount, dismount } from '../dom-util';
+import { readAlias, propAlias } from '../prop-util';
+import ComponentError from '../../error/ComponentError';
+import { Properties } from '../../util';
 
 interface MirrorElement {
     items: NodeComponent[];

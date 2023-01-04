@@ -1,9 +1,9 @@
 import { isState } from '@aldinh777/reactive-utils/validator';
-import { Context, NodeComponent, intoDom, ControlComponent } from '../dom';
-import { _text, dismount, remove, mount, append } from '../dom/dom-util';
-import { PropAlias, propAlias, readAlias } from '../dom/prop-util';
-import ComponentError from '../error/ComponentError';
-import { Properties } from '../util';
+import { Context, NodeComponent, intoDom, ControlComponent } from '..';
+import { _text, dismount, remove, mount, append } from '../dom-util';
+import { PropAlias, propAlias, readAlias } from '../prop-util';
+import ComponentError from '../../error/ComponentError';
+import { Properties } from '../../util';
 
 function createFlatListElement(
     alias: string,

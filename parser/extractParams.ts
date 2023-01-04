@@ -1,12 +1,5 @@
 import { CMLObject, CMLTree } from '@aldinh777/cml-parser';
-import { extractTextProps } from '../util';
-
-export type Identifiers = [dependencies: string[], params: string[], blacklist?: Set<string>];
-export type Preprocessor = (node: CMLObject, ids: Identifiers) => CMLObject;
-
-export function isInvalidIdentifier(id: string): RegExpMatchArray | null {
-    return id.match(/(^\d|[^\w_$])/);
-}
+import { extractTextProps, Identifiers, TreePreprocessor } from '../util';
 
 function undupe<T>(array: T[]): T[] {
     return Array.from(new Set(array));
@@ -15,18 +8,19 @@ function undupe<T>(array: T[]): T[] {
 function preprocessCML(
     item: CMLObject,
     ids: Identifiers,
-    preprocessors: Preprocessor[]
+    preprocessors: TreePreprocessor[],
+    isRoot: boolean = false
 ): CMLObject {
     let processed = item;
     for (const pre of preprocessors) {
-        processed = pre(processed, ids);
+        processed = pre(processed, ids, isRoot);
     }
     return processed;
 }
 
 export default function extractParams(
     items: CMLTree,
-    preprocessors: Preprocessor[],
+    preprocessors: TreePreprocessor[],
     blacklist: Set<string> = new Set()
 ): Identifiers {
     let dep: string[] = [];
