@@ -10,7 +10,7 @@ type ImportType = 'import' | 'require';
 export interface RCMLParserOptions {
     mode?: ImportType;
     trimCML?: boolean;
-    autoImports?: [from: string, imports: string | string[]][];
+    autoImports?: ImportFormat[];
     relativeImports?: {
         filename: string;
         extensions?: string[];
