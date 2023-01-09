@@ -1,5 +1,6 @@
 import { CMLObject, CMLTree } from '@aldinh777/cml-parser';
-import { extractTextProps, Identifiers, TreePreprocessor } from '../util';
+import { extractTextProps } from '../util';
+import { Identifiers, TreePreprocessor } from '../util-type';
 
 function undupe<T>(array: T[]): T[] {
     return Array.from(new Set(array));

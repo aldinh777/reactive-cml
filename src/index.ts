@@ -1,5 +1,6 @@
 import { CMLObject, CMLTree } from '@aldinh777/cml-parser';
-import { extractTextProps, StaticProperties, TextProp } from '../util';
+import { extractTextProps } from '../util';
+import { StaticProperties, TextProp } from '../util-type';
 
 export type RCResult = string | TextProp | Component;
 

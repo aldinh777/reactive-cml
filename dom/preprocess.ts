@@ -1,6 +1,6 @@
 import { join, relative, dirname } from 'path';
 import { processRC } from '../src';
-import { Preprocessor } from '../util';
+import { Preprocessor } from '../util-type';
 import { DEFAULT_COMPONENT_SET } from './constants';
 
 import preprocessChildren from './preprocessor/children';

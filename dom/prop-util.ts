@@ -1,4 +1,4 @@
-import { Properties } from '../util';
+import { Properties } from '../util-type';
 
 export type PropAlias = [prop: string, alias: string];
 

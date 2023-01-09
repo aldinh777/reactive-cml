@@ -9,7 +9,8 @@ import {
     PROP_STATE_OBJECT,
     TAG_DESTRUCT
 } from '../constants';
-import { Identifiers, isInvalidIdentifier } from '../../util';
+import { isInvalidIdentifier } from '../../util';
+import { Identifiers } from '../../util-type';
 
 export default function (item: CMLObject, [dep, par]: Identifiers): CMLObject {
     const { tag, props } = item;

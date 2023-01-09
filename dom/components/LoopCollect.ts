@@ -4,7 +4,7 @@ import { NodeComponent, Context, intoDom, ControlComponent } from '..';
 import { _text, append, remove, mount, dismount } from '../dom-util';
 import { readAlias, propAlias } from '../prop-util';
 import ComponentError from '../../error/ComponentError';
-import { Properties } from '../../util';
+import { Properties } from '../../util-type';
 
 interface MirrorElement {
     items: NodeComponent[];

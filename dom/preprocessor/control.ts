@@ -8,7 +8,8 @@ import {
     COMPONENT_CONTROL_STATE,
     COMPONENT_CONTROL_BASIC
 } from '../constants';
-import { Identifiers, isInvalidIdentifier } from '../../util';
+import { isInvalidIdentifier } from '../../util';
+import { Identifiers } from '../../util-type';
 
 export default function (item: CMLObject, [dep, par]: Identifiers): CMLObject {
     const { tag, props } = item;

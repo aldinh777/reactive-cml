@@ -2,7 +2,7 @@ import { isState } from '@aldinh777/reactive-utils/validator';
 import { DEFAULT_COMPONENT_SET } from './constants';
 import ComponentError from '../error/ComponentError';
 import { RCResult, Component } from '../src';
-import { Properties, StaticProperties, TextProp } from '../util';
+import { Properties, StaticProperties, TextProp } from '../util-type';
 import { setAttr, _text, _elem, append } from './dom-util';
 import { PropAlias, readAlias } from './prop-util';
 

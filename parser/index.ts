@@ -1,5 +1,5 @@
 import { parseCML } from '@aldinh777/cml-parser';
-import { ImportFormat, Preprocessor } from '../util';
+import { ImportFormat, Preprocessor } from '../util-type';
 import extractImports from './extractImports';
 import extractParams from './extractParams';
 import extractRelatives from './extractRelatives';

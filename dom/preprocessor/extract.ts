@@ -1,6 +1,6 @@
 import { CMLObject } from '@aldinh777/cml-parser';
 import { PROP_CONTROL_EXTRACT } from '../constants';
-import { Identifiers } from '../../util';
+import { Identifiers } from '../../util-type';
 
 export default function (item: CMLObject, [, , bl]: Identifiers): CMLObject {
     const { tag, props } = item;

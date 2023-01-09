@@ -1,6 +1,6 @@
 import { CMLObject } from '@aldinh777/cml-parser';
 import { COMPONENT_SLOT, TAG_SLOT } from '../constants';
-import { Identifiers } from '../../util';
+import { Identifiers } from '../../util-type';
 
 export default function (item: CMLObject, [dep]: Identifiers): CMLObject {
     const { tag } = item;

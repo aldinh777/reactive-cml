@@ -6,7 +6,8 @@ import {
     PROP_CONTROL_EXPORT,
     PROP_CONTROL_EXTRACT
 } from '../constants';
-import { Identifiers, isInvalidIdentifier } from '../../util';
+import { isInvalidIdentifier } from '../../util';
+import { Identifiers } from '../../util-type';
 
 export default function (item: CMLObject, [dep, par]: Identifiers): CMLObject {
     const { tag, props } = item;

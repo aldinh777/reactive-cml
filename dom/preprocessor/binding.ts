@@ -1,6 +1,7 @@
 import { CMLObject } from '@aldinh777/cml-parser';
 import CompileError from '../../error/CompileError';
-import { Identifiers, isInvalidIdentifier } from '../../util';
+import { isInvalidIdentifier } from '../../util';
+import { Identifiers } from '../../util-type';
 
 export default function (item: CMLObject, [, par]: Identifiers) {
     const { tag, props } = item;

@@ -1,6 +1,6 @@
 import { Context, NodeComponent, intoDom } from '..';
 import { PropAlias, readAlias, propAlias } from '../prop-util';
-import { Properties } from '../../util';
+import { Properties } from '../../util-type';
 
 export default function (props: Properties = {}, component: Context = {}): NodeComponent[] | void {
     if (typeof props.list !== 'string') {

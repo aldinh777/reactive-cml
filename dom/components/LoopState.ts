@@ -3,7 +3,7 @@ import { Context, NodeComponent, intoDom, ControlComponent } from '..';
 import { _text, dismount, remove, mount, append } from '../dom-util';
 import { PropAlias, propAlias, readAlias } from '../prop-util';
 import ComponentError from '../../error/ComponentError';
-import { Properties } from '../../util';
+import { Properties } from '../../util-type';
 
 function createFlatListElement(
     alias: string,

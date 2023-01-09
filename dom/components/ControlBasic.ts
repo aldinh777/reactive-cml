@@ -1,6 +1,6 @@
 import { has } from '@aldinh777/reactive-utils/validator';
 import { Context, NodeComponent, intoDom } from '..';
-import { Properties } from '../../util';
+import { Properties } from '../../util-type';
 
 export default function (props: Properties = {}, component: Context = {}): NodeComponent[] | void {
     if (typeof props.value !== 'string') {
