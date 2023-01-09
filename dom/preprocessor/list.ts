@@ -3,15 +3,17 @@ import CompileError from '../../error/CompileError';
 import {
     COMPONENT_LIST_BASIC,
     COMPONENT_LIST_COLLECTION,
-    COMPONENT_LIST_STATE,
-    PROP_COLLECTION_LIST,
-    PROP_CONTROL_AS,
-    PROP_CONTROL_LIST,
-    PROP_STATE_LIST,
-    TAG_FOREACH
+    COMPONENT_LIST_STATE
 } from '../constants';
 import { isInvalidIdentifier } from '../../util';
 import { Identifiers } from '../../util-type';
+import {
+    TAG_FOREACH,
+    PROP_CONTROL_AS,
+    PROP_STATE_LIST,
+    PROP_CONTROL_LIST,
+    PROP_COLLECTION_LIST
+} from '../../common/constants';
 
 export default function (item: CMLObject, [dep, par, bl]: Identifiers): CMLObject {
     const { tag, props } = item;

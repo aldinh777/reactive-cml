@@ -9,6 +9,7 @@
         "src",
         "dom",
         "parser",
-        "error"
+        "error",
+        "common"
     ]
 }

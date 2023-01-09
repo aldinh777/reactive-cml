@@ -67,7 +67,7 @@ export function parseReactiveCML(source: string, options?: RCMLParserOptions): s
 
     /** Preprocessing CML Tree */
     const cmlTree = parseCML(cml, trimCML);
-    const [dependencies, params] = extractParams(cmlTree, cmlPreprocessor.preprocessors);
+    const [dependencies, params] = extractParams(cmlTree, cmlPreprocessor.preprocessors || []);
 
     /** Recursively check related file to import */
     if (relativeImports) {
@@ -76,7 +76,7 @@ export function parseReactiveCML(source: string, options?: RCMLParserOptions): s
             .map((imp) => imp[1])
             .filter((m) => typeof m === 'string') as string[];
         const componentDependencies = dependencies.filter(
-            (dependency) => !cmlPreprocessor.relativeBlacklist.includes(dependency)
+            (dependency) => !cmlPreprocessor.relativeBlacklist?.includes(dependency)
         );
         const relativeDependencies = extractRelatives(filename, {
             dependencies: componentDependencies,

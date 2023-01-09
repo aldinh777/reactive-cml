@@ -3,13 +3,13 @@ import { processRC } from '../src';
 import { Preprocessor } from '../util-type';
 import { DEFAULT_COMPONENT_SET } from './constants';
 
+import preprocessExtract from '../common/preprocessor/extract';
+import preprocessBinding from '../common/preprocessor/binding';
 import preprocessChildren from './preprocessor/children';
 import preprocessSlot from './preprocessor/slot';
 import preprocessComponent from './preprocessor/component';
 import preprocessControl from './preprocessor/control';
 import preprocessDestruct from './preprocessor/destruct';
-import preprocessExtract from './preprocessor/extract';
-import preprocessBinding from './preprocessor/binding';
 import preprocessList from './preprocessor/list';
 
 const DEFAULT_COMPONENT_PATH = '@aldinh777/reactive-cml/dom/components';
@@ -25,7 +25,7 @@ function pathify(target: string | void, source: string): string {
 
 export default function (options?: { localDebug?: boolean; filepath: string }): Preprocessor {
     return {
-        buildScript(cmlRoot, [dependencies, params], addImport): string {
+        buildScript(cmlRoot, [dependencies, params], addImport) {
             /** add internal dependencies to import */
             const internalComponents = dependencies.filter((dep: string) =>
                 DEFAULT_COMPONENT_SET.includes(dep)

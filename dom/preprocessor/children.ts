@@ -1,13 +1,9 @@
 import { CMLObject } from '@aldinh777/cml-parser';
 import CompileError from '../../error/CompileError';
-import {
-    TAG_CHILDREN,
-    COMPONENT_CHILDREN,
-    PROP_CONTROL_EXPORT,
-    PROP_CONTROL_EXTRACT
-} from '../constants';
+import { COMPONENT_CHILDREN } from '../constants';
 import { isInvalidIdentifier } from '../../util';
 import { Identifiers } from '../../util-type';
+import { PROP_CONTROL_EXPORT, PROP_CONTROL_EXTRACT, TAG_CHILDREN } from '../../common/constants';
 
 export default function (item: CMLObject, [dep, par]: Identifiers): CMLObject {
     const { tag, props } = item;

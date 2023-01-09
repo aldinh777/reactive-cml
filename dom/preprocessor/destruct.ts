@@ -3,14 +3,16 @@ import CompileError from '../../error/CompileError';
 import {
     COMPONENT_DESTRUCT_BASIC,
     COMPONENT_DESTRUCT_COLLECTION,
-    COMPONENT_DESTRUCT_STATE,
-    PROP_COLLECTION_OBJECT,
-    PROP_CONTROL_OBJECT,
-    PROP_STATE_OBJECT,
-    TAG_DESTRUCT
+    COMPONENT_DESTRUCT_STATE
 } from '../constants';
 import { isInvalidIdentifier } from '../../util';
 import { Identifiers } from '../../util-type';
+import {
+    TAG_DESTRUCT,
+    PROP_STATE_OBJECT,
+    PROP_CONTROL_OBJECT,
+    PROP_COLLECTION_OBJECT
+} from '../../common/constants';
 
 export default function (item: CMLObject, [dep, par]: Identifiers): CMLObject {
     const { tag, props } = item;

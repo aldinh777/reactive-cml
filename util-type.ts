@@ -11,9 +11,9 @@ export interface Preprocessor {
         cmlRoot: CMLTree,
         identifiers: Identifiers,
         addImport: (item: ImportFormat) => any
-    ): void;
-    relativeBlacklist: string[];
-    preprocessors: TreePreprocessor[];
+    ): string;
+    relativeBlacklist?: string[];
+    preprocessors?: TreePreprocessor[];
 }
 
 export type TextProp = [name: string];
