@@ -5,7 +5,10 @@ import { _elem, _text, append, remove, mount, dismount } from '../dom-util';
 import ComponentError from '../../error/ComponentError';
 import { Properties } from '../../util-type';
 
-export default function (props: Properties = {}, component: Context = {}): NodeComponent[] | void {
+export default function (
+    props: Properties<any> = {},
+    component: Context = {}
+): NodeComponent[] | void {
     if (typeof props.value !== 'string') {
         return;
     }

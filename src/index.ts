@@ -1,20 +1,20 @@
 import { CMLObject, CMLTree } from '@aldinh777/cml-parser';
 import { extractTextProps } from '../util';
-import { StaticProperties, TextProp } from '../util-type';
+import { Properties, TextProp } from '../util-type';
 
 export type RCResult = string | TextProp | Component;
 
 export type Component = [
     tag: string,
-    props: StaticProperties<string | TextProp>,
-    events: StaticProperties<string>,
+    props: Properties<string | TextProp>,
+    events: Properties<string>,
     children: RCResult[]
 ];
 
 function processComponent(node: CMLObject): Component {
     const { tag, props, children } = node;
-    const propsComp: StaticProperties<string | TextProp> = {};
-    const eventsComp: StaticProperties<string> = {};
+    const propsComp: Properties<string | TextProp> = {};
+    const eventsComp: Properties<string> = {};
     for (const prop in props) {
         const value = props[prop];
         const matches = prop.match(/(on|bind):(.+)/);
@@ -29,8 +29,7 @@ function processComponent(node: CMLObject): Component {
             eventsComp[attr] = value;
         }
     }
-    const comp: Component = [tag, propsComp, eventsComp, processRC(children)];
-    return comp;
+    return [tag, propsComp, eventsComp, processRC(children)];
 }
 
 export function processRC(tree: CMLTree): RCResult[] {

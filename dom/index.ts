@@ -2,15 +2,15 @@ import { isState } from '@aldinh777/reactive-utils/validator';
 import { DEFAULT_COMPONENT_SET } from './constants';
 import ComponentError from '../error/ComponentError';
 import { RCResult, Component } from '../src';
-import { Properties, StaticProperties, TextProp } from '../util-type';
+import { Properties, TextProp } from '../util-type';
 import { setAttr, _text, _elem, append } from './dom-util';
 import { PropAlias, readAlias } from './prop-util';
 
-type PropertyResult = [props: Properties, events: StaticProperties<Function>];
+type PropertyResult = [props: Properties<any>, events: Properties<Function>];
 export type NodeComponent = Node | ControlComponent;
 export type EventDispatcher = (name: string, ...args: any[]) => any;
 export type ReactiveComponent = (
-    props: Properties,
+    props: Properties<any>,
     component?: Context,
     dispatch?: EventDispatcher
 ) => NodeComponent[] | void;
@@ -23,7 +23,7 @@ export interface ControlComponent {
 }
 
 export interface Context {
-    params?: Properties;
+    params?: Properties<any>;
     extracts?: PropAlias[];
     children?: RCResult[];
     onMount?(): void;
@@ -33,12 +33,12 @@ export interface Context {
 }
 
 function processComponentProperties(
-    params: Properties,
-    props: StaticProperties<string | TextProp>,
-    events: StaticProperties<string>
+    params: Properties<any>,
+    props: Properties<string | TextProp>,
+    events: Properties<string>
 ): PropertyResult {
-    const propsComp: Properties = {};
-    const eventsComp: StaticProperties<Function> = {};
+    const propsComp: Properties<any> = {};
+    const eventsComp: Properties<Function> = {};
     for (const prop in props) {
         const value = props[prop];
         if (typeof value === 'string') {
@@ -56,8 +56,8 @@ function processComponentProperties(
 
 function processElementProperties(
     elem: HTMLElement,
-    props: Properties,
-    events: StaticProperties<Function>
+    props: Properties<any>,
+    events: Properties<Function>
 ): void {
     for (const prop in props) {
         const propvalue = props[prop];
@@ -74,7 +74,7 @@ function processElementProperties(
     }
 }
 
-function createDispatcher(events: StaticProperties<Function>): EventDispatcher {
+function createDispatcher(events: Properties<Function>): EventDispatcher {
     return (name: string, ...args: any[]) => {
         const event = events[name];
         if (typeof event === 'function') {
@@ -101,7 +101,7 @@ function crash(name: string, err: any): ComponentError {
 
 export function intoDom(
     tree: RCResult[],
-    params: Properties,
+    params: Properties<any>,
     context?: Context,
     isRoot: boolean = false
 ): NodeComponent[] {

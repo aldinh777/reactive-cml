@@ -5,7 +5,10 @@ import { PropAlias, readAlias, propAlias } from '../prop-util';
 import ComponentError from '../../error/ComponentError';
 import { Properties } from '../../util-type';
 
-export default function (props: Properties = {}, component: Context = {}): NodeComponent[] | void {
+export default function (
+    props: Properties<any> = {},
+    component: Context = {}
+): NodeComponent[] | void {
     if (typeof props.obj !== 'string' || typeof props.extract !== 'string') {
         return;
     }

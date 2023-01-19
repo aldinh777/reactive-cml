@@ -11,7 +11,7 @@ interface MirrorElement {
     start: Text;
 }
 
-export default function (props: Properties = {}, component: Context = {}): NodeComponent[] | void {
+export default function (props: Properties<any> = {}, component: Context = {}): NodeComponent[] | void {
     if (typeof props.list !== 'string') {
         return;
     }

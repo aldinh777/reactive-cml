@@ -1,8 +1,6 @@
 import { CMLObject, CMLTree } from '@aldinh777/cml-parser';
 
-export type Properties = StaticProperties<any>;
-
-export interface StaticProperties<T> {
+export interface Properties<T> {
     [key: string]: T;
 }
 

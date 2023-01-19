@@ -3,11 +3,11 @@ import { Properties } from '../util-type';
 export type PropAlias = [prop: string, alias: string];
 
 export function propAlias(
-    params: Properties,
+    params: Properties<any>,
     aliases: PropAlias[],
-    obj: Properties | Map<string, any>
-): Properties {
-    const ob: Properties = Object.assign({}, params);
+    obj: Properties<any> | Map<string, any>
+): Properties<any> {
+    const ob: Properties<any> = Object.assign({}, params);
     for (const [prop, alias] of aliases) {
         ob[alias] = obj instanceof Map ? obj.get(prop) : obj[prop];
     }
