@@ -5,8 +5,8 @@ import {
     COMPONENT_DESTRUCT_COLLECTION,
     COMPONENT_DESTRUCT_STATE
 } from '../constants';
-import { isInvalidIdentifier } from '../../util';
-import { Identifiers } from '../../util-type';
+import { isInvalidIdentifier } from '../../common/util';
+import { Identifiers } from '../../common/types';
 import {
     TAG_DESTRUCT,
     PROP_STATE_OBJECT,

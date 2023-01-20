@@ -1,8 +1,8 @@
 import { CMLObject } from '@aldinh777/cml-parser';
 import CompileError from '../../error/CompileError';
 import { COMPONENT_CONTROL_STATE, COMPONENT_CONTROL_BASIC } from '../constants';
-import { isInvalidIdentifier } from '../../util';
-import { Identifiers } from '../../util-type';
+import { isInvalidIdentifier } from '../../common/util';
+import { Identifiers } from '../../common/types';
 import { TAG_IF, TAG_UNLESS, PROP_STATE_VALUE, PROP_CONTROL_VALUE } from '../../common/constants';
 
 export default function (item: CMLObject, [dep, par]: Identifiers): CMLObject {

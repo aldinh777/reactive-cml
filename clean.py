@@ -21,7 +21,7 @@ if __name__ == '__main__':
     root = '.'
 
     # Exclude the node_modules and test directories
-    excludes = ['node_modules']
+    excludes = ['node_modules', 'debug']
 
     # Remove files with the .js or .d.ts extensions
     patterns = ['*.js', '*.d.ts']

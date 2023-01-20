@@ -1,4 +1,4 @@
-import { FlatText } from './util-type';
+import { FlatText } from './types';
 
 export function isInvalidIdentifier(id: string): RegExpMatchArray | null {
     return id.match(/(^\d|[^\w_$])/);

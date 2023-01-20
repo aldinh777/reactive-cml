@@ -5,8 +5,8 @@ import {
     COMPONENT_LIST_COLLECTION,
     COMPONENT_LIST_STATE
 } from '../constants';
-import { isInvalidIdentifier } from '../../util';
-import { Identifiers } from '../../util-type';
+import { isInvalidIdentifier } from '../../common/util';
+import { Identifiers } from '../../common/types';
 import {
     TAG_FOREACH,
     PROP_CONTROL_AS,

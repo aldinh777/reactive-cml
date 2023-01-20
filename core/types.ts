@@ -1,5 +1,5 @@
 import { State } from '@aldinh777/reactive';
-import { FlatText, Properties } from '../util-type';
+import { FlatText, Properties } from '../common/types';
 import { PropAlias } from './prop-util';
 import { RCElement } from './render';
 

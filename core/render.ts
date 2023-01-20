@@ -1,6 +1,6 @@
 import { State } from '@aldinh777/reactive';
 import { isState } from '@aldinh777/reactive-utils/validator';
-import { FlatText, Properties } from '../util-type';
+import { FlatText, Properties } from '../common/types';
 import { readAlias } from './prop-util';
 import { RCResult, Component, RenderResult, ReactiveComponent } from './types';
 
@@ -75,6 +75,9 @@ export function render(
                     _super: component
                 };
                 const reactiveComponent: ReactiveComponent = params[tag];
+                if (typeof reactiveComponent !== 'function') {
+                    throw Error(`undefined or invalid component : '${tag}'`);
+                }
                 const componentResult = reactiveComponent(
                     componentProps,
                     componentContext,

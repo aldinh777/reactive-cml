@@ -1,6 +1,6 @@
 import { join, relative, dirname } from 'path';
-import { processRC } from '../src';
-import { Preprocessor } from '../util-type';
+import { processRC } from '../core';
+import { Preprocessor } from '../common/types';
 import { DEFAULT_COMPONENT_SET } from './constants';
 
 import preprocessExtract from '../common/preprocessor/extract';
@@ -13,7 +13,7 @@ import preprocessDestruct from './preprocessor/destruct';
 import preprocessList from './preprocessor/list';
 
 const DEFAULT_COMPONENT_PATH = '@aldinh777/reactive-cml/dom/components';
-const DEFAULT_INTODOM_PATH = '@aldinh777/reactive-cml/dom';
+const DEFAULT_INTODOM_PATH = '@aldinh777/reactive-cml/core/render';
 const DEFAULT_SIMPLEDON_PATH = '@aldinh777/reactive-cml/dom/dom-util';
 const LOCAL_COMPONENT_PATH = join(__dirname, '../dom/components');
 const LOCAL_INTODOM_PATH = join(__dirname, '../dom');
@@ -45,14 +45,14 @@ export default function (options?: { localDebug?: boolean; filepath: string }): 
                 const domifiedPath = options?.localDebug
                     ? pathify(options?.filepath, LOCAL_INTODOM_PATH)
                     : DEFAULT_INTODOM_PATH;
-                addImport([domifiedPath, ['intoDom']]);
-                outputScript = `return intoDom(${rcJson}, {${fullparams.join()}}, component, true)`;
+                addImport([domifiedPath, ['render']]);
+                outputScript = `return render(${rcJson}, {${fullparams.join()}}, component, true)`;
             } else {
                 const domifiedPath = options?.localDebug
                     ? pathify(options?.filepath, LOCAL_SIMPLEDOM_PATH)
                     : DEFAULT_SIMPLEDON_PATH;
-                addImport([domifiedPath, ['simpleDom']]);
-                outputScript = `return simpleDom(${rcJson}, component)`;
+                addImport([domifiedPath, ['simpleRender']]);
+                outputScript = `return simpleRender(${rcJson}, component)`;
             }
             return outputScript;
         },

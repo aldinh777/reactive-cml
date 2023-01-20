@@ -2,7 +2,7 @@
   "name": "@aldinh777/reactive-cml",
   "version": "0.15.2",
   "description": "Adding Reactivity to CML",
-  "main": "src/index.js",
+  "main": "core/index.js",
   "scripts": {
     "build": "tsc"
   },
@@ -12,7 +12,8 @@
     "@aldinh777/reactive": "^0.28.4",
     "@aldinh777/reactive-utils": "^0.1.9",
     "@types/node": "^18.11.18",
-    "typescript": "^4.9.4"
+    "typescript": "^4.9.4",
+    "vite": "^4.0.4"
   },
   "dependencies": {
     "@aldinh777/cml-parser": "^0.5.3"

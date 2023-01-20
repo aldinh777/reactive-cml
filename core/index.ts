@@ -1,6 +1,6 @@
 import { CMLObject, CMLTree } from '@aldinh777/cml-parser';
-import { extractTextProps } from '../util';
-import { Properties, FlatText } from '../util-type';
+import { extractTextProps } from '../common/util';
+import { Properties, FlatText } from '../common/types';
 import { RCFlatElement, RCResult } from './types';
 
 function processComponent(node: CMLObject): RCFlatElement {
