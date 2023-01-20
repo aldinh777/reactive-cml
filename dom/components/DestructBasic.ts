@@ -1,11 +1,12 @@
-import { Context, NodeComponent, intoDom } from '..';
-import { PropAlias, readAlias, propAlias } from '../prop-util';
-import { Properties } from '../../util-type';
+import { PropAlias, readAlias, propAlias } from '../../core/prop-util';
+import { render } from '../../core/render';
+import { Component, RenderResult } from '../../core/types';
+import { Properties } from '../../common/types';
 
 export default function (
     props: Properties<any> = {},
-    component: Context = {}
-): NodeComponent[] | void {
+    component: Component = {}
+): RenderResult[] | void {
     if (typeof props.obj !== 'string' || typeof props.extract !== 'string') {
         return;
     }
@@ -13,5 +14,5 @@ export default function (
     const obj = params[props.obj];
     const propnames: PropAlias[] = readAlias(props.extract);
     const localparams = propAlias(params, propnames, obj);
-    return intoDom(children, localparams, _super);
+    return render(children, localparams, _super);
 }

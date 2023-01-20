@@ -1,11 +1,12 @@
 import { has } from '@aldinh777/reactive-utils/validator';
-import { Context, NodeComponent, intoDom } from '..';
-import { Properties } from '../../util-type';
+import { render } from '../../core/render';
+import { Component, RenderResult } from '../../core/types';
+import { Properties } from '../../common/types';
 
 export default function (
     props: Properties<any> = {},
-    component: Context = {}
-): NodeComponent[] | void {
+    component: Component = {}
+): RenderResult[] | void {
     if (typeof props.value !== 'string') {
         return;
     }
@@ -16,12 +17,12 @@ export default function (
     if (hasEqual) {
         const condition = unless ? value != props.equal : value == props.equal;
         if (condition) {
-            return intoDom(children, params, _super);
+            return render(children, params, _super);
         }
     } else {
         const condition = unless ? !value : value;
         if (condition) {
-            return intoDom(children, params, _super);
+            return render(children, params, _super);
         }
     }
 }

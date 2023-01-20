@@ -1,16 +1,17 @@
-import { Context, NodeComponent, intoDom } from '..';
-import { propAlias } from '../prop-util';
-import { Properties } from '../../util-type';
+import { propAlias } from '../../core/prop-util';
+import { render } from '../../core/render';
+import { Component, RenderResult } from '../../core/types';
+import { Properties } from '../../common/types';
 
 export default function (
     props: Properties<any> = {},
-    component: Context = {}
-): NodeComponent[] | void {
+    component: Component = {}
+): RenderResult[] | void {
     if (component._super) {
         const { children, extracts, params, _super } = component;
         if (props.for === _super.slotname) {
             const nextParams = propAlias(params, extracts, params);
-            return intoDom(children, nextParams, _super);
+            return render(children, nextParams, _super);
         }
     }
 }

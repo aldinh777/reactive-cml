@@ -1,11 +1,12 @@
-import { Context, NodeComponent, intoDom } from '..';
-import { readAlias, propAlias } from '../prop-util';
-import { Properties } from '../../util-type';
+import { readAlias, propAlias } from '../../core/prop-util';
+import { render } from '../../core/render';
+import { Component, RenderResult } from '../../core/types';
+import { Properties } from '../../common/types';
 
 export default function (
     props: Properties<any> = {},
-    component: Context = {}
-): NodeComponent[] | void {
+    component: Component = {}
+): RenderResult[] | void {
     if (component._super) {
         const { children, extracts, params, _super } = component._super;
         const prevSlotName = _super?.slotname;
@@ -15,12 +16,12 @@ export default function (
         const exported = typeof props.export === 'string' ? readAlias(props.export) : [];
         const localParams = propAlias(params, exported, component.params);
         const childrenParams = propAlias(localParams, extracts, localParams);
-        const output = intoDom(children, childrenParams, _super);
+        const output = render(children, childrenParams, _super);
         if (_super) {
             _super.slotname = prevSlotName;
         }
         return output.length
             ? output
-            : intoDom(component.children, component.params, component._super);
+            : render(component.children, component.params, component._super);
     }
 }

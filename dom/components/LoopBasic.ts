@@ -1,8 +1,12 @@
-import { Context, NodeComponent, intoDom } from '..';
-import { PropAlias, readAlias, propAlias } from '../prop-util';
-import { Properties } from '../../util-type';
+import { PropAlias, readAlias, propAlias } from '../../core/prop-util';
+import { render } from '../../core/render';
+import { Component, RenderResult } from '../../core/types';
+import { Properties } from '../../common/types';
 
-export default function (props: Properties<any> = {}, component: Context = {}): NodeComponent[] | void {
+export default function (
+    props: Properties<any> = {},
+    component: Component = {}
+): RenderResult[] | void {
     if (typeof props.list !== 'string') {
         return;
     }
@@ -10,13 +14,13 @@ export default function (props: Properties<any> = {}, component: Context = {}): 
     const list = params[props.list];
     const alias: string = props.as;
     const extracts: PropAlias[] = typeof props.extract === 'string' ? readAlias(props.extract) : [];
-    const result: NodeComponent[] = [];
+    const result: RenderResult[] = [];
     for (const item of list) {
         const localParams = propAlias(params, extracts, item);
         if (alias) {
             Object.assign(localParams, { [alias]: item });
         }
-        result.push(...intoDom(children, localParams, _super));
+        result.push(...render(children, localParams, _super));
     }
     return result;
 }

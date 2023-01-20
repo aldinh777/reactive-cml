@@ -1,9 +1,10 @@
-import { Context, intoDom, NodeComponent } from '..';
-import { Properties } from '../../util-type';
+import { render } from '../../core/render';
+import { Component, RenderResult } from '../../core/types';
+import { Properties } from '../../common/types';
 
 export default function (
     _props: Properties<any> = {},
-    component: Context = {}
-): NodeComponent[] | void {
-    return intoDom(component.children, component.params, component._super);
+    component: Component = {}
+): RenderResult[] | void {
+    return render(component.children, component.params, component._super);
 }
