@@ -1,5 +1,5 @@
 import { Context, NodeComponent } from '.';
-import { RCResult, Component } from '../src';
+import { RCResult, RCFlatElement } from '../src/types';
 
 type ComponentHandler = (target: Node, components: NodeComponent[], nodeBefore: Node) => void;
 
@@ -66,7 +66,7 @@ export function simpleDom(tree: RCResult[], component?: Context): NodeComponent[
         if (typeof item === 'string') {
             result.push(_text(item));
         } else {
-            const [tag, props, , children] = item as Component;
+            const [tag, props, , children] = item as RCFlatElement;
             const elem = _elem(tag);
             for (const prop in props) {
                 const value = props[prop];

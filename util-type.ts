@@ -14,9 +14,8 @@ export interface Preprocessor {
     preprocessors?: TreePreprocessor[];
 }
 
-export type TextProp = [name: string];
+export type FlatText = [name: string];
 export type ImportFormat = [from: string, imports: string | string[]];
 
 export type Identifiers = [dependencies: string[], params: string[], blacklist?: Set<string>];
-export type RootPreprocessor = () => void;
 export type TreePreprocessor = (node: CMLObject, ids: Identifiers, isRoot: boolean) => CMLObject;

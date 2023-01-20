@@ -1,11 +1,11 @@
-import { TextProp } from './util-type';
+import { FlatText } from './util-type';
 
 export function isInvalidIdentifier(id: string): RegExpMatchArray | null {
     return id.match(/(^\d|[^\w_$])/);
 }
 
-export function extractTextProps(text: string): (string | TextProp)[] {
-    const extractedResult: (string | TextProp)[] = [];
+export function extractTextProps(text: string): (string | FlatText)[] {
+    const extractedResult: (string | FlatText)[] = [];
     let streamPropertyName = '';
     let propertyName = '';
     let isInProperty = false;

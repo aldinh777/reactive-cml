@@ -33,7 +33,7 @@ export default function (
     const list = component.params[props.list];
     const alias = props.as;
     const extracts: PropAlias[] = typeof props.extract === 'string' ? readAlias(props.extract) : [];
-    if (!isState(list)) {
+    if (!isState<any[]>(list)) {
         throw new ComponentError(
             `'${props.list}' are not a valid State in 'state:list' property of 'foreach' element`
         );

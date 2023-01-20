@@ -1,10 +1,10 @@
 import { isState } from '@aldinh777/reactive-utils/validator';
 import { DEFAULT_COMPONENT_SET } from './constants';
 import ComponentError from '../error/ComponentError';
-import { RCResult, Component } from '../src';
-import { Properties, TextProp } from '../util-type';
+import { Properties, FlatText } from '../util-type';
 import { setAttr, _text, _elem, append } from './dom-util';
 import { PropAlias, readAlias } from './prop-util';
+import { RCResult, RCFlatElement } from '../src/types';
 
 type PropertyResult = [props: Properties<any>, events: Properties<Function>];
 export type NodeComponent = Node | ControlComponent;
@@ -34,7 +34,7 @@ export interface Context {
 
 function processComponentProperties(
     params: Properties<any>,
-    props: Properties<string | TextProp>,
+    props: Properties<string | FlatText>,
     events: Properties<string>
 ): PropertyResult {
     const propsComp: Properties<any> = {};
@@ -113,7 +113,7 @@ export function intoDom(
             const [propname] = item;
             const param = params[propname];
             const text = _text('');
-            if (isState(param)) {
+            if (isState<any>(param)) {
                 text.textContent = param.getValue();
                 param.onChange((next: string) => (text.textContent = next));
             } else {
@@ -121,7 +121,7 @@ export function intoDom(
             }
             result.push(text);
         } else {
-            const [tag, props, events, children] = item as Component;
+            const [tag, props, events, children] = item as RCFlatElement;
             const [compProps, compEvents] = processComponentProperties(params, props, events);
             const extracts = typeof props.extract === 'string' ? readAlias(props.extract) : [];
             if (tag[0].match(/[A-Z]/)) {
