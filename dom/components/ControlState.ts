@@ -1,14 +1,16 @@
 import { State } from '@aldinh777/reactive';
 import { has, isState } from '@aldinh777/reactive-utils/validator';
-import { Context, NodeComponent, intoDom, ControlComponent } from '..';
-import { _elem, _text, append, remove, mount, dismount } from '../dom-util';
+import { RCElement, render } from '../../core/render';
+import { Component, RCComponent, RenderResult } from '../../core/types';
 import ComponentError from '../../error/ComponentError';
-import { Properties } from '../../util-type';
+import { Properties } from '../../common/types';
+import { mount, removeAll, _elem, _text } from '..';
+import { generateRandomId, getElementsBetween } from '../../common/helper';
 
 export default function (
     props: Properties<any> = {},
-    component: Context = {}
-): NodeComponent[] | void {
+    component: Component = {}
+): RenderResult[] | void {
     if (typeof props.value !== 'string') {
         return;
     }
@@ -25,54 +27,65 @@ export default function (
     const hasEqual = has(props, ['equal']);
     const value = isActive.getValue();
     if (hasEqual) {
-        const eq = props.equal;
-        const equalCond = new State(unless ? value != eq : value == eq);
+        const equalValue = props.equal;
+        const equalState = new State(unless ? value != equalValue : value == equalValue);
         if (unless) {
-            isActive.onChange((next) => equalCond.setValue(next != eq));
+            isActive.onChange((next) => equalState.setValue(next != equalValue));
         } else {
-            isActive.onChange((next) => equalCond.setValue(next == eq));
+            isActive.onChange((next) => equalState.setValue(next == equalValue));
         }
-        isActive = equalCond;
+        isActive = equalState;
     } else if (unless) {
-        const cond = new State(!value);
-        isActive.onChange((next) => cond.setValue(!next));
-        isActive = cond;
+        const condition = new State(!value);
+        isActive.onChange((next) => condition.setValue(!next));
+        isActive = condition;
     }
+    const componentID = generateRandomId(8);
+    const childrenComponents = render(children, params, _super);
     let isMounted = false;
-    const hide = _elem('div');
-    const marker = _text('');
-    const elements = intoDom(children, params, _super);
-    const result: ControlComponent = {
-        items: [],
-        mount: () => (isMounted = true),
-        dismount: () => (isMounted = false)
+    let dismount: () => void;
+    let elementStart: Node;
+    let elementEnd: Node;
+    component.onMount = () => {
+        isMounted = true;
+        elementStart = document.querySelector(`[data-fx="${componentID}"]`);
+        elementEnd = document.querySelector(`[data-fz="${componentID}"]`);
+        if (isActive.getValue()) {
+            const parentNode = elementEnd?.parentNode;
+            if (!parentNode) {
+                return;
+            }
+            const replaceMarkerStart = _text('');
+            const replaceMarkerEnd = _text('');
+            parentNode.replaceChild(replaceMarkerStart, elementStart);
+            parentNode.replaceChild(replaceMarkerEnd, elementEnd);
+            elementStart = replaceMarkerStart;
+            elementEnd = replaceMarkerEnd;
+            dismount = mount(parentNode, childrenComponents, elementEnd);
+        }
     };
-    if (isActive.getValue()) {
-        result.items = elements;
-    } else {
-        append(hide, elements);
-    }
+    component.onDismount = () => {
+        isMounted = false;
+        if (isActive.getValue()) {
+            dismount?.();
+        }
+    };
     isActive.onChange((active) => {
-        const { parentNode } = marker;
+        const parentNode = elementEnd?.parentNode;
         if (!parentNode) {
             return;
         }
-        if (active) {
-            remove(hide, elements);
-            if (isMounted) {
-                mount(parentNode, elements, marker);
+        if (isMounted) {
+            if (active) {
+                dismount = mount(parentNode, childrenComponents, elementEnd);
             } else {
-                append(parentNode, elements, marker);
+                const elements = getElementsBetween(elementStart, elementEnd);
+                removeAll(parentNode, elements);
+                dismount?.();
             }
-        } else {
-            if (isMounted) {
-                dismount(parentNode, elements);
-            } else {
-                remove(parentNode, elements);
-            }
-            append(hide, elements);
         }
-        result.items = active ? elements : [];
     });
-    return [result, marker];
+    const markerStart = new RCElement('span', { 'data-fx': componentID });
+    const markerEnd = new RCElement('span', { 'data-fz': componentID });
+    return [markerStart, markerEnd, { items: [], component }];
 }

@@ -1,3 +1,4 @@
+import { StateSubscription } from '@aldinh777/reactive';
 import { isState } from '@aldinh777/reactive-utils/validator';
 import { RCElement } from '../core/render';
 import { RenderResult } from '../core/types';
@@ -6,15 +7,20 @@ export const _doc = document;
 export const _text = (text: any) => _doc.createTextNode(text);
 export const _elem = (tag: string) => _doc.createElement(tag);
 
-export const append = (target: Node, elem: Node, before?: Node) => {
+export const append = (parent: Node, node: Node, before?: Node): void => {
     if (before) {
-        target.insertBefore(elem, before);
+        parent.insertBefore(node, before);
     } else {
-        target.appendChild(elem);
+        parent.appendChild(node);
+    }
+};
+export const removeAll = (parent: Node, nodes: Node[]): void => {
+    for (const node of nodes) {
+        parent.removeChild(node);
     }
 };
 
-export const setAttr = (element: Element, attribute: string, value: any) => {
+export const setAttr = (element: Element, attribute: string, value: any): void => {
     if (element.hasAttribute(attribute)) {
         element.setAttribute(attribute, value);
     } else {
@@ -24,15 +30,19 @@ export const setAttr = (element: Element, attribute: string, value: any) => {
     }
 };
 
-export function toDom(rcElement: RCElement): Element {
+type DomBindingOutput = [element: Element, bindings: StateSubscription<any>[]];
+
+export function toDom(rcElement: RCElement): DomBindingOutput {
+    const bindings: StateSubscription<any>[] = [];
     const domElement = _elem(rcElement.tag);
-    for (const prop in rcElement.props) {
-        const propvalue = rcElement.props[prop];
+    for (const propname in rcElement.props) {
+        const propvalue = rcElement.props[propname];
         if (isState(propvalue)) {
-            setAttr(domElement, prop, propvalue.getValue());
-            propvalue.onChange((nextvalue) => setAttr(domElement, prop, nextvalue));
+            setAttr(domElement, propname, propvalue.getValue());
+            const sub = propvalue.onChange((nextvalue) => setAttr(domElement, propname, nextvalue));
+            bindings.push(sub);
         } else {
-            setAttr(domElement, prop, propvalue);
+            setAttr(domElement, propname, propvalue);
         }
     }
     for (const event in rcElement.events) {
@@ -44,34 +54,60 @@ export function toDom(rcElement: RCElement): Element {
             append(domElement, _text(child));
         } else if (isState(child)) {
             const textNode = _text(child.getValue());
-            child.onChange((text) => (textNode.textContent = String(text)));
+            const sub = child.onChange((text) => (textNode.textContent = String(text)));
+            bindings.push(sub);
             append(domElement, textNode);
         } else {
-            append(domElement, toDom(child));
+            const [element, nestedBindings] = toDom(child);
+            append(domElement, element);
+            bindings.push(...nestedBindings);
         }
     }
-    return domElement;
+    return [domElement, bindings];
 }
 
-export function mount(target: Node, components: RenderResult[], before?: Node) {
+export function mount(parent: Node, components: RenderResult[], before?: Node): () => void {
+    const bindings: StateSubscription<any>[] = [];
+    const dismounters: (() => void)[] = [];
     for (const item of components) {
         if (typeof item === 'string') {
-            append(target, _text(item), before);
+            append(parent, _text(item), before);
         } else if (isState(item)) {
             const textNode = _text(item.getValue());
-            item.onChange((text) => (textNode.textContent = String(text)));
-            append(target, textNode, before);
+            const sub = item.onChange((text) => (textNode.textContent = String(text)));
+            bindings.push(sub);
+            append(parent, textNode, before);
         } else if (item instanceof RCElement) {
-            append(target, toDom(item), before);
+            const [element, nestedBindings] = toDom(item);
+            append(parent, element, before);
+            bindings.push(...nestedBindings);
         } else {
-            const parent = (item.root && toDom(item.root)) || target;
-            if (parent !== target) {
-                append(target, parent, before);
+            let nextParent = parent;
+            if (item.root) {
+                const [element, nestedBindings] = toDom(item.root);
+                nextParent = element;
+                bindings.push(...nestedBindings);
             }
+            const isEqualParent = parent === nextParent;
+            if (!isEqualParent) {
+                append(parent, nextParent, before);
+            }
+            const dismount = mount(nextParent, item.items, isEqualParent ? before : undefined);
+            dismounters.push(dismount);
             if (item?.component?.onMount) {
                 item.component.onMount();
             }
-            mount(parent, item.items);
+            if (item?.component?.onDismount) {
+                dismounters.push(item.component.onDismount);
+            }
         }
     }
+    return () => {
+        for (const binding of bindings) {
+            binding.unsub();
+        }
+        for (const dismount of dismounters) {
+            dismount();
+        }
+    };
 }
