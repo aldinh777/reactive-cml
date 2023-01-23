@@ -45,7 +45,7 @@ export function createMounter(
     const NAMESPACE_START = `data-${markerID}x`;
     const NAMESPACE_END = `data-${markerID}z`;
     let dismount: () => any;
-    const mountData: MounterData = {
+    const mounter: MounterData = {
         isMounted: false,
         marker: {},
         rendered: [
@@ -54,14 +54,14 @@ export function createMounter(
             { items: [], component }
         ],
         mount(components: RenderResult[]) {
-            const endMarker = mountData.marker.end;
+            const endMarker = mounter.marker.end;
             const parent = endMarker?.parentNode;
             dismount = mount(parent, components, endMarker);
         },
         dismount() {
             dismount?.();
             dismount = null;
-            const { start, end } = mountData.marker;
+            const { start, end } = mounter.marker;
             const parent = end?.parentNode;
             if (start && end) {
                 const elements = getElementsBetween(start, end);
@@ -70,7 +70,7 @@ export function createMounter(
         }
     };
     component.onMount = () => {
-        mountData.isMounted = true;
+        mounter.isMounted = true;
         const elementStart = _doc.querySelector(`[${NAMESPACE_START}="${COMPONENT_ID}"]`);
         const elementEnd = _doc.querySelector(`[${NAMESPACE_END}="${COMPONENT_ID}"]`);
         const parentNode = elementEnd?.parentNode;
@@ -81,15 +81,15 @@ export function createMounter(
         const replaceMarkerEnd = _text('');
         parentNode.replaceChild(replaceMarkerStart, elementStart);
         parentNode.replaceChild(replaceMarkerEnd, elementEnd);
-        mountData.marker.start = replaceMarkerStart;
-        mountData.marker.end = replaceMarkerEnd;
+        mounter.marker.start = replaceMarkerStart;
+        mounter.marker.end = replaceMarkerEnd;
         options.onMount?.();
     };
     component.onDismount = () => {
-        mountData.isMounted = false;
+        mounter.isMounted = false;
         if (!options.preventDismount?.()) {
-            mountData.dismount?.();
+            mounter.dismount?.();
         }
     };
-    return mountData;
+    return mounter;
 }
