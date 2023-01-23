@@ -7,6 +7,9 @@ import { Properties } from '../../common/types';
 import { mount, removeAll, _elem, _text } from '..';
 import { generateRandomId, getElementsBetween } from '../../common/helper';
 
+const DATA_MARKER_START = 'data-csx';
+const DATA_MARKER_END = 'data-csz';
+
 export default function (
     props: Properties<any> = {},
     component: Component = {}
@@ -48,8 +51,8 @@ export default function (
     let elementEnd: Node;
     component.onMount = () => {
         isMounted = true;
-        elementStart = document.querySelector(`[data-fx="${componentID}"]`);
-        elementEnd = document.querySelector(`[data-fz="${componentID}"]`);
+        elementStart = document.querySelector(`[${DATA_MARKER_START}="${componentID}"]`);
+        elementEnd = document.querySelector(`[${DATA_MARKER_END}="${componentID}"]`);
         if (isActive.getValue()) {
             const parentNode = elementEnd?.parentNode;
             if (!parentNode) {
@@ -85,7 +88,7 @@ export default function (
             }
         }
     });
-    const markerStart = new RCElement('span', { 'data-fx': componentID });
-    const markerEnd = new RCElement('span', { 'data-fz': componentID });
+    const markerStart = new RCElement('span', { [DATA_MARKER_START]: componentID });
+    const markerEnd = new RCElement('span', { [DATA_MARKER_END]: componentID });
     return [markerStart, markerEnd, { items: [], component }];
 }

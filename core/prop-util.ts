@@ -5,7 +5,7 @@ export type PropAlias = [prop: string, alias: string];
 export function propAlias(
     params: Properties<any>,
     aliases: PropAlias[],
-    obj: Properties<any> | Map<string, any>
+    obj: object | Map<string, any>
 ): Properties<any> {
     const ob: Properties<any> = Object.assign({}, params);
     for (const [prop, alias] of aliases) {
