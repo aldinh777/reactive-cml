@@ -6,6 +6,37 @@ import ComponentError from '../../error/ComponentError';
 import { Properties } from '../../common/types';
 import { createMounter } from '../component-helper';
 
+function statify(props: Properties<any>, params: Properties<any>): State<boolean> {
+    const name = props.value;
+    const state = params[name];
+    const isUnless = has(props, ['rev']);
+    const hasEqual = has(props, ['equal']);
+    if (!isState(state)) {
+        throw new ComponentError(
+            `'${name}' are not a valid State in 'state:value' property of '${
+                isUnless ? 'unless' : 'if'
+            }' element`
+        );
+    }
+    const value = state.getValue();
+    if (hasEqual) {
+        const equalValue = props.equal;
+        const equalState = new State(isUnless ? value != equalValue : value == equalValue);
+        if (isUnless) {
+            state.onChange((next) => equalState.setValue(next != equalValue));
+        } else {
+            state.onChange((next) => equalState.setValue(next == equalValue));
+        }
+        return equalState;
+    } else if (isUnless) {
+        const condition = new State(!value);
+        state.onChange((next) => condition.setValue(!next));
+        return condition;
+    } else {
+        return state as State<boolean>;
+    }
+}
+
 export default function (
     props: Properties<any> = {},
     component: Component = {}
@@ -14,41 +45,17 @@ export default function (
         return;
     }
     const { children, params, _super } = component;
-    const unless = has(props, ['rev']);
-    let isActive: State<any> = params[props.value];
-    if (!isState(isActive)) {
-        throw new ComponentError(
-            `'${props.value}' are not a valid State in 'state:value' property of '${
-                unless ? 'unless' : 'if'
-            }' element`
-        );
-    }
-    const hasEqual = has(props, ['equal']);
-    const value = isActive.getValue();
-    if (hasEqual) {
-        const equalValue = props.equal;
-        const equalState = new State(unless ? value != equalValue : value == equalValue);
-        if (unless) {
-            isActive.onChange((next) => equalState.setValue(next != equalValue));
-        } else {
-            isActive.onChange((next) => equalState.setValue(next == equalValue));
-        }
-        isActive = equalState;
-    } else if (unless) {
-        const condition = new State(!value);
-        isActive.onChange((next) => condition.setValue(!next));
-        isActive = condition;
-    }
+    const state = statify(params, props);
     const elements = render(children, params, _super);
     const mounter = createMounter('cs', component, {
         onMount() {
-            if (isActive.getValue()) {
+            if (state.getValue()) {
                 mounter.mount(elements);
             }
         },
-        preventDismount: () => !isActive.getValue()
+        preventDismount: () => !state.getValue()
     });
-    isActive.onChange((active) => {
+    state.onChange((active) => {
         if (mounter.isMounted) {
             if (active) {
                 mounter.mount(elements);
