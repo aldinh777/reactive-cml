@@ -1,14 +1,10 @@
 import { State } from '@aldinh777/reactive';
 import { has, isState } from '@aldinh777/reactive-utils/validator';
-import { RCElement, render } from '../../core/render';
-import { Component, RCComponent, RenderResult } from '../../core/types';
+import { render } from '../../core/render';
+import { Component, RenderResult } from '../../core/types';
 import ComponentError from '../../error/ComponentError';
 import { Properties } from '../../common/types';
-import { mount, removeAll, _elem, _text } from '..';
-import { generateRandomId, getElementsBetween } from '../../common/helper';
-
-const DATA_MARKER_START = 'data-csx';
-const DATA_MARKER_END = 'data-csz';
+import { createMounter } from '../component-helper';
 
 export default function (
     props: Properties<any> = {},
@@ -43,52 +39,23 @@ export default function (
         isActive.onChange((next) => condition.setValue(!next));
         isActive = condition;
     }
-    const componentID = generateRandomId(8);
-    const childrenComponents = render(children, params, _super);
-    let isMounted = false;
-    let dismount: () => void;
-    let elementStart: Node;
-    let elementEnd: Node;
-    component.onMount = () => {
-        isMounted = true;
-        elementStart = document.querySelector(`[${DATA_MARKER_START}="${componentID}"]`);
-        elementEnd = document.querySelector(`[${DATA_MARKER_END}="${componentID}"]`);
-        if (isActive.getValue()) {
-            const parentNode = elementEnd?.parentNode;
-            if (!parentNode) {
-                return;
+    const elements = render(children, params, _super);
+    const mounter = createMounter('cs', component, {
+        onMount() {
+            if (isActive.getValue()) {
+                mounter.mount(elements);
             }
-            const replaceMarkerStart = _text('');
-            const replaceMarkerEnd = _text('');
-            parentNode.replaceChild(replaceMarkerStart, elementStart);
-            parentNode.replaceChild(replaceMarkerEnd, elementEnd);
-            elementStart = replaceMarkerStart;
-            elementEnd = replaceMarkerEnd;
-            dismount = mount(parentNode, childrenComponents, elementEnd);
-        }
-    };
-    component.onDismount = () => {
-        isMounted = false;
-        if (isActive.getValue()) {
-            dismount?.();
-        }
-    };
+        },
+        preventDismount: () => !isActive.getValue()
+    });
     isActive.onChange((active) => {
-        const parentNode = elementEnd?.parentNode;
-        if (!parentNode) {
-            return;
-        }
-        if (isMounted) {
+        if (mounter.isMounted) {
             if (active) {
-                dismount = mount(parentNode, childrenComponents, elementEnd);
+                mounter.mount(elements);
             } else {
-                const elements = getElementsBetween(elementStart, elementEnd);
-                removeAll(parentNode, elements);
-                dismount?.();
+                mounter.dismount();
             }
         }
     });
-    const markerStart = new RCElement('span', { [DATA_MARKER_START]: componentID });
-    const markerEnd = new RCElement('span', { [DATA_MARKER_END]: componentID });
-    return [markerStart, markerEnd, { items: [], component }];
+    return mounter.rendered;
 }
