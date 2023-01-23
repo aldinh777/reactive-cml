@@ -45,7 +45,7 @@ export default function (
         return;
     }
     const { children, params, _super } = component;
-    const state = statify(params, props);
+    const state = statify(props, params);
     const elements = render(children, params, _super);
     const mounter = createMounter('cs', component, {
         onMount() {
