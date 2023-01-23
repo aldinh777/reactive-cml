@@ -1,17 +1,20 @@
 import { ListViewMapped } from '@aldinh777/reactive/collection/view/ListViewMapped';
 import { isList } from '@aldinh777/reactive-utils/validator';
-import { NodeComponent, Context, intoDom, ControlComponent } from '..';
-import { _text, append, remove, mount, dismount } from '../dom-util';
-import { readAlias, propAlias } from '../prop-util';
+import { readAlias, propAlias } from '../../core/prop-util';
 import ComponentError from '../../error/ComponentError';
-import { Properties } from '../../util-type';
+import { Properties } from '../../common/types';
+import { Component, RenderResult } from '../../core/types';
+import { render } from '../../core/render';
 
 interface MirrorElement {
-    items: NodeComponent[];
+    items: RenderResult[];
     start: Text;
 }
 
-export default function (props: Properties<any> = {}, component: Context = {}): NodeComponent[] | void {
+export default function (
+    props: Properties<any> = {},
+    component: Component = {}
+): RenderResult[] | void {
     if (typeof props.list !== 'string') {
         return;
     }
@@ -25,6 +28,8 @@ export default function (props: Properties<any> = {}, component: Context = {}): 
         );
     }
     let isMounted = false;
+    component.onMount = () => (isMounted = true);
+    component.onDismount = () => (isMounted = false);
     const marker = _text('');
     const listMirror: ListViewMapped<any, MirrorElement> = new ListViewMapped(list, (item) => {
         const localParams = propAlias(params, extracts, item);
@@ -32,19 +37,15 @@ export default function (props: Properties<any> = {}, component: Context = {}): 
             Object.assign(localParams, { [alias]: item });
         }
         return {
-            items: intoDom(children, localParams, _super),
+            items: render(children, localParams, _super),
             start: _text('')
         };
     });
-    const mappedElement: ListViewMapped<MirrorElement, NodeComponent> = new ListViewMapped(
+    const mappedElement: ListViewMapped<MirrorElement, RenderResult> = new ListViewMapped(
         listMirror,
         (mirror) => ({ items: mirror ? [mirror.start, ...mirror.items] : [] })
     );
-    const result: ControlComponent = {
-        items: mappedElement.raw,
-        mount: () => (isMounted = true),
-        dismount: () => (isMounted = false)
-    };
+    const result: RenderResult = { items: mappedElement.raw, component };
     listMirror.onUpdate((_, next, prev: MirrorElement) => {
         const { parentNode } = prev.start;
         if (parentNode) {
