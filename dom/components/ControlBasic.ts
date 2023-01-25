@@ -1,7 +1,7 @@
 import { has } from '@aldinh777/reactive-utils/validator';
+import { Properties } from '../../common/types';
 import { render } from '../../core/render';
 import { Component, RenderResult } from '../../core/types';
-import { Properties } from '../../common/types';
 
 export default function ControlBasic(
     props: Properties<any> = {},

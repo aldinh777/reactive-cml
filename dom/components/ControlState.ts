@@ -1,9 +1,9 @@
-import { State } from '@aldinh777/reactive';
+import { State, StateSubscription } from '@aldinh777/reactive';
 import { has, isState } from '@aldinh777/reactive-utils/validator';
+import { Properties } from '../../common/types';
 import { render } from '../../core/render';
 import { Component, RenderResult } from '../../core/types';
 import ComponentError from '../../error/ComponentError';
-import { Properties } from '../../common/types';
 import { createMounter } from '../component-helper';
 
 function statify(props: Properties<any>, params: Properties<any>): State<boolean> {
@@ -47,22 +47,23 @@ export default function ControlState(
     const { children, params, _super } = component;
     const state = statify(props, params);
     const elements = render(children, params, _super);
+    let subscription: StateSubscription<boolean>;
     const mounter = createMounter('cs', component, {
         preventDismount: () => !state.getValue(),
         onMount() {
             if (state.getValue()) {
                 mounter.mount(elements);
             }
-        }
-    });
-    state.onChange((active) => {
-        console.log(active);
-        if (mounter.isMounted) {
-            if (active) {
-                mounter.mount(elements);
-            } else {
-                mounter.dismount();
-            }
+            subscription = state.onChange((active) => {
+                if (active) {
+                    mounter.mount(elements);
+                } else {
+                    mounter.dismount();
+                }
+            });
+        },
+        onDismount() {
+            subscription?.unsub?.();
         }
     });
     return mounter.rendered;

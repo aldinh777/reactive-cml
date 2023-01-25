@@ -1,12 +1,13 @@
-import { ListViewMapped } from '@aldinh777/reactive/collection/view/ListViewMapped';
 import { isList } from '@aldinh777/reactive-utils/validator';
-import { readAlias, propAlias } from '../../core/prop-util';
-import ComponentError from '../../error/ComponentError';
+import { ListViewMapped, StateCollection, OperationHandler } from '@aldinh777/reactive/collection';
+import { Subscription } from '@aldinh777/reactive/helper/subscription-helper';
+import { removeAll, mount } from '..';
 import { Properties } from '../../common/types';
-import { Component, RenderResult } from '../../core/types';
+import { readAlias, propAlias } from '../../core/prop-util';
 import { render } from '../../core/render';
-import { createMounter, MounterData } from '../component-helper';
-import { mount, removeAll } from '..';
+import { Component, RenderResult } from '../../core/types';
+import ComponentError from '../../error/ComponentError';
+import { MounterData, createMounter } from '../component-helper';
 
 function removeSubmounter(mounter: MounterData, submounter: MounterData) {
     const { start, end } = submounter.marker;
@@ -59,33 +60,42 @@ export default function LoopCollect(
         );
         return submounter;
     });
+    let updateSubscription: Subscription<
+        StateCollection<number, MounterData, MounterData[]>,
+        OperationHandler<number, MounterData>
+    >;
+    let insertSubscription: Subscription<
+        StateCollection<number, MounterData, MounterData[]>,
+        OperationHandler<number, MounterData>
+    >;
+    let deleteSubscription: Subscription<
+        StateCollection<number, MounterData, MounterData[]>,
+        OperationHandler<number, MounterData>
+    >;
     const mounter = createMounter('lc', component, {
         preventDismount: () => true,
         onMount() {
             for (const submounter of submounters.raw) {
                 mounter.mount(submounter.rendered);
             }
+            updateSubscription = submounters.onUpdate((index, next, previous: MounterData) => {
+                removeSubmounter(mounter, previous);
+                appendSubmounter(mounter, next, submounters.get(index + 1));
+            });
+            insertSubscription = submounters.onInsert((index, inserted) => {
+                appendSubmounter(mounter, inserted, submounters.get(index + 1));
+            });
+            deleteSubscription = submounters.onDelete((_, deleted) => {
+                removeSubmounter(mounter, deleted);
+            });
         },
         onDismount() {
             for (const submounter of submounters.raw) {
                 submounter.dismount();
             }
-        }
-    });
-    submounters.onUpdate((index, next, previous: MounterData) => {
-        if (mounter.isMounted) {
-            removeSubmounter(mounter, previous);
-            appendSubmounter(mounter, next, submounters.get(index + 1));
-        }
-    });
-    submounters.onInsert((index, inserted) => {
-        if (mounter.isMounted) {
-            appendSubmounter(mounter, inserted, submounters.get(index + 1));
-        }
-    });
-    submounters.onDelete((_, deleted) => {
-        if (mounter.isMounted) {
-            removeSubmounter(mounter, deleted);
+            updateSubscription?.unsub?.();
+            insertSubscription?.unsub?.();
+            deleteSubscription?.unsub?.();
         }
     });
     return mounter.rendered;

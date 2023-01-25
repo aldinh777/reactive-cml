@@ -1,9 +1,10 @@
+import { StateSubscription } from '@aldinh777/reactive';
 import { isState } from '@aldinh777/reactive-utils/validator';
+import { Properties } from '../../common/types';
 import { PropAlias, propAlias, readAlias } from '../../core/prop-util';
 import { render } from '../../core/render';
 import { Component, RenderResult } from '../../core/types';
 import ComponentError from '../../error/ComponentError';
-import { Properties } from '../../common/types';
 import { createMounter } from '../component-helper';
 
 function createFlatListElement(
@@ -39,17 +40,19 @@ export default function LoopState(
             `'${props.list}' are not a valid State in 'state:list' property of 'foreach' element`
         );
     }
+    let subscription: StateSubscription<any[]>;
     const mounter = createMounter('ls', component, {
         onMount() {
             const elements = createFlatListElement(alias, extracts, list.getValue(), component);
             mounter.mount(elements);
-        }
-    });
-    list.onChange((items: any[]) => {
-        if (mounter.isMounted) {
-            const newElements = createFlatListElement(alias, extracts, items, component);
-            mounter.dismount();
-            mounter.mount(newElements);
+            subscription = list.onChange((items) => {
+                const newElements = createFlatListElement(alias, extracts, items, component);
+                mounter.dismount();
+                mounter.mount(newElements);
+            });
+        },
+        onDismount() {
+            subscription?.unsub?.();
         }
     });
     return mounter.rendered;

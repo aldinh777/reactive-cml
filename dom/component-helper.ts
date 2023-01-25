@@ -9,7 +9,6 @@ interface MounterOptions {
 }
 
 export interface MounterData {
-    isMounted: boolean;
     marker: {
         start?: Node;
         end?: Node;
@@ -49,7 +48,6 @@ export function createMounter(
     const NAMESPACE_END = `data-${markerID}z`;
     let dismount: () => any;
     const mounter: MounterData = {
-        isMounted: false,
         marker: {},
         rendered: [
             new RCElement('span', { [NAMESPACE_START]: COMPONENT_ID }),
@@ -72,7 +70,6 @@ export function createMounter(
         }
     };
     component.onMount = () => {
-        mounter.isMounted = true;
         const elementStart = _doc.querySelector(`[${NAMESPACE_START}="${COMPONENT_ID}"]`);
         const elementEnd = _doc.querySelector(`[${NAMESPACE_END}="${COMPONENT_ID}"]`);
         const parentNode = elementEnd?.parentNode;
@@ -88,7 +85,6 @@ export function createMounter(
         options.onMount?.();
     };
     component.onDismount = () => {
-        mounter.isMounted = false;
         if (!options.preventDismount?.()) {
             mounter.dismount?.();
         }

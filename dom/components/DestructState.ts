@@ -1,9 +1,10 @@
+import { StateSubscription } from '@aldinh777/reactive';
 import { isState } from '@aldinh777/reactive-utils/validator';
+import { Properties } from '../../common/types';
 import { PropAlias, readAlias, propAlias } from '../../core/prop-util';
 import { render } from '../../core/render';
 import { Component, RenderResult } from '../../core/types';
 import ComponentError from '../../error/ComponentError';
-import { Properties } from '../../common/types';
 import { createMounter } from '../component-helper';
 
 export default function DestructState(
@@ -21,19 +22,21 @@ export default function DestructState(
             `'${props.obj}' are not a valid State in 'state:obj' property of 'destruct' element`
         );
     }
+    let subscription: StateSubscription<object | Map<string, any>>;
     const mounter = createMounter('ds', component, {
         onMount() {
             const destructParams = propAlias(params, propnames, obj.getValue());
             const elements = render(children, destructParams, _super);
             mounter.mount(elements);
-        }
-    });
-    obj.onChange((ob: Properties<any> | Map<string, any>) => {
-        if (mounter.isMounted) {
-            const destructParams = propAlias(params, propnames, ob);
-            const newElements = render(children, destructParams, _super);
-            mounter.dismount();
-            mounter.mount(newElements);
+            subscription = obj.onChange((ob) => {
+                const destructParams = propAlias(params, propnames, ob);
+                const newElements = render(children, destructParams, _super);
+                mounter.dismount();
+                mounter.mount(newElements);
+            });
+        },
+        onDismount() {
+            subscription?.unsub?.();
         }
     });
     return mounter.rendered;

@@ -1,9 +1,11 @@
 import { isMap } from '@aldinh777/reactive-utils/validator';
+import { StateCollection, OperationHandler } from '@aldinh777/reactive/collection';
+import { Subscription } from '@aldinh777/reactive/helper/subscription-helper';
+import { Properties } from '../../common/types';
 import { PropAlias, readAlias, propAlias } from '../../core/prop-util';
 import { render } from '../../core/render';
 import { Component, RenderResult } from '../../core/types';
 import ComponentError from '../../error/ComponentError';
-import { Properties } from '../../common/types';
 import { createMounter } from '../component-helper';
 
 export default function DestructCollect(
@@ -21,19 +23,24 @@ export default function DestructCollect(
             `'${props.obj}' are not a valid StateCollection in 'collect:obj' property of 'destruct' element`
         );
     }
+    let updateSubscription: Subscription<
+        StateCollection<string, unknown, Map<string, unknown>>,
+        OperationHandler<string, unknown>
+    >;
     const mounter = createMounter('dc', component, {
         onMount() {
             const destructParams = propAlias(params, propnames, obj.raw);
             const elements = render(children, destructParams, _super);
             mounter.mount(elements);
-        }
-    });
-    obj.onUpdate(() => {
-        if (mounter.isMounted) {
-            const destructParams = propAlias(params, propnames, obj.raw);
-            const newElements = render(children, destructParams, _super);
-            mounter.dismount();
-            mounter.mount(newElements);
+            updateSubscription = obj.onUpdate(() => {
+                const destructParams = propAlias(params, propnames, obj.raw);
+                const newElements = render(children, destructParams, _super);
+                mounter.dismount();
+                mounter.mount(newElements);
+            });
+        },
+        onDismount() {
+            updateSubscription?.unsub?.();
         }
     });
     return mounter.rendered;
