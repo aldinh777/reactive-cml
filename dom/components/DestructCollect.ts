@@ -6,7 +6,7 @@ import ComponentError from '../../error/ComponentError';
 import { Properties } from '../../common/types';
 import { createMounter } from '../component-helper';
 
-export default function (
+export default function DestructCollect(
     props: Properties<any> = {},
     component: Component = {}
 ): RenderResult[] | void {

@@ -3,7 +3,7 @@ import { render } from '../../core/render';
 import { Component, RenderResult } from '../../core/types';
 import { Properties } from '../../common/types';
 
-export default function (
+export default function DestructBasic(
     props: Properties<any> = {},
     component: Component = {}
 ): RenderResult[] | void {

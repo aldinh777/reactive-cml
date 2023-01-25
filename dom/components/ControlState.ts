@@ -37,7 +37,7 @@ function statify(props: Properties<any>, params: Properties<any>): State<boolean
     }
 }
 
-export default function (
+export default function ControlState(
     props: Properties<any> = {},
     component: Component = {}
 ): RenderResult[] | void {
@@ -53,9 +53,10 @@ export default function (
             if (state.getValue()) {
                 mounter.mount(elements);
             }
-        },
+        }
     });
     state.onChange((active) => {
+        console.log(active);
         if (mounter.isMounted) {
             if (active) {
                 mounter.mount(elements);

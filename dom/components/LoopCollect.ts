@@ -26,7 +26,7 @@ function appendSubmounter(
     mount(parent, submounter.rendered, insertBefore);
 }
 
-export default function (
+export default function LoopCollect(
     props: Properties<any> = {},
     component: Component = {}
 ): RenderResult[] | void {

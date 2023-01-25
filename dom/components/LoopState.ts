@@ -24,7 +24,7 @@ function createFlatListElement(
     return components;
 }
 
-export default function (
+export default function LoopState(
     props: Properties<any> = {},
     component: Component = {}
 ): RenderResult[] | void {
