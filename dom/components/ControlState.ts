@@ -48,12 +48,12 @@ export default function (
     const state = statify(props, params);
     const elements = render(children, params, _super);
     const mounter = createMounter('cs', component, {
+        preventDismount: () => !state.getValue(),
         onMount() {
             if (state.getValue()) {
                 mounter.mount(elements);
             }
         },
-        preventDismount: () => !state.getValue()
     });
     state.onChange((active) => {
         if (mounter.isMounted) {

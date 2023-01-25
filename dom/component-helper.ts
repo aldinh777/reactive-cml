@@ -2,19 +2,21 @@ import { mount, removeAll, _doc, _text } from '.';
 import { RCElement } from '../core/render';
 import { Component, RCComponent, RenderResult } from '../core/types';
 
-interface MounterData {
+interface MounterOptions {
+    preventDismount?(): boolean;
+    onMount?(): any;
+    onDismount?(): any;
+}
+
+export interface MounterData {
     isMounted: boolean;
     marker: {
         start?: Node;
         end?: Node;
     };
     rendered: [start: RCElement, end: RCElement, component: RCComponent];
-    mount: (components: RenderResult[]) => void;
-    dismount: () => void;
-}
-interface MounterOptions {
-    onMount?(): any;
-    preventDismount?(): boolean;
+    mount(components: RenderResult[]): void;
+    dismount(): void;
 }
 
 const CHARACTERS = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789';
@@ -61,7 +63,6 @@ export function createMounter(
         },
         dismount() {
             dismount?.();
-            dismount = null;
             const { start, end } = mounter.marker;
             const parent = end?.parentNode;
             if (start && end) {
@@ -91,6 +92,8 @@ export function createMounter(
         if (!options.preventDismount?.()) {
             mounter.dismount?.();
         }
+        dismount = null;
+        options.onDismount?.();
     };
     return mounter;
 }

@@ -5,10 +5,25 @@ import ComponentError from '../../error/ComponentError';
 import { Properties } from '../../common/types';
 import { Component, RenderResult } from '../../core/types';
 import { render } from '../../core/render';
+import { createMounter, MounterData } from '../component-helper';
+import { mount, removeAll } from '..';
 
-interface MirrorElement {
-    items: RenderResult[];
-    start: Text;
+function removeSubmounter(mounter: MounterData, submounter: MounterData) {
+    const { start, end } = submounter.marker;
+    const parent = mounter.marker.end?.parentNode;
+    submounter.dismount();
+    removeAll(parent, [start, end]);
+}
+
+function appendSubmounter(
+    mounter: MounterData,
+    submounter: MounterData,
+    before: MounterData = mounter
+) {
+    const { start, end } = before.marker;
+    const insertBefore = mounter === before ? end : start;
+    const parent = insertBefore.parentNode;
+    mount(parent, submounter.rendered, insertBefore);
 }
 
 export default function (
@@ -22,63 +37,56 @@ export default function (
     const list = params[props.list];
     const alias = props.as;
     const extracts = typeof props.extract === 'string' ? readAlias(props.extract) : [];
-    if (!isList(list)) {
+    if (!isList<any>(list)) {
         throw new ComponentError(
             `'${props.list}' are not a valid StateCollection in 'collect:list' property of 'foreach' element`
         );
     }
-    let isMounted = false;
-    component.onMount = () => (isMounted = true);
-    component.onDismount = () => (isMounted = false);
-    const marker = _text('');
-    const listMirror: ListViewMapped<any, MirrorElement> = new ListViewMapped(list, (item) => {
+    const submounters = new ListViewMapped(list, (item) => {
         const localParams = propAlias(params, extracts, item);
         if (alias) {
             Object.assign(localParams, { [alias]: item });
         }
-        return {
-            items: render(children, localParams, _super),
-            start: _text('')
-        };
+        const renderer = render(children, localParams, _super);
+        const submounter = createMounter(
+            'lci',
+            {},
+            {
+                onMount() {
+                    submounter.mount(renderer);
+                }
+            }
+        );
+        return submounter;
     });
-    const mappedElement: ListViewMapped<MirrorElement, RenderResult> = new ListViewMapped(
-        listMirror,
-        (mirror) => ({ items: mirror ? [mirror.start, ...mirror.items] : [] })
-    );
-    const result: RenderResult = { items: mappedElement.raw, component };
-    listMirror.onUpdate((_, next, prev: MirrorElement) => {
-        const { parentNode } = prev.start;
-        if (parentNode) {
-            if (isMounted) {
-                mount(parentNode, [next.start, ...next.items], prev.start);
-                dismount(parentNode, [prev.start, ...prev.items]);
-            } else {
-                append(parentNode, [next.start, ...next.items], prev.start);
-                remove(parentNode, [prev.start, ...prev.items]);
+    const mounter = createMounter('lc', component, {
+        preventDismount: () => true,
+        onMount() {
+            for (const submounter of submounters.raw) {
+                mounter.mount(submounter.rendered);
+            }
+        },
+        onDismount() {
+            for (const submounter of submounters.raw) {
+                submounter.dismount();
             }
         }
     });
-    listMirror.onInsert((index, inserted) => {
-        const nextElem = listMirror.get(index + 1);
-        const nextMarker = nextElem ? nextElem.start : marker;
-        const { parentNode } = marker;
-        if (parentNode) {
-            if (isMounted) {
-                mount(parentNode, [inserted.start, ...inserted.items], nextMarker);
-            } else {
-                append(parentNode, [inserted.start, ...inserted.items], nextMarker);
-            }
+    submounters.onUpdate((index, next, previous: MounterData) => {
+        if (mounter.isMounted) {
+            removeSubmounter(mounter, previous);
+            appendSubmounter(mounter, next, submounters.get(index + 1));
         }
     });
-    listMirror.onDelete((_, deleted) => {
-        const { parentNode } = deleted.start;
-        if (parentNode) {
-            if (isMounted) {
-                dismount(parentNode, [deleted.start, ...deleted.items]);
-            } else {
-                remove(parentNode, [deleted.start, ...deleted.items]);
-            }
+    submounters.onInsert((index, inserted) => {
+        if (mounter.isMounted) {
+            appendSubmounter(mounter, inserted, submounters.get(index + 1));
         }
     });
-    return [result, marker];
+    submounters.onDelete((_, deleted) => {
+        if (mounter.isMounted) {
+            removeSubmounter(mounter, deleted);
+        }
+    });
+    return mounter.rendered;
 }
