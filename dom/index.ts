@@ -1,5 +1,5 @@
 import { StateSubscription } from '@aldinh777/reactive';
-import { isState } from '@aldinh777/reactive-utils/validator';
+import { has, isState } from '@aldinh777/reactive-utils/validator';
 import { RCElement } from '../core/render';
 import { RenderResult } from '../core/types';
 
@@ -66,6 +66,9 @@ export function toDom(rcElement: RCElement): DomBindingOutput {
     return [domElement, bindings];
 }
 
+const isElement = (elem: any): elem is RCElement =>
+    has(elem, ['tag', 'props', 'events', 'children']);
+
 export function mount(parent: Node, components: RenderResult[], before?: Node): () => void {
     const bindings: StateSubscription<any>[] = [];
     const dismounters: (() => void)[] = [];
@@ -77,7 +80,7 @@ export function mount(parent: Node, components: RenderResult[], before?: Node): 
             const sub = item.onChange((text) => (textNode.textContent = String(text)));
             bindings.push(sub);
             append(parent, textNode, before);
-        } else if (item instanceof RCElement) {
+        } else if (isElement(item)) {
             const [element, nestedBindings] = toDom(item);
             append(parent, element, before);
             bindings.push(...nestedBindings);
