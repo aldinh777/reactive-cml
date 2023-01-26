@@ -1,4 +1,3 @@
-import { StateSubscription } from '@aldinh777/reactive';
 import { has, isState } from '@aldinh777/reactive-utils/validator';
 import { RCElement } from '../core/render';
 import { RenderResult } from '../core/types';
@@ -30,17 +29,17 @@ export const setAttr = (element: Element, attribute: string, value: any): void =
     }
 };
 
-type DomBindingOutput = [element: Element, bindings: StateSubscription<any>[]];
+type DomBindingOutput = [element: Element, bindings: (() => any)[]];
 
 export function toDom(rcElement: RCElement): DomBindingOutput {
-    const bindings: StateSubscription<any>[] = [];
+    const dismounters: (() => any)[] = [];
     const domElement = _elem(rcElement.tag);
     for (const propname in rcElement.props) {
         const propvalue = rcElement.props[propname];
         if (isState(propvalue)) {
             setAttr(domElement, propname, propvalue.getValue());
             const sub = propvalue.onChange((nextvalue) => setAttr(domElement, propname, nextvalue));
-            bindings.push(sub);
+            dismounters.push(() => sub.unsub());
         } else {
             setAttr(domElement, propname, propvalue);
         }
@@ -48,6 +47,7 @@ export function toDom(rcElement: RCElement): DomBindingOutput {
     for (const event in rcElement.events) {
         const listener = rcElement.events[event] as EventListener;
         domElement.addEventListener(event, listener);
+        dismounters.push(() => domElement.removeEventListener(event, listener));
     }
     for (const child of rcElement.children) {
         if (typeof child === 'string') {
@@ -55,22 +55,21 @@ export function toDom(rcElement: RCElement): DomBindingOutput {
         } else if (isState(child)) {
             const textNode = _text(child.getValue());
             const sub = child.onChange((text) => (textNode.textContent = String(text)));
-            bindings.push(sub);
+            dismounters.push(() => sub.unsub());
             append(domElement, textNode);
         } else {
-            const [element, nestedBindings] = toDom(child);
+            const [element, nestedDismounters] = toDom(child);
             append(domElement, element);
-            bindings.push(...nestedBindings);
+            dismounters.push(...nestedDismounters);
         }
     }
-    return [domElement, bindings];
+    return [domElement, dismounters];
 }
 
 const isElement = (elem: any): elem is RCElement =>
     has(elem, ['tag', 'props', 'events', 'children']);
 
 export function mount(parent: Node, components: RenderResult[], before?: Node): () => void {
-    const bindings: StateSubscription<any>[] = [];
     const dismounters: (() => void)[] = [];
     for (const item of components) {
         if (typeof item === 'string') {
@@ -78,18 +77,18 @@ export function mount(parent: Node, components: RenderResult[], before?: Node): 
         } else if (isState(item)) {
             const textNode = _text(item.getValue());
             const sub = item.onChange((text) => (textNode.textContent = String(text)));
-            bindings.push(sub);
+            dismounters.push(() => sub.unsub());
             append(parent, textNode, before);
         } else if (isElement(item)) {
-            const [element, nestedBindings] = toDom(item);
+            const [element, domDismounters] = toDom(item);
             append(parent, element, before);
-            bindings.push(...nestedBindings);
+            dismounters.push(...domDismounters);
         } else {
             let nextParent = parent;
             if (item.root) {
-                const [element, nestedBindings] = toDom(item.root);
+                const [element, nestedDismounters] = toDom(item.root);
                 nextParent = element;
-                bindings.push(...nestedBindings);
+                dismounters.push(...nestedDismounters);
             }
             const isEqualParent = parent === nextParent;
             if (!isEqualParent) {
@@ -106,9 +105,6 @@ export function mount(parent: Node, components: RenderResult[], before?: Node): 
         }
     }
     return () => {
-        for (const binding of bindings) {
-            binding.unsub();
-        }
         for (const dismount of dismounters) {
             dismount();
         }
