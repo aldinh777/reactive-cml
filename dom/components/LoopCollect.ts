@@ -1,13 +1,14 @@
 import { isList } from '@aldinh777/reactive-utils/validator';
 import { ListViewMapped, StateCollection, OperationHandler } from '@aldinh777/reactive/collection';
 import { Subscription } from '@aldinh777/reactive/helper/subscription-helper';
-import { removeAll, mount } from '..';
+import { mount } from '..';
 import { Properties } from '../../common/types';
 import { readAlias, propAlias } from '../../core/prop-util';
 import { render } from '../../core/render';
 import { Component, RenderResult } from '../../core/types';
 import ComponentError from '../../error/ComponentError';
 import { MounterData, createMounter } from '../component-helper';
+import { removeAll } from '../dom-util';
 
 function removeSubmounter(mounter: MounterData, submounter: MounterData) {
     const { start, end } = submounter.marker;
