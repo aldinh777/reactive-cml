@@ -1,6 +1,7 @@
-import { mount, removeAll, _doc, _text } from '.';
-import { RCElement } from '../core/render';
+import { mount } from '.';
+import { RCElement } from '../core/element';
 import { Component, RCComponent, RenderResult } from '../core/types';
+import { removeAll, _doc, _text } from './dom-util';
 
 interface MounterOptions {
     preventDismount?(): boolean;

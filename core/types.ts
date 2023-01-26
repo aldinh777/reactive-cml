@@ -1,7 +1,7 @@
 import { State } from '@aldinh777/reactive';
 import { FlatText, Properties } from '../common/types';
 import { PropAlias } from './prop-util';
-import { RCElement } from './render';
+import { RCElement } from './element';
 
 export type RCResult = string | FlatText | RCFlatElement;
 

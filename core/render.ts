@@ -1,24 +1,10 @@
-import { State } from '@aldinh777/reactive';
 import { isState } from '@aldinh777/reactive-utils/validator';
 import { FlatText, Properties } from '../common/types';
+import { RCElement, RCElementChildren } from './element';
 import { readAlias } from './prop-util';
 import { RCResult, Component, RenderResult, ReactiveComponent } from './types';
 
 type PropertyResult = [props: Properties<any>, events: Properties<Function>];
-type RCElementChildren = RCElement | State<any> | string;
-
-export class RCElement {
-    tag: string;
-    props: Properties<any>;
-    events: Properties<Function>;
-    children: RCElementChildren[] = [];
-
-    constructor(tag: string, props: Properties<any> = {}, events: Properties<Function> = {}) {
-        this.tag = tag;
-        this.props = props;
-        this.events = events;
-    }
-}
 
 const processProperties = (
     params: Properties<any>,

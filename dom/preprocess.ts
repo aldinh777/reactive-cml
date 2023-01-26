@@ -14,8 +14,10 @@ import preprocessList from './preprocessor/list';
 
 const DEFAULT_COMPONENT_PATH = '@aldinh777/reactive-cml/dom/components';
 const DEFAULT_RENDER_PATH = '@aldinh777/reactive-cml/core/render';
+const DEFAULT_SIMPLE_RENDER_PATH = '@aldinh777/reactive-cml/dom/slimify/render';
 const LOCAL_COMPONENT_PATH = join(__dirname, '../dom/components');
-const LOCAL_RENDER_PATH = join(__dirname, '../dom');
+const LOCAL_RENDER_PATH = join(__dirname, '../core/render');
+const LOCAL_SIMPLE_RENDER_PATH = join(__dirname, '../dom/slimify/render');
 
 function pathify(target: string | void, source: string): string {
     return './' + (target ? relative(dirname(target), source) : source).replace(/\\/g, '/');
@@ -39,11 +41,19 @@ export default function (options?: { localDebug?: boolean; filepath: string }): 
             const fullparams = params.concat(dependencies);
             const rcJson = JSON.stringify(rcResult, null, 2);
             let outputScript: string;
-            const domifiedPath = options?.localDebug
-                ? pathify(options?.filepath, LOCAL_RENDER_PATH)
-                : DEFAULT_RENDER_PATH;
-            addImport([domifiedPath, ['render']]);
-            outputScript = `return render(${rcJson}, {${fullparams.join()}}, component, true)`;
+            if (fullparams.length > 0) {
+                const domifiedPath = options?.localDebug
+                    ? pathify(options?.filepath, LOCAL_RENDER_PATH)
+                    : DEFAULT_RENDER_PATH;
+                addImport([domifiedPath, ['render']]);
+                outputScript = `return render(${rcJson}, {${fullparams.join()}}, component, true)`;
+            } else {
+                const domifiedPath = options?.localDebug
+                    ? pathify(options?.filepath, LOCAL_SIMPLE_RENDER_PATH)
+                    : DEFAULT_SIMPLE_RENDER_PATH;
+                addImport([domifiedPath, ['simpleRender']]);
+                outputScript = `return simpleRender(${rcJson}, component)`;
+            }
             return outputScript;
         },
         relativeBlacklist: DEFAULT_COMPONENT_SET,
