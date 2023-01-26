@@ -34,8 +34,8 @@ const isElementChildren = (item: RenderResult): item is RCElementChildren =>
 
 export function render(
     tree: RCResult[],
-    params?: Properties<any>,
-    component?: Component,
+    params: Properties<any>,
+    component: Component,
     isRoot: boolean = false
 ): RenderResult[] {
     const renderResult: RenderResult[] = [];

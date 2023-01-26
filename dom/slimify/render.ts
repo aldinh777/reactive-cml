@@ -1,11 +1,9 @@
-import { Properties } from '../../common/types';
 import { RCElement } from '../../core/element';
 import { RCResult, Component, RenderResult, RCFlatElement } from '../../core/types';
 
 export function simpleRender(
     tree: RCResult[],
-    params?: Properties<any>,
-    component?: Component,
+    component: Component,
     isRoot: boolean = false
 ): RenderResult[] {
     const renderResult: RenderResult[] = [];
@@ -15,10 +13,7 @@ export function simpleRender(
         } else {
             const [tag, props, , children] = item;
             const reactiveElement = new RCElement(tag, props, {});
-            reactiveElement.children = simpleRender(children, params, component) as (
-                | RCElement
-                | string
-            )[];
+            reactiveElement.children = simpleRender(children, component) as (RCElement | string)[];
         }
     }
     return isRoot ? [{ component, items: renderResult }] : renderResult;

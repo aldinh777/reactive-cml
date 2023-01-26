@@ -52,7 +52,7 @@ export default function (options?: { localDebug?: boolean; filepath: string }): 
                     ? pathify(options?.filepath, LOCAL_SIMPLE_RENDER_PATH)
                     : DEFAULT_SIMPLE_RENDER_PATH;
                 addImport([domifiedPath, ['simpleRender']]);
-                outputScript = `return simpleRender(${rcJson}, component)`;
+                outputScript = `return simpleRender(${rcJson}, component, true)`;
             }
             return outputScript;
         },
