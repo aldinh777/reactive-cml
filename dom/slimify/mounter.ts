@@ -1,8 +1,8 @@
 import { RCElement } from '../../core/element';
-import { RenderResult } from '../../core/types';
+import { RCComponent, RenderResult } from '../../core/types';
 import { append, setAttr, _elem, _text } from '../dom-util';
 
-export function simpleToDom(rcElement: RCElement): Node {
+function simpleToDom(rcElement: RCElement): Node {
     const domElement = _elem(rcElement.tag);
     for (const propname in rcElement.props) {
         const propvalue = rcElement.props[propname];
@@ -19,13 +19,20 @@ export function simpleToDom(rcElement: RCElement): Node {
     return domElement;
 }
 
+const isElement = (item: any): item is RCElement => Reflect.has(item, 'children');
+
 export function simpleMount(parent: Node, components: RenderResult[], before?: Node): void {
-    for (const item of components as (RCElement | string)[]) {
+    for (const item of components as (RCComponent | RCElement | string)[]) {
         if (typeof item === 'string') {
             append(parent, [_text(item)], before);
-        } else {
+        } else if (isElement(item)) {
             const element = simpleToDom(item);
             append(parent, [element], before);
+        } else {
+            simpleMount(parent, item.items, before);
+            if (item?.component?.onMount) {
+                item.component.onMount();
+            }
         }
     }
 }
