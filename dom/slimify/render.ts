@@ -12,8 +12,12 @@ export function simpleRender(
             renderResult.push(item);
         } else {
             const [tag, props, , children] = item;
-            const element = new RCElement(tag, props, {});
-            element.children = simpleRender(children, component) as (RCElement | string)[];
+            const element = {
+                tag,
+                props,
+                events: {},
+                children: simpleRender(children, component) as (RCElement | string)[]
+            };
             renderResult.push(element);
         }
     }

@@ -78,7 +78,12 @@ export function render(
                     renderResult.push(...componentResult);
                 }
             } else {
-                const reactiveElement = new RCElement(tag, componentProps, componentEvents);
+                const reactiveElement = {
+                    tag,
+                    props: componentProps,
+                    events: componentEvents,
+                    children: []
+                };
                 const childrenResult = render(children, params, component);
                 if (childrenResult.every(isElementChildren)) {
                     reactiveElement.children = childrenResult;

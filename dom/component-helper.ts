@@ -51,8 +51,8 @@ export function createMounter(
     const mounter: MounterData = {
         marker: {},
         rendered: [
-            new RCElement('span', { [NAMESPACE_START]: COMPONENT_ID }),
-            new RCElement('span', { [NAMESPACE_END]: COMPONENT_ID }),
+            { tag: 'span', props: { [NAMESPACE_START]: COMPONENT_ID }, events: {}, children: [] },
+            { tag: 'span', props: { [NAMESPACE_END]: COMPONENT_ID }, events: {}, children: [] },
             { items: [], component }
         ],
         mount(components: RenderResult[]) {
