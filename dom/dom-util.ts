@@ -19,6 +19,9 @@ export const remove = (parent: Node, nodes: Node[]): void => {
 };
 
 export const setAttr = (element: Element, attribute: string, value: any): void => {
-    element.removeAttribute(attribute);
-    element.setAttribute(attribute, value);
+    if (Reflect.has(element, attribute)) {
+        element[attribute] = value;
+    } else {
+        element.setAttribute(attribute, value);
+    }
 };
