@@ -8,13 +8,13 @@ import { render } from '../../core/render';
 import { Component, RenderResult } from '../../core/types';
 import ComponentError from '../../error/ComponentError';
 import { MounterData, createMounter } from '../component-helper';
-import { removeAll } from '../dom-util';
+import { remove } from '../dom-util';
 
 function removeSubmounter(mounter: MounterData, submounter: MounterData) {
     const { start, end } = submounter.marker;
     const parent = mounter.marker.end?.parentNode;
     submounter.dismount();
-    removeAll(parent, [start, end]);
+    remove(parent, [start, end]);
 }
 
 function appendSubmounter(

@@ -1,7 +1,7 @@
 import { mount } from '.';
 import { RCElement } from '../core/element';
 import { Component, RCComponent, RenderResult } from '../core/types';
-import { removeAll, _doc, _text } from './dom-util';
+import { remove, _doc, _text } from './dom-util';
 
 interface MounterOptions {
     preventDismount?(): boolean;
@@ -66,7 +66,7 @@ export function createMounter(
             const parent = end?.parentNode;
             if (start && end) {
                 const elements = getElementsBetween(start, end);
-                removeAll(parent, elements);
+                remove(parent, elements);
             }
         }
     };

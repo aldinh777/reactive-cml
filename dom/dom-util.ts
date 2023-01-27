@@ -11,18 +11,14 @@ export const append = (parent: Node, nodes: Node[], before?: Node): void => {
         }
     }
 };
-export const removeAll = (parent: Node, nodes: Node[]): void => {
+
+export const remove = (parent: Node, nodes: Node[]): void => {
     for (const node of nodes) {
         parent.removeChild(node);
     }
 };
 
 export const setAttr = (element: Element, attribute: string, value: any): void => {
-    if (element.hasAttribute(attribute)) {
-        element.setAttribute(attribute, value);
-    } else {
-        const att = _doc.createAttribute(attribute);
-        att.value = value;
-        element.setAttributeNode(att);
-    }
+    element.removeAttribute(attribute);
+    element.setAttribute(attribute, value);
 };
