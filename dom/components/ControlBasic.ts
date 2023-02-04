@@ -1,4 +1,4 @@
-import { has } from '@aldinh777/reactive-utils/validator';
+import { has } from '@aldinh777/toolbox/object/validate';
 import { Properties } from '../../common/types';
 import { render } from '../../core/render';
 import { Component, RenderResult } from '../../core/types';
@@ -11,8 +11,8 @@ export default function ControlBasic(
         return;
     }
     const { children, params, _super } = component;
-    const unless = has(props, ['rev']);
-    const hasEqual = has(props, ['equal']);
+    const unless = has(props, 'rev');
+    const hasEqual = has(props, 'equal');
     const value = params[props.value];
     if (hasEqual) {
         const condition = unless ? value != props.equal : value == props.equal;

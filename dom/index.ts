@@ -1,4 +1,5 @@
-import { has, isState } from '@aldinh777/reactive-utils/validator';
+import { isState } from '@aldinh777/reactive-utils/validator';
+import { has } from '@aldinh777/toolbox/object/validate';
 import { RCElement } from '../core/element';
 import { RenderResult } from '../core/types';
 import { _elem, setAttr, append, _text } from './dom-util';
@@ -40,8 +41,7 @@ export function toDom(rcElement: RCElement): DomBindingOutput {
     return [domElement, dismounters];
 }
 
-const isElement = (elem: any): elem is RCElement =>
-    has(elem, ['tag', 'props', 'events', 'children']);
+const isElement = (elem: any): elem is RCElement => has(elem, 'tag', 'props', 'events', 'children');
 
 export function mount(parent: Node, components: RenderResult[], before?: Node): () => void {
     const dismounters: (() => void)[] = [];

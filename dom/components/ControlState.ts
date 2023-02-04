@@ -1,5 +1,6 @@
 import { State, StateSubscription } from '@aldinh777/reactive';
-import { has, isState } from '@aldinh777/reactive-utils/validator';
+import { isState } from '@aldinh777/reactive-utils/validator';
+import { has } from '@aldinh777/toolbox/object/validate';
 import { Properties } from '../../common/types';
 import { render } from '../../core/render';
 import { Component, RenderResult } from '../../core/types';
@@ -9,8 +10,8 @@ import { createMounter } from '../component-helper';
 function statify(props: Properties<any>, params: Properties<any>): State<boolean> {
     const name = props.value;
     const state = params[name];
-    const isUnless = has(props, ['rev']);
-    const hasEqual = has(props, ['equal']);
+    const isUnless = has(props, 'rev');
+    const hasEqual = has(props, 'equal');
     if (!isState(state)) {
         throw new ComponentError(
             `'${name}' are not a valid State in 'state:value' property of '${

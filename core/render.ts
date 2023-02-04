@@ -1,6 +1,6 @@
 import { isState } from '@aldinh777/reactive-utils/validator';
 import { FlatText, Properties } from '../common/types';
-import { RCElement, RCElementChildren } from './element';
+import { RCElementChildren } from './element';
 import { readAlias } from './prop-util';
 import { RCResult, Component, RenderResult, ReactiveComponent } from './types';
 

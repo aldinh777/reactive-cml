@@ -9,8 +9,9 @@
   "author": "aldinh777",
   "license": "ISC",
   "devDependencies": {
-    "@aldinh777/reactive": "^0.28.4",
-    "@aldinh777/reactive-utils": "^0.1.10",
+    "@aldinh777/reactive": "^0.28.6",
+    "@aldinh777/reactive-utils": "^0.1.11",
+    "@aldinh777/toolbox": "^1.0.0",
     "@types/node": "^18.11.18",
     "typescript": "^4.9.4",
     "vite": "^4.0.4"
