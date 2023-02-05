@@ -1,6 +1,7 @@
 import { isState } from '@aldinh777/reactive-utils/validator';
+import { has } from '@aldinh777/toolbox/object/validate';
 import { FlatText, Properties } from '../common/types';
-import { RCElementChildren } from './element';
+import { RCElement, RCElementChildren } from './element';
 import { readAlias } from './prop-util';
 import { RCResult, Component, RenderResult, ReactiveComponent } from './types';
 
@@ -29,8 +30,7 @@ const processProperties = (
 };
 
 const isProp = (item: RCResult): item is FlatText => item.length === 1;
-const isElementChildren = (item: RenderResult): item is RCElementChildren =>
-    typeof item !== 'object' || !Reflect.has(item, 'items');
+const isElementChildren = (item: RenderResult): item is RCElementChildren => !has(item, 'items');
 
 export function render(
     tree: RCResult[],
@@ -78,7 +78,7 @@ export function render(
                     renderResult.push(...componentResult);
                 }
             } else {
-                const reactiveElement = {
+                const reactiveElement: RCElement = {
                     tag,
                     props: componentProps,
                     events: componentEvents,

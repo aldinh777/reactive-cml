@@ -13,13 +13,14 @@ import {
     PROP_CONTROL_OBJECT,
     PROP_COLLECTION_OBJECT
 } from '../../common/constants';
+import { has } from '@aldinh777/toolbox/object/validate';
 
 export default function (item: CMLObject, [dep, par]: Identifiers): CMLObject {
     const { tag, props } = item;
     if (tag !== TAG_DESTRUCT) {
         return item;
     }
-    if (Reflect.has(props, PROP_STATE_OBJECT)) {
+    if (has(props, PROP_STATE_OBJECT)) {
         const state = props[PROP_STATE_OBJECT];
         if (!state) {
             throw CompileError.statementRequire(TAG_DESTRUCT, PROP_CONTROL_OBJECT);
@@ -32,7 +33,7 @@ export default function (item: CMLObject, [dep, par]: Identifiers): CMLObject {
         item.tag = COMPONENT_DESTRUCT_STATE;
         dep.push(COMPONENT_DESTRUCT_STATE);
         par.push(state);
-    } else if (Reflect.has(props, PROP_COLLECTION_OBJECT)) {
+    } else if (has(props, PROP_COLLECTION_OBJECT)) {
         const collect = props[PROP_COLLECTION_OBJECT];
         if (!collect) {
             throw CompileError.statementRequire(TAG_DESTRUCT, PROP_CONTROL_OBJECT);

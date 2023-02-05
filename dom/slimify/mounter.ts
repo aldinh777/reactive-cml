@@ -1,3 +1,4 @@
+import { has } from '@aldinh777/toolbox/object/validate';
 import { RCElement } from '../../core/element';
 import { RCComponent, RenderResult } from '../../core/types';
 import { append, setAttr, _elem, _text } from '../dom-util';
@@ -19,7 +20,7 @@ function simpleToDom(rcElement: RCElement): Node {
     return domElement;
 }
 
-const isElement = (item: any): item is RCElement => Reflect.has(item, 'children');
+const isElement = (item: any): item is RCElement => has(item, 'children');
 
 export function simpleMount(parent: Node, components: RenderResult[], before?: Node): void {
     for (const item of components as (RCComponent | RCElement | string)[]) {

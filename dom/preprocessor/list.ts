@@ -14,6 +14,7 @@ import {
     PROP_CONTROL_LIST,
     PROP_COLLECTION_LIST
 } from '../../common/constants';
+import { has } from '@aldinh777/toolbox/object/validate';
 
 export default function (item: CMLObject, [dep, par, bl]: Identifiers): CMLObject {
     const { tag, props } = item;
@@ -22,7 +23,7 @@ export default function (item: CMLObject, [dep, par, bl]: Identifiers): CMLObjec
     }
     const localItem = props[PROP_CONTROL_AS];
     bl?.add(localItem);
-    if (Reflect.has(props, PROP_STATE_LIST)) {
+    if (has(props, PROP_STATE_LIST)) {
         const state = props[PROP_STATE_LIST];
         if (!state) {
             throw CompileError.statementRequire(TAG_FOREACH, PROP_CONTROL_LIST);
@@ -35,7 +36,7 @@ export default function (item: CMLObject, [dep, par, bl]: Identifiers): CMLObjec
         item.tag = COMPONENT_LIST_STATE;
         dep.push(COMPONENT_LIST_STATE);
         par.push(state);
-    } else if (Reflect.has(props, PROP_COLLECTION_LIST)) {
+    } else if (has(props, PROP_COLLECTION_LIST)) {
         const collect = props[PROP_COLLECTION_LIST];
         if (!collect) {
             throw CompileError.statementRequire(TAG_FOREACH, PROP_CONTROL_LIST);

@@ -1,3 +1,5 @@
+import { has } from '@aldinh777/toolbox/object/validate';
+
 export const _doc = document;
 export const _text = (text: any) => _doc.createTextNode(text);
 export const _elem = (tag: string) => _doc.createElement(tag);
@@ -19,7 +21,7 @@ export const remove = (parent: Node, nodes: Node[]): void => {
 };
 
 export const setAttr = (element: Element, attribute: string, value: any): void => {
-    if (Reflect.has(element, attribute)) {
+    if (has(element, attribute)) {
         element[attribute] = value;
     } else {
         element.setAttribute(attribute, value);
