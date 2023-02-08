@@ -1,9 +1,15 @@
 import { isState } from '@aldinh777/reactive-utils/validator';
 import { has } from '@aldinh777/toolbox/object/validate';
 import { FlatText, Properties } from '../common/types';
-import { RCElement, RCElementChildren } from './element';
 import { readAlias } from './prop-util';
-import { RCResult, Component, RenderResult, ReactiveComponent } from './types';
+import {
+    RCResult,
+    Component,
+    RenderResult,
+    ReactiveComponent,
+    RCElementChildren,
+    RCElement
+} from './types';
 
 type PropertyResult = [props: Properties<any>, events: Properties<Function>];
 

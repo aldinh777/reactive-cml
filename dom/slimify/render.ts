@@ -1,5 +1,4 @@
-import { RCElement } from '../../core/element';
-import { RCResult, Component, RenderResult, RCFlatElement } from '../../core/types';
+import { RCResult, Component, RenderResult, RCFlatElement, RCElement } from '../../core/types';
 
 export function simpleRender(
     tree: RCResult[],

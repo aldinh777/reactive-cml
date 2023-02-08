@@ -1,6 +1,5 @@
 import { has } from '@aldinh777/toolbox/object/validate';
-import { RCElement } from '../../core/element';
-import { RCComponent, RenderResult } from '../../core/types';
+import { RCComponent, RCElement, RenderResult } from '../../core/types';
 import { append, setAttr, _elem, _text } from '../dom-util';
 
 function simpleToDom(rcElement: RCElement): Node {

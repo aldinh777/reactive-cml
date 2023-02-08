@@ -1,7 +1,6 @@
 import { isState } from '@aldinh777/reactive-utils/validator';
 import { has } from '@aldinh777/toolbox/object/validate';
-import { RCElement } from '../core/element';
-import { RenderResult } from '../core/types';
+import { RCElement, RenderResult } from '../core/types';
 import { _elem, setAttr, append, _text } from './dom-util';
 
 type DomBindingOutput = [element: Element, bindings: (() => any)[]];

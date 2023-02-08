@@ -1,6 +1,5 @@
 import { mount } from '.';
-import { RCElement } from '../core/element';
-import { Component, RCComponent, RenderResult } from '../core/types';
+import { Component, RCComponent, RCElement, RenderResult } from '../core/types';
 import { remove, _doc, _text } from './dom-util';
 
 interface MounterOptions {
