@@ -1,12 +1,12 @@
 import { Properties } from '../../common/types';
 import { PropAlias, readAlias, propAlias } from '../../core/prop-util';
 import { render } from '../../core/render';
-import { Component, RenderResult } from '../../core/types';
+import { Component, RenderedResult } from '../../core/types';
 
 export default function LoopBasic(
     props: Properties<any> = {},
     component: Component = {}
-): RenderResult[] | void {
+): RenderedResult[] | void {
     if (typeof props.list !== 'string') {
         return;
     }
@@ -14,7 +14,7 @@ export default function LoopBasic(
     const list = params[props.list];
     const alias: string = props.as;
     const extracts: PropAlias[] = typeof props.extract === 'string' ? readAlias(props.extract) : [];
-    const result: RenderResult[] = [];
+    const result: RenderedResult[] = [];
     for (const item of list) {
         const localParams = propAlias(params, extracts, item);
         if (alias) {

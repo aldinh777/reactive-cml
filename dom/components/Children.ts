@@ -1,12 +1,12 @@
 import { Properties } from '../../common/types';
 import { readAlias, propAlias } from '../../core/prop-util';
 import { render } from '../../core/render';
-import { Component, RenderResult } from '../../core/types';
+import { Component, RenderedResult } from '../../core/types';
 
 export default function Children(
     props: Properties<any> = {},
     component: Component = {}
-): RenderResult[] | void {
+): RenderedResult[] | void {
     if (component._super) {
         const { children, extracts, params, _super } = component._super;
         const prevSlotName = _super?.slotname;

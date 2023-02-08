@@ -1,9 +1,9 @@
 import { CMLObject, CMLTree } from '@aldinh777/cml-parser';
 import { extractTextProps } from '../common/util';
 import { Properties, FlatText } from '../common/types';
-import { RCFlatElement, RCResult } from './types';
+import { FlatElement, FlatResult } from './types';
 
-function processComponent(node: CMLObject): RCFlatElement {
+function processComponent(node: CMLObject): FlatElement {
     const { tag, props, children } = node;
     const propsComp: Properties<string | FlatText> = {};
     const eventsComp: Properties<string> = {};
@@ -21,11 +21,11 @@ function processComponent(node: CMLObject): RCFlatElement {
             eventsComp[attr] = value;
         }
     }
-    return [tag, propsComp, eventsComp, processRC(children)];
+    return [tag, propsComp, eventsComp, renderCML(children)];
 }
 
-export function processRC(tree: CMLTree): RCResult[] {
-    const result: RCResult[] = [];
+export function renderCML(tree: CMLTree): FlatResult[] {
+    const result: FlatResult[] = [];
     for (const node of tree) {
         if (typeof node === 'string') {
             result.push(...extractTextProps(node));

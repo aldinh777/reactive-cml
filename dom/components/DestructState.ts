@@ -3,14 +3,14 @@ import { isState } from '@aldinh777/reactive-utils/validator';
 import { Properties } from '../../common/types';
 import { PropAlias, readAlias, propAlias } from '../../core/prop-util';
 import { render } from '../../core/render';
-import { Component, RenderResult } from '../../core/types';
+import { Component, RenderedResult } from '../../core/types';
 import ComponentError from '../../error/ComponentError';
 import { createMounter } from '../component-helper';
 
 export default function DestructState(
     props: Properties<any> = {},
     component: Component = {}
-): RenderResult[] | void {
+): RenderedResult[] | void {
     if (typeof props.obj !== 'string' || typeof props.extract !== 'string') {
         return;
     }

@@ -1,14 +1,14 @@
 import { has } from '@aldinh777/toolbox/object/validate';
-import { RCComponent, RCElement, RenderResult } from '../../core/types';
+import { RenderedComponent, RenderedElement, RenderedResult } from '../../core/types';
 import { append, setAttr, _elem, _text } from '../dom-util';
 
-function simpleToDom(rcElement: RCElement): Node {
-    const domElement = _elem(rcElement.tag);
-    for (const propname in rcElement.props) {
-        const propvalue = rcElement.props[propname];
+function simpleToDom(element: RenderedElement): Node {
+    const domElement = _elem(element.tag);
+    for (const propname in element.props) {
+        const propvalue = element.props[propname];
         setAttr(domElement, propname, propvalue);
     }
-    for (const child of rcElement.children as (RCElement | string)[]) {
+    for (const child of element.children as (RenderedElement | string)[]) {
         if (typeof child === 'string') {
             append(domElement, [_text(child)]);
         } else {
@@ -19,10 +19,10 @@ function simpleToDom(rcElement: RCElement): Node {
     return domElement;
 }
 
-const isElement = (item: any): item is RCElement => has(item, 'children');
+const isElement = (item: any): item is RenderedElement => has(item, 'children');
 
-export function simpleMount(parent: Node, components: RenderResult[], before?: Node): void {
-    for (const item of components as (RCComponent | RCElement | string)[]) {
+export function simpleMount(parent: Node, components: RenderedResult[], before?: Node): void {
+    for (const item of components as (RenderedComponent | RenderedElement | string)[]) {
         if (typeof item === 'string') {
             append(parent, [_text(item)], before);
         } else if (isElement(item)) {

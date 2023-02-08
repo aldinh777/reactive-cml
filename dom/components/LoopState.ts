@@ -3,7 +3,7 @@ import { isState } from '@aldinh777/reactive-utils/validator';
 import { Properties } from '../../common/types';
 import { PropAlias, propAlias, readAlias } from '../../core/prop-util';
 import { render } from '../../core/render';
-import { Component, RenderResult } from '../../core/types';
+import { Component, RenderedResult } from '../../core/types';
 import ComponentError from '../../error/ComponentError';
 import { createMounter } from '../component-helper';
 
@@ -12,8 +12,8 @@ function createFlatListElement(
     extract: PropAlias[],
     items: any[],
     component: Component
-): RenderResult[] {
-    const components: RenderResult[] = [];
+): RenderedResult[] {
+    const components: RenderedResult[] = [];
     const { children, params, _super } = component;
     for (const item of items) {
         const localParams = propAlias(params, extract, item);
@@ -28,7 +28,7 @@ function createFlatListElement(
 export default function LoopState(
     props: Properties<any> = {},
     component: Component = {}
-): RenderResult[] | void {
+): RenderedResult[] | void {
     if (typeof props.list !== 'string') {
         return;
     }

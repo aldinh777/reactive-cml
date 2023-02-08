@@ -1,5 +1,5 @@
 import { mount } from '.';
-import { Component, RCComponent, RCElement, RenderResult } from '../core/types';
+import { Component, RenderedComponent, RenderedElement, RenderedResult } from '../core/types';
 import { remove, _doc, _text } from './dom-util';
 
 interface MounterOptions {
@@ -13,8 +13,8 @@ export interface MounterData {
         start?: Node;
         end?: Node;
     };
-    rendered: [start: RCElement, end: RCElement, component: RCComponent];
-    mount(components: RenderResult[]): void;
+    rendered: [start: RenderedElement, end: RenderedElement, component: RenderedComponent];
+    mount(components: RenderedResult[]): void;
     dismount(): void;
 }
 
@@ -54,7 +54,7 @@ export function createMounter(
             { tag: 'span', props: { [NAMESPACE_END]: COMPONENT_ID }, events: {}, children: [] },
             { items: [], component }
         ],
-        mount(components: RenderResult[]) {
+        mount(components: RenderedResult[]) {
             const endMarker = mounter.marker.end;
             const parent = endMarker?.parentNode;
             dismount = mount(parent, components, endMarker);

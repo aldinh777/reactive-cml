@@ -1,15 +1,15 @@
 import { isState } from '@aldinh777/reactive-utils/validator';
 import { has } from '@aldinh777/toolbox/object/validate';
-import { RCElement, RenderResult } from '../core/types';
+import { RenderedElement, RenderedResult } from '../core/types';
 import { _elem, setAttr, append, _text } from './dom-util';
 
 type DomBindingOutput = [element: Element, bindings: (() => any)[]];
 
-export function toDom(rcElement: RCElement): DomBindingOutput {
+export function toDom(element: RenderedElement): DomBindingOutput {
     const dismounters: (() => any)[] = [];
-    const domElement = _elem(rcElement.tag);
-    for (const propname in rcElement.props) {
-        const propvalue = rcElement.props[propname];
+    const domElement = _elem(element.tag);
+    for (const propname in element.props) {
+        const propvalue = element.props[propname];
         if (isState(propvalue)) {
             setAttr(domElement, propname, propvalue.getValue());
             const sub = propvalue.onChange((nextvalue) => setAttr(domElement, propname, nextvalue));
@@ -18,12 +18,12 @@ export function toDom(rcElement: RCElement): DomBindingOutput {
             setAttr(domElement, propname, propvalue);
         }
     }
-    for (const event in rcElement.events) {
-        const listener = rcElement.events[event] as EventListener;
+    for (const event in element.events) {
+        const listener = element.events[event] as EventListener;
         domElement.addEventListener(event, listener);
         dismounters.push(() => domElement.removeEventListener(event, listener));
     }
-    for (const child of rcElement.children) {
+    for (const child of element.children) {
         if (typeof child === 'string') {
             append(domElement, [_text(child)]);
         } else if (isState(child)) {
@@ -40,9 +40,9 @@ export function toDom(rcElement: RCElement): DomBindingOutput {
     return [domElement, dismounters];
 }
 
-const isElement = (elem: any): elem is RCElement => has(elem, 'tag', 'props', 'events', 'children');
+const isElement = (elem: any): elem is RenderedElement => has(elem, 'tag', 'props', 'events', 'children');
 
-export function mount(parent: Node, components: RenderResult[], before?: Node): () => void {
+export function mount(parent: Node, components: RenderedResult[], before?: Node): () => void {
     const dismounters: (() => void)[] = [];
     for (const item of components) {
         if (typeof item === 'string') {

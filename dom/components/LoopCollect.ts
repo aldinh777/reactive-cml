@@ -5,7 +5,7 @@ import { mount } from '..';
 import { Properties } from '../../common/types';
 import { readAlias, propAlias } from '../../core/prop-util';
 import { render } from '../../core/render';
-import { Component, RenderResult } from '../../core/types';
+import { Component, RenderedResult } from '../../core/types';
 import ComponentError from '../../error/ComponentError';
 import { MounterData, createMounter } from '../component-helper';
 import { remove } from '../dom-util';
@@ -31,7 +31,7 @@ function appendSubmounter(
 export default function LoopCollect(
     props: Properties<any> = {},
     component: Component = {}
-): RenderResult[] | void {
+): RenderedResult[] | void {
     if (typeof props.list !== 'string') {
         return;
     }

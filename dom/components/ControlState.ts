@@ -3,7 +3,7 @@ import { isState } from '@aldinh777/reactive-utils/validator';
 import { has } from '@aldinh777/toolbox/object/validate';
 import { Properties } from '../../common/types';
 import { render } from '../../core/render';
-import { Component, RenderResult } from '../../core/types';
+import { Component, RenderedResult } from '../../core/types';
 import ComponentError from '../../error/ComponentError';
 import { createMounter } from '../component-helper';
 
@@ -41,7 +41,7 @@ function statify(props: Properties<any>, params: Properties<any>): State<boolean
 export default function ControlState(
     props: Properties<any> = {},
     component: Component = {}
-): RenderResult[] | void {
+): RenderedResult[] | void {
     if (typeof props.value !== 'string') {
         return;
     }

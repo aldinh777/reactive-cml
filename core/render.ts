@@ -3,12 +3,12 @@ import { has } from '@aldinh777/toolbox/object/validate';
 import { FlatText, Properties } from '../common/types';
 import { readAlias } from './prop-util';
 import {
-    RCResult,
+    FlatResult,
     Component,
-    RenderResult,
+    RenderedResult,
     ReactiveComponent,
-    RCElementChildren,
-    RCElement
+    RenderedElementChildren,
+    RenderedElement
 } from './types';
 
 type PropertyResult = [props: Properties<any>, events: Properties<Function>];
@@ -35,16 +35,17 @@ const processProperties = (
     return [propsComp, eventsComp];
 };
 
-const isProp = (item: RCResult): item is FlatText => item.length === 1;
-const isElementChildren = (item: RenderResult): item is RCElementChildren => !has(item, 'items');
+const isProp = (item: FlatResult): item is FlatText => item.length === 1;
+const isElementChildren = (item: RenderedResult): item is RenderedElementChildren =>
+    !has(item, 'items');
 
 export function render(
-    tree: RCResult[],
+    tree: FlatResult[],
     params: Properties<any>,
     component: Component,
     isRoot: boolean = false
-): RenderResult[] {
-    const renderResult: RenderResult[] = [];
+): RenderedResult[] {
+    const renderResult: RenderedResult[] = [];
     for (const item of tree) {
         if (typeof item === 'string') {
             renderResult.push(item);
@@ -84,7 +85,7 @@ export function render(
                     renderResult.push(...componentResult);
                 }
             } else {
-                const reactiveElement: RCElement = {
+                const reactiveElement: RenderedElement = {
                     tag,
                     props: componentProps,
                     events: componentEvents,

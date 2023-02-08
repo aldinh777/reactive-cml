@@ -1,12 +1,12 @@
 import { has } from '@aldinh777/toolbox/object/validate';
 import { Properties } from '../../common/types';
 import { render } from '../../core/render';
-import { Component, RenderResult } from '../../core/types';
+import { Component, RenderedResult } from '../../core/types';
 
 export default function ControlBasic(
     props: Properties<any> = {},
     component: Component = {}
-): RenderResult[] | void {
+): RenderedResult[] | void {
     if (typeof props.value !== 'string') {
         return;
     }

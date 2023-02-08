@@ -1,12 +1,12 @@
-import { RCResult, Component, RenderResult, RCFlatElement, RCElement } from '../../core/types';
+import { FlatResult, Component, RenderedResult, FlatElement, RenderedElement } from '../../core/types';
 
 export function simpleRender(
-    tree: RCResult[],
+    tree: FlatResult[],
     component: Component,
     isRoot: boolean = false
-): RenderResult[] {
-    const renderResult: RenderResult[] = [];
-    for (const item of tree as (string | RCFlatElement)[]) {
+): RenderedResult[] {
+    const renderResult: RenderedResult[] = [];
+    for (const item of tree as (string | FlatElement)[]) {
         if (typeof item === 'string') {
             renderResult.push(item);
         } else {
@@ -15,7 +15,7 @@ export function simpleRender(
                 tag,
                 props,
                 events: {},
-                children: simpleRender(children, component) as (RCElement | string)[]
+                children: simpleRender(children, component) as (RenderedElement | string)[]
             };
             renderResult.push(element);
         }

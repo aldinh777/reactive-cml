@@ -1,5 +1,5 @@
 import { join, relative, dirname } from 'path';
-import { processRC } from '../core';
+import { renderCML } from '../core';
 import { Preprocessor } from '../common/types';
 import { DEFAULT_COMPONENT_SET } from './constants';
 
@@ -37,22 +37,23 @@ export default function (options?: { localDebug?: boolean; filepath: string }): 
                 addImport([`${componentPath}/${component}`, component]);
             }
 
-            const rcResult = processRC(cmlRoot);
+            /** component rendering process */
+            const flatResult = renderCML(cmlRoot);
             const fullparams = params.concat(dependencies);
-            const rcJson = JSON.stringify(rcResult, null, 2);
+            const stringifiedResult = JSON.stringify(flatResult, null, 2);
             let outputScript: string;
             if (fullparams.length > 0) {
                 const domifiedPath = options?.localDebug
                     ? pathify(options?.filepath, LOCAL_RENDER_PATH)
                     : DEFAULT_RENDER_PATH;
                 addImport([domifiedPath, ['render']]);
-                outputScript = `return render(${rcJson}, {${fullparams.join()}}, component, true)`;
+                outputScript = `return render(${stringifiedResult}, {${fullparams.join()}}, component, true)`;
             } else {
                 const domifiedPath = options?.localDebug
                     ? pathify(options?.filepath, LOCAL_SIMPLE_RENDER_PATH)
                     : DEFAULT_SIMPLE_RENDER_PATH;
                 addImport([domifiedPath, ['simpleRender']]);
-                outputScript = `return simpleRender(${rcJson}, component, true)`;
+                outputScript = `return simpleRender(${stringifiedResult}, component, true)`;
             }
             return outputScript;
         },
