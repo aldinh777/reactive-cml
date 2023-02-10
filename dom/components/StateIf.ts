@@ -38,7 +38,7 @@ function statify(props: Properties<any>, params: Properties<any>): State<boolean
     }
 }
 
-export default function ControlState(
+export default function StateIf(
     props: Properties<any> = {},
     component: Component = {}
 ): RenderedResult[] | void {

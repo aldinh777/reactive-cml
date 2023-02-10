@@ -5,12 +5,15 @@ import { DEFAULT_COMPONENT_SET } from './constants';
 
 import preprocessExtract from '../common/preprocessor/extract';
 import preprocessBinding from '../common/preprocessor/binding';
-import preprocessChildren from './preprocessor/children';
-import preprocessSlot from './preprocessor/slot';
-import preprocessComponent from './preprocessor/component';
-import preprocessControl from './preprocessor/control';
-import preprocessDestruct from './preprocessor/destruct';
-import preprocessList from './preprocessor/list';
+import preprocessChildren from '../common/preprocessor/children';
+import preprocessSlot from '../common/preprocessor/slot';
+import preprocessComponent from '../common/preprocessor/component';
+import preprocessBasicIf from '../common/preprocessor/basic-if';
+import preprocessBasicDestruct from '../common/preprocessor/basic-foreach';
+import preprocessBasicForeach from '../common/preprocessor/basic-destruct';
+import preprocessControlledIf from './preprocessor/controlled-if';
+import preprocessControlledDestruct from './preprocessor/controlled-destruct';
+import preprocessControlledForeach from './preprocessor/controlled-foreach';
 
 const DEFAULT_COMPONENT_PATH = '@aldinh777/reactive-cml/dom/components';
 const DEFAULT_RENDER_PATH = '@aldinh777/reactive-cml/core/render';
@@ -61,9 +64,12 @@ export default function (options?: { localDebug?: boolean; filepath: string }): 
         preprocessors: [
             preprocessChildren,
             preprocessSlot,
-            preprocessControl,
-            preprocessList,
-            preprocessDestruct,
+            preprocessControlledIf,
+            preprocessControlledDestruct,
+            preprocessControlledForeach,
+            preprocessBasicIf,
+            preprocessBasicDestruct,
+            preprocessBasicForeach,
             preprocessComponent,
             preprocessExtract,
             preprocessBinding

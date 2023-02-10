@@ -1,9 +1,9 @@
 import { has } from '@aldinh777/toolbox/object/validate';
-import { Properties } from '../../common/types';
+import { Properties } from '../types';
 import { render } from '../../core/render';
 import { Component, RenderedResult } from '../../core/types';
 
-export default function ControlBasic(
+export default function If(
     props: Properties<any> = {},
     component: Component = {}
 ): RenderedResult[] | void {

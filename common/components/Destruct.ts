@@ -1,9 +1,9 @@
-import { Properties } from '../../common/types';
+import { Properties } from '../types';
 import { PropAlias, readAlias, propAlias } from '../../core/prop-util';
 import { render } from '../../core/render';
 import { Component, RenderedResult } from '../../core/types';
 
-export default function DestructBasic(
+export default function Destruct(
     props: Properties<any> = {},
     component: Component = {}
 ): RenderedResult[] | void {

@@ -1,4 +1,4 @@
-import { Properties } from '../../common/types';
+import { Properties } from '../types';
 import { render } from '../../core/render';
 import { RenderedResult, Component } from '../../core/types';
 

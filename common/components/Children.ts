@@ -1,4 +1,4 @@
-import { Properties } from '../../common/types';
+import { Properties } from '../types';
 import { readAlias, propAlias } from '../../core/prop-util';
 import { render } from '../../core/render';
 import { Component, RenderedResult } from '../../core/types';
