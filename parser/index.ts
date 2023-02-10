@@ -59,7 +59,25 @@ export function parseReactiveCML(source: string, options?: RCMLParserOptions): s
     ];
 
     /** Preparing automatic imports & script imports */
-    const autoImports: ImportFormat[] = [...autoImportsOpt];
+    const autoImports: ImportFormat[] = [];
+    const isUsed = (source: string, name: string) => source.match(RegExp(`\\b${name}\\b`));
+    for (const [from, imports] of autoImportsOpt) {
+        if (typeof imports === 'string') {
+            if (isUsed(script, imports) || isUsed(cml, imports)) {
+                autoImports.push([from, imports]);
+            }
+        } else {
+            const usedDependencies: string[] = [];
+            for (const dependency of imports) {
+                if (isUsed(script, dependency) || isUsed(cml, dependency)) {
+                    usedDependencies.push(dependency);
+                }
+            }
+            if (usedDependencies.length > 0) {
+                autoImports.push([from, usedDependencies]);
+            }
+        }
+    }
     const addImport = (...item: ImportFormat[]): any => autoImports.push(...item);
     for (const [query, from] of imports) {
         addImport([from, query]);
