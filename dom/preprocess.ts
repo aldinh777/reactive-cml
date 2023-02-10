@@ -1,7 +1,7 @@
 import { join, relative, dirname } from 'path';
 import { renderCML } from '../core';
 import { Preprocessor } from '../common/types';
-import { DEFAULT_COMPONENT_SET } from './constants';
+import { BASIC_COMPONENT_SET, DOM_COMPONENT_SET } from './constants';
 
 import preprocessExtract from '../common/preprocessor/extract';
 import preprocessBinding from '../common/preprocessor/binding';
@@ -15,12 +15,14 @@ import preprocessControlledIf from './preprocessor/controlled-if';
 import preprocessControlledDestruct from './preprocessor/controlled-destruct';
 import preprocessControlledForeach from './preprocessor/controlled-foreach';
 
+const COMMON_COMPONENT_PATH = '@aldinh777/reactive-cml/common/components';
 const DEFAULT_COMPONENT_PATH = '@aldinh777/reactive-cml/dom/components';
 const DEFAULT_RENDER_PATH = '@aldinh777/reactive-cml/core/render';
 const DEFAULT_SIMPLE_RENDER_PATH = '@aldinh777/reactive-cml/dom/slimify/render';
 const LOCAL_COMPONENT_PATH = join(__dirname, '../dom/components');
 const LOCAL_RENDER_PATH = join(__dirname, '../core/render');
 const LOCAL_SIMPLE_RENDER_PATH = join(__dirname, '../dom/slimify/render');
+const INTERNAL_COMPONENT_SET = BASIC_COMPONENT_SET.concat(DOM_COMPONENT_SET);
 
 function pathify(target: string | void, source: string): string {
     return './' + (target ? relative(dirname(target), source) : source).replace(/\\/g, '/');
@@ -31,11 +33,13 @@ export default function (options?: { localDebug?: boolean; filepath: string }): 
         buildScript(cmlRoot, [dependencies, params], addImport) {
             /** add internal dependencies to import */
             const internalComponents = dependencies.filter((dep: string) =>
-                DEFAULT_COMPONENT_SET.includes(dep)
+                INTERNAL_COMPONENT_SET.includes(dep)
             );
             for (const component of internalComponents) {
                 const componentPath = options?.localDebug
                     ? pathify(options?.filepath, LOCAL_COMPONENT_PATH)
+                    : BASIC_COMPONENT_SET.includes(component)
+                    ? COMMON_COMPONENT_PATH
                     : DEFAULT_COMPONENT_PATH;
                 addImport([`${componentPath}/${component}`, component]);
             }
@@ -60,7 +64,7 @@ export default function (options?: { localDebug?: boolean; filepath: string }): 
             }
             return outputScript;
         },
-        relativeBlacklist: DEFAULT_COMPONENT_SET,
+        relativeBlacklist: INTERNAL_COMPONENT_SET,
         preprocessors: [
             preprocessChildren,
             preprocessSlot,
