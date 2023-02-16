@@ -7,10 +7,10 @@ import { Component, RenderedResult } from '../../core/types';
 import ComponentError from '../../error/ComponentError';
 import { createMounter } from '../component-helper';
 
-export default function StateDestruct(
+export default async function StateDestruct(
     props: Properties = {},
     component: Component = {}
-): RenderedResult[] | void {
+): Promise<RenderedResult[] | void> {
     if (typeof props.obj !== 'string' || typeof props.extract !== 'string') {
         return;
     }
@@ -24,13 +24,13 @@ export default function StateDestruct(
     }
     let subscription: StateSubscription<object | Map<string, any>>;
     const mounter = createMounter('ds', component, {
-        onMount() {
+        async onMount() {
             const destructParams = propAlias(params, propnames, obj.getValue());
-            const elements = render(children, destructParams, _super);
+            const elements = await render(children, destructParams, _super);
             mounter.mount(elements);
-            subscription = obj.onChange((ob) => {
+            subscription = obj.onChange(async (ob) => {
                 const destructParams = propAlias(params, propnames, ob);
-                const newElements = render(children, destructParams, _super);
+                const newElements = await render(children, destructParams, _super);
                 mounter.dismount();
                 mounter.mount(newElements);
             });

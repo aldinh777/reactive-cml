@@ -1,5 +1,10 @@
 import { isList } from '@aldinh777/reactive-utils/validator';
-import { ListViewMapped, StateCollection, OperationHandler } from '@aldinh777/reactive/collection';
+import {
+    ListViewMapped,
+    StateCollection,
+    OperationHandler,
+    StateList
+} from '@aldinh777/reactive/collection';
 import { Subscription } from '@aldinh777/reactive/helper/subscription-helper';
 import { mount } from '..';
 import { Properties } from '../../common/types';
@@ -28,10 +33,10 @@ function appendSubmounter(
     mount(parent, submounter.rendered, insertBefore);
 }
 
-export default function CollectionForeach(
+export default async function CollectionForeach(
     props: Properties = {},
     component: Component = {}
-): RenderedResult[] | void {
+): Promise<RenderedResult[] | void> {
     if (typeof props.list !== 'string') {
         return;
     }
@@ -44,12 +49,12 @@ export default function CollectionForeach(
             `'${props.list}' are not a valid StateCollection in 'collect:list' property of 'foreach' element`
         );
     }
-    const submounters = new ListViewMapped(list, (item) => {
+    const submounters = new ListViewMapped(list, async (item) => {
         const localParams = typeof item === 'object' ? propAlias(params, extracts, item) : {};
         if (alias) {
             Object.assign(localParams, { [alias]: item });
         }
-        const renderer = render(children, localParams, _super);
+        const renderer = await render(children, localParams, _super);
         const submounter = createMounter(
             'lci',
             {},
@@ -61,37 +66,30 @@ export default function CollectionForeach(
         );
         return submounter;
     });
-    let updateSubscription: Subscription<
-        StateCollection<number, MounterData, MounterData[]>,
-        OperationHandler<number, MounterData>
-    >;
-    let insertSubscription: Subscription<
-        StateCollection<number, MounterData, MounterData[]>,
-        OperationHandler<number, MounterData>
-    >;
-    let deleteSubscription: Subscription<
-        StateCollection<number, MounterData, MounterData[]>,
-        OperationHandler<number, MounterData>
-    >;
+    let updateSubscription: Subscription<StateList, OperationHandler<number, Promise<MounterData>>>;
+    let insertSubscription: Subscription<StateList, OperationHandler<number, Promise<MounterData>>>;
+    let deleteSubscription: Subscription<StateList, OperationHandler<number, Promise<MounterData>>>;
     const mounter = createMounter('lc', component, {
         preventDismount: () => true,
-        onMount() {
-            for (const submounter of submounters.raw) {
+        async onMount() {
+            for await (const submounter of submounters.raw) {
                 mounter.mount(submounter.rendered);
             }
-            updateSubscription = submounters.onUpdate((index, next, previous: MounterData) => {
-                removeSubmounter(mounter, previous);
-                appendSubmounter(mounter, next, submounters.get(index + 1));
+            updateSubscription = submounters.onUpdate(
+                async (index, next, previous: Promise<MounterData>) => {
+                    removeSubmounter(mounter, await previous);
+                    appendSubmounter(mounter, await next, await submounters.get(index + 1));
+                }
+            );
+            insertSubscription = submounters.onInsert(async (index, inserted) => {
+                appendSubmounter(mounter, await inserted, await submounters.get(index + 1));
             });
-            insertSubscription = submounters.onInsert((index, inserted) => {
-                appendSubmounter(mounter, inserted, submounters.get(index + 1));
-            });
-            deleteSubscription = submounters.onDelete((_, deleted) => {
-                removeSubmounter(mounter, deleted);
+            deleteSubscription = submounters.onDelete(async (_, deleted) => {
+                removeSubmounter(mounter, await deleted);
             });
         },
-        onDismount() {
-            for (const submounter of submounters.raw) {
+        async onDismount() {
+            for await (const submounter of submounters.raw) {
                 submounter.dismount();
             }
             updateSubscription?.unsub?.();

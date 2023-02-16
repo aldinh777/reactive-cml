@@ -3,10 +3,10 @@ import { readAlias, propAlias } from '../prop-util';
 import { render } from '../../core/render';
 import { Component, RenderedResult } from '../../core/types';
 
-export default function Children(
+export default async function Children(
     props: Properties = {},
     component: Component = {}
-): RenderedResult[] | void {
+): Promise<RenderedResult[] | void> {
     if (component._super) {
         const { children, extracts, params, _super } = component._super;
         const prevSlotName = _super?.slotname;
@@ -16,7 +16,7 @@ export default function Children(
         const exported = typeof props.export === 'string' ? readAlias(props.export) : [];
         const localParams = propAlias(params, exported, component.params);
         const childrenParams = propAlias(localParams, extracts, localParams);
-        const output = render(children, childrenParams, _super);
+        const output = await render(children, childrenParams, _super);
         if (_super) {
             _super.slotname = prevSlotName;
         }

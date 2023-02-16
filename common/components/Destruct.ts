@@ -3,10 +3,10 @@ import { PropAlias, readAlias, propAlias } from '../prop-util';
 import { render } from '../../core/render';
 import { Component, RenderedResult } from '../../core/types';
 
-export default function Destruct(
+export default async function Destruct(
     props: Properties = {},
     component: Component = {}
-): RenderedResult[] | void {
+): Promise<RenderedResult[] | void> {
     if (typeof props.obj !== 'string' || typeof props.extract !== 'string') {
         return;
     }

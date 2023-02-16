@@ -3,10 +3,10 @@ import { Properties } from '../types';
 import { render } from '../../core/render';
 import { Component, RenderedResult } from '../../core/types';
 
-export default function If(
+export default async function If(
     props: Properties = {},
     component: Component = {}
-): RenderedResult[] | void {
+): Promise<RenderedResult[] | void> {
     if (typeof props.value !== 'string') {
         return;
     }

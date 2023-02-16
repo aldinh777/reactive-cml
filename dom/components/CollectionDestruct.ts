@@ -8,10 +8,10 @@ import { Component, RenderedResult } from '../../core/types';
 import ComponentError from '../../error/ComponentError';
 import { createMounter } from '../component-helper';
 
-export default function CollectionDestruct(
+export default async function CollectionDestruct(
     props: Properties = {},
     component: Component = {}
-): RenderedResult[] | void {
+): Promise<RenderedResult[] | void> {
     if (typeof props.obj !== 'string' || typeof props.extract !== 'string') {
         return;
     }
@@ -28,13 +28,13 @@ export default function CollectionDestruct(
         OperationHandler<string, unknown>
     >;
     const mounter = createMounter('dc', component, {
-        onMount() {
+        async onMount() {
             const destructParams = propAlias(params, propnames, obj.raw);
             const elements = render(children, destructParams, _super);
-            mounter.mount(elements);
-            updateSubscription = obj.onUpdate(() => {
+            mounter.mount(await elements);
+            updateSubscription = obj.onUpdate(async () => {
                 const destructParams = propAlias(params, propnames, obj.raw);
-                const newElements = render(children, destructParams, _super);
+                const newElements = await render(children, destructParams, _super);
                 mounter.dismount();
                 mounter.mount(newElements);
             });

@@ -3,10 +3,10 @@ import { propAlias } from '../prop-util';
 import { render } from '../../core/render';
 import { Component, RenderedResult } from '../../core/types';
 
-export default function Slot(
+export default async function Slot(
     props: Properties = {},
     component: Component = {}
-): RenderedResult[] | void {
+): Promise<RenderedResult[] | void> {
     if (component._super) {
         const { children, extracts, params, _super } = component;
         if (props.for === _super.slotname) {

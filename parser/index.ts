@@ -110,6 +110,6 @@ export function parseReactiveCML(source: string, options?: RCMLParserOptions): s
     const outputScript = cmlPreprocessor.buildScript(cmlTree, [dependencies, params], addImport);
     const importScript = stringifyImports(mode, autoImports);
     const exportScript = '\n' + (mode === 'require' ? 'module.exports = ' : 'export default ');
-    const resultScript = `function(props={}, component={}, dispatch=()=>{}) {\n${script.trim()}\n${outputScript}\n}`;
+    const resultScript = `async function(props={}, component={}, dispatch=()=>{}) {\n${script.trim()}\n${outputScript}\n}`;
     return importScript + exportScript + resultScript;
 }

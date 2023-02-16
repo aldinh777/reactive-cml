@@ -3,10 +3,10 @@ import { PropAlias, readAlias, propAlias } from '../prop-util';
 import { render } from '../../core/render';
 import { Component, RenderedResult } from '../../core/types';
 
-export default function Foreach(
+export default async function Foreach(
     props: Properties = {},
     component: Component = {}
-): RenderedResult[] | void {
+): Promise<RenderedResult[] | void> {
     if (typeof props.list !== 'string') {
         return;
     }
@@ -20,7 +20,7 @@ export default function Foreach(
         if (alias) {
             Object.assign(localParams, { [alias]: item });
         }
-        result.push(...render(children, localParams, _super));
+        result.push(...(await render(children, localParams, _super)));
     }
     return result;
 }

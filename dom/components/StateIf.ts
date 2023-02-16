@@ -33,16 +33,16 @@ function statify(props: Properties, params: Properties): State<boolean> {
     return state as State<boolean>;
 }
 
-export default function StateIf(
+export default async function StateIf(
     props: Properties = {},
     component: Component = {}
-): RenderedResult[] | void {
+): Promise<RenderedResult[] | void> {
     if (typeof props.value !== 'string') {
         return;
     }
     const { children, params, _super } = component;
     const state = statify(props, params);
-    const elements = render(children, params, _super);
+    const elements = await render(children, params, _super);
     let subscription: StateSubscription<boolean>;
     const mounter = createMounter('cs', component, {
         preventDismount: () => !state.getValue(),

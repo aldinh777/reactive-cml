@@ -42,12 +42,12 @@ const isProp = (item: FlatResult): item is FlatText => item.length === 1;
 const isElementChildren = (item: RenderedResult): item is RenderedElementChildren =>
     !has(item, 'items');
 
-export function render(
+export async function render(
     tree: FlatResult[],
     params: Properties,
     component: Component,
     isRoot: boolean = false
-): RenderedResult[] {
+): Promise<RenderedResult[]> {
     const renderResult: RenderedResult[] = [];
     for (const item of tree) {
         if (typeof item === 'string') {
@@ -94,7 +94,7 @@ export function render(
                     events: componentEvents,
                     children: []
                 };
-                const childrenResult = render(children, params, component);
+                const childrenResult = await render(children, params, component);
                 if (childrenResult.every(isElementChildren)) {
                     reactiveElement.children = childrenResult;
                     renderResult.push(reactiveElement);

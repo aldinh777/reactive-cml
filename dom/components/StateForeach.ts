@@ -7,12 +7,12 @@ import { Component, RenderedResult } from '../../core/types';
 import ComponentError from '../../error/ComponentError';
 import { createMounter } from '../component-helper';
 
-function createFlatListElement(
+async function createFlatListElement(
     alias: string,
     extract: PropAlias[],
     items: any[],
     component: Component
-): RenderedResult[] {
+): Promise<RenderedResult[]> {
     const components: RenderedResult[] = [];
     const { children, params, _super } = component;
     for (const item of items) {
@@ -20,15 +20,15 @@ function createFlatListElement(
         if (alias) {
             Object.assign(localParams, { [alias]: item });
         }
-        components.push(...render(children, localParams, _super));
+        components.push(...(await render(children, localParams, _super)));
     }
     return components;
 }
 
-export default function StateForeach(
+export default async function StateForeach(
     props: Properties = {},
     component: Component = {}
-): RenderedResult[] | void {
+): Promise<RenderedResult[] | void> {
     if (typeof props.list !== 'string') {
         return;
     }
@@ -42,11 +42,16 @@ export default function StateForeach(
     }
     let subscription: StateSubscription<any[]>;
     const mounter = createMounter('ls', component, {
-        onMount() {
-            const elements = createFlatListElement(alias, extracts, list.getValue(), component);
+        async onMount() {
+            const elements = await createFlatListElement(
+                alias,
+                extracts,
+                list.getValue(),
+                component
+            );
             mounter.mount(elements);
-            subscription = list.onChange((items) => {
-                const newElements = createFlatListElement(alias, extracts, items, component);
+            subscription = list.onChange(async (items) => {
+                const newElements = await createFlatListElement(alias, extracts, items, component);
                 mounter.dismount();
                 mounter.mount(newElements);
             });
