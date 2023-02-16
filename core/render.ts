@@ -74,7 +74,7 @@ export async function render(
                 if (typeof reactiveComponent !== 'function') {
                     throw Error(`undefined or invalid component : '${tag}'`);
                 }
-                const componentResult = reactiveComponent(
+                const componentResult = await reactiveComponent(
                     componentProps,
                     componentContext,
                     (name, ...args) => {

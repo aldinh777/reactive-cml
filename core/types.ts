@@ -16,7 +16,7 @@ export type ReactiveComponent = (
     props: Properties,
     component?: Component,
     dispatch?: EventDispatcher
-) => RenderedResult[] | void;
+) => Promise<RenderedResult[] | void>;
 
 export interface RenderedElement {
     tag: string;
