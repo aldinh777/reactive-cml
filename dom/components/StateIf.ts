@@ -19,14 +19,14 @@ function statify(props: Properties, params: Properties): State<boolean> {
             }' element`
         );
     }
-    const value = state.getValue();
     if (hasEqual) {
         const equalValue = props.equal;
-        const equalState = new State(isUnless ? value != equalValue : value == equalValue);
+        const equalState = new State(state.getValue() == equalValue);
+        state.onChange((next) => next === equalValue);
         state = equalState;
     }
     if (isUnless) {
-        const reverse = new State(!value);
+        const reverse = new State(!state.getValue());
         state.onChange((next) => reverse.setValue(!next));
         state = reverse;
     }
