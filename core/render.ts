@@ -10,6 +10,7 @@ import {
     RenderedElementChildren,
     RenderedElement
 } from './types';
+import ComponentError from '../error/ComponentError';
 
 type PropertyResult = [props: Properties, events: Properties<Function>];
 
@@ -74,18 +75,34 @@ export async function render(
                 if (typeof reactiveComponent !== 'function') {
                     throw Error(`undefined or invalid component : '${tag}'`);
                 }
-                const componentResult = await reactiveComponent(
-                    componentProps,
-                    componentContext,
-                    (name, ...args) => {
-                        const event = componentEvents[name];
-                        if (typeof event === 'function') {
-                            return event(...args);
+                try {
+                    const componentResult = await reactiveComponent(
+                        componentProps,
+                        componentContext,
+                        (name, ...args) => {
+                            const event = componentEvents[name];
+                            if (typeof event === 'function') {
+                                return event(...args);
+                            }
                         }
+                    );
+                    if (componentResult) {
+                        renderResult.push(...componentResult);
                     }
-                );
-                if (componentResult) {
-                    renderResult.push(...componentResult);
+                } catch (err) {
+                    if (err instanceof ComponentError) {
+                        throw new ComponentError(
+                            err.message,
+                            [tag, ...err.componentTraces],
+                            err.reason
+                        );
+                    } else {
+                        throw new ComponentError(
+                            `crash at component ${tag}`,
+                            [tag],
+                            err instanceof Error ? err.message : err
+                        );
+                    }
                 }
             } else {
                 const reactiveElement: RenderedElement = {
