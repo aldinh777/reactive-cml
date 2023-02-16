@@ -91,14 +91,15 @@ export async function render(
                     }
                 } catch (err) {
                     if (err instanceof ComponentError) {
+                        const cause = err.componentTraces.at(-1);
                         throw new ComponentError(
-                            err.message,
+                            `crash at component '${cause}'`,
                             [tag, ...err.componentTraces],
                             err.reason
                         );
                     } else {
                         throw new ComponentError(
-                            `crash at component ${tag}`,
+                            `crash at component '${tag}'`,
                             [tag],
                             err instanceof Error ? err.message : err
                         );
