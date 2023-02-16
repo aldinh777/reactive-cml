@@ -1,7 +1,7 @@
 import { StateSubscription } from '@aldinh777/reactive';
 import { isState } from '@aldinh777/reactive-utils/validator';
 import { Properties } from '../../common/types';
-import { PropAlias, propAlias, readAlias } from '../../core/prop-util';
+import { PropAlias, propAlias, readAlias } from '../../common/prop-util';
 import { render } from '../../core/render';
 import { Component, RenderedResult } from '../../core/types';
 import ComponentError from '../../error/ComponentError';
@@ -26,14 +26,14 @@ function createFlatListElement(
 }
 
 export default function StateForeach(
-    props: Properties<any> = {},
+    props: Properties = {},
     component: Component = {}
 ): RenderedResult[] | void {
     if (typeof props.list !== 'string') {
         return;
     }
     const list = component.params[props.list];
-    const alias = props.as;
+    const alias = props.as as string;
     const extracts: PropAlias[] = typeof props.extract === 'string' ? readAlias(props.extract) : [];
     if (!isState<any[]>(list)) {
         throw new ComponentError(

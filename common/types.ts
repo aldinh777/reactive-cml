@@ -1,6 +1,6 @@
 import { CMLObject, CMLTree } from '@aldinh777/cml-parser';
 
-export interface Properties<T> {
+export interface Properties<T = unknown> {
     [key: string]: T;
 }
 

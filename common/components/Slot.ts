@@ -1,10 +1,10 @@
 import { Properties } from '../types';
-import { propAlias } from '../../core/prop-util';
+import { propAlias } from '../prop-util';
 import { render } from '../../core/render';
 import { Component, RenderedResult } from '../../core/types';
 
 export default function Slot(
-    props: Properties<any> = {},
+    props: Properties = {},
     component: Component = {}
 ): RenderedResult[] | void {
     if (component._super) {

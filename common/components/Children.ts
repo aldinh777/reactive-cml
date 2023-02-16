@@ -1,17 +1,17 @@
 import { Properties } from '../types';
-import { readAlias, propAlias } from '../../core/prop-util';
+import { readAlias, propAlias } from '../prop-util';
 import { render } from '../../core/render';
 import { Component, RenderedResult } from '../../core/types';
 
 export default function Children(
-    props: Properties<any> = {},
+    props: Properties = {},
     component: Component = {}
 ): RenderedResult[] | void {
     if (component._super) {
         const { children, extracts, params, _super } = component._super;
         const prevSlotName = _super?.slotname;
         if (_super) {
-            _super.slotname = props.name;
+            _super.slotname = props.name as string;
         }
         const exported = typeof props.export === 'string' ? readAlias(props.export) : [];
         const localParams = propAlias(params, exported, component.params);

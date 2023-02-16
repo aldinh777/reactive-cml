@@ -1,7 +1,7 @@
 import { isState } from '@aldinh777/reactive-utils/validator';
 import { has } from '@aldinh777/toolbox/object/validate';
 import { FlatText, Properties } from '../common/types';
-import { readAlias } from './prop-util';
+import { readAlias } from '../common/prop-util';
 import {
     FlatResult,
     Component,
@@ -11,14 +11,14 @@ import {
     RenderedElement
 } from './types';
 
-type PropertyResult = [props: Properties<any>, events: Properties<Function>];
+type PropertyResult = [props: Properties, events: Properties<Function>];
 
 const processProperties = (
-    params: Properties<any>,
+    params: Properties,
     props: Properties<string | FlatText>,
     events: Properties<string>
 ): PropertyResult => {
-    const propsComp: Properties<any> = {};
+    const propsComp: Properties = {};
     const eventsComp: Properties<Function> = {};
     for (const prop in props) {
         const value = props[prop];
@@ -30,7 +30,10 @@ const processProperties = (
         }
     }
     for (const event in events) {
-        eventsComp[event] = params[events[event]];
+        const handler = params[events[event]];
+        if (typeof handler === 'function') {
+            eventsComp[event] = handler;
+        }
     }
     return [propsComp, eventsComp];
 };
@@ -41,7 +44,7 @@ const isElementChildren = (item: RenderedResult): item is RenderedElementChildre
 
 export function render(
     tree: FlatResult[],
-    params: Properties<any>,
+    params: Properties,
     component: Component,
     isRoot: boolean = false
 ): RenderedResult[] {
@@ -50,7 +53,7 @@ export function render(
         if (typeof item === 'string') {
             renderResult.push(item);
         } else if (isProp(item)) {
-            const param = params[item[0]];
+            const param = params[item[0]] as any;
             if (isState(param)) {
                 renderResult.push(param);
             } else {
@@ -67,7 +70,7 @@ export function render(
                     extracts: component?.extracts?.concat(extracts) || [],
                     _super: component
                 };
-                const reactiveComponent: ReactiveComponent = params[tag];
+                const reactiveComponent = params[tag] as ReactiveComponent;
                 if (typeof reactiveComponent !== 'function') {
                     throw Error(`undefined or invalid component : '${tag}'`);
                 }

@@ -2,14 +2,14 @@ import { isMap } from '@aldinh777/reactive-utils/validator';
 import { StateCollection, OperationHandler } from '@aldinh777/reactive/collection';
 import { Subscription } from '@aldinh777/reactive/helper/subscription-helper';
 import { Properties } from '../../common/types';
-import { PropAlias, readAlias, propAlias } from '../../core/prop-util';
+import { PropAlias, readAlias, propAlias } from '../../common/prop-util';
 import { render } from '../../core/render';
 import { Component, RenderedResult } from '../../core/types';
 import ComponentError from '../../error/ComponentError';
 import { createMounter } from '../component-helper';
 
 export default function CollectionDestruct(
-    props: Properties<any> = {},
+    props: Properties = {},
     component: Component = {}
 ): RenderedResult[] | void {
     if (typeof props.obj !== 'string' || typeof props.extract !== 'string') {

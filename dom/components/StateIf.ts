@@ -7,14 +7,14 @@ import { Component, RenderedResult } from '../../core/types';
 import ComponentError from '../../error/ComponentError';
 import { createMounter } from '../component-helper';
 
-function statify(props: Properties<any>, params: Properties<any>): State<boolean> {
-    const name = props.value;
-    const state = params[name];
+function statify(props: Properties, params: Properties): State<boolean> {
     const isUnless = has(props, 'rev');
     const hasEqual = has(props, 'equal');
+    const valueName = props.value as string;
+    let state: State = params[valueName] as State;
     if (!isState(state)) {
         throw new ComponentError(
-            `'${name}' are not a valid State in 'state:value' property of '${
+            `'${valueName}' are not a valid State in 'state:value' property of '${
                 isUnless ? 'unless' : 'if'
             }' element`
         );
@@ -23,23 +23,18 @@ function statify(props: Properties<any>, params: Properties<any>): State<boolean
     if (hasEqual) {
         const equalValue = props.equal;
         const equalState = new State(isUnless ? value != equalValue : value == equalValue);
-        if (isUnless) {
-            state.onChange((next) => equalState.setValue(next != equalValue));
-        } else {
-            state.onChange((next) => equalState.setValue(next == equalValue));
-        }
-        return equalState;
-    } else if (isUnless) {
-        const condition = new State(!value);
-        state.onChange((next) => condition.setValue(!next));
-        return condition;
-    } else {
-        return state as State<boolean>;
+        state = equalState;
     }
+    if (isUnless) {
+        const reverse = new State(!value);
+        state.onChange((next) => reverse.setValue(!next));
+        state = reverse;
+    }
+    return state as State<boolean>;
 }
 
 export default function StateIf(
-    props: Properties<any> = {},
+    props: Properties = {},
     component: Component = {}
 ): RenderedResult[] | void {
     if (typeof props.value !== 'string') {

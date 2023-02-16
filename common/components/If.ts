@@ -4,7 +4,7 @@ import { render } from '../../core/render';
 import { Component, RenderedResult } from '../../core/types';
 
 export default function If(
-    props: Properties<any> = {},
+    props: Properties = {},
     component: Component = {}
 ): RenderedResult[] | void {
     if (typeof props.value !== 'string') {

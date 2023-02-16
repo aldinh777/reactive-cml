@@ -3,7 +3,7 @@ import { ListViewMapped, StateCollection, OperationHandler } from '@aldinh777/re
 import { Subscription } from '@aldinh777/reactive/helper/subscription-helper';
 import { mount } from '..';
 import { Properties } from '../../common/types';
-import { readAlias, propAlias } from '../../core/prop-util';
+import { readAlias, propAlias } from '../../common/prop-util';
 import { render } from '../../core/render';
 import { Component, RenderedResult } from '../../core/types';
 import ComponentError from '../../error/ComponentError';
@@ -29,7 +29,7 @@ function appendSubmounter(
 }
 
 export default function CollectionForeach(
-    props: Properties<any> = {},
+    props: Properties = {},
     component: Component = {}
 ): RenderedResult[] | void {
     if (typeof props.list !== 'string') {
@@ -37,15 +37,15 @@ export default function CollectionForeach(
     }
     const { children, params, _super } = component;
     const list = params[props.list];
-    const alias = props.as;
+    const alias = props.as as string;
     const extracts = typeof props.extract === 'string' ? readAlias(props.extract) : [];
-    if (!isList<any>(list)) {
+    if (!isList(list)) {
         throw new ComponentError(
             `'${props.list}' are not a valid StateCollection in 'collect:list' property of 'foreach' element`
         );
     }
     const submounters = new ListViewMapped(list, (item) => {
-        const localParams = propAlias(params, extracts, item);
+        const localParams = typeof item === 'object' ? propAlias(params, extracts, item) : {};
         if (alias) {
             Object.assign(localParams, { [alias]: item });
         }
