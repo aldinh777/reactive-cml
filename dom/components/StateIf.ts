@@ -22,7 +22,7 @@ function statify(props: Properties, params: Properties): State<boolean> {
     if (hasEqual) {
         const equalValue = props.equal;
         const equalState = new State(state.getValue() == equalValue);
-        state.onChange((next) => next === equalValue);
+        state.onChange((next) => equalState.setValue(next === equalValue));
         state = equalState;
     }
     if (isUnless) {
