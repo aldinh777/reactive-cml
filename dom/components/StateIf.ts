@@ -7,7 +7,7 @@ import { Component, RenderedResult } from '../../core/types';
 import ComponentError from '../../error/ComponentError';
 import { createMounter } from '../component-helper';
 
-function statify(props: Properties, params: Properties): State<boolean> {
+function getState(props: Properties, params: Properties): State<boolean> {
     const isUnless = has(props, 'rev');
     const hasEqual = has(props, 'equal');
     const valueName = props.value as string;
@@ -41,7 +41,7 @@ export default async function StateIf(
         return;
     }
     const { children, params, _super } = component;
-    const state = statify(props, params);
+    const state = getState(props, params);
     const elements = await render(children, params, _super);
     let subscription: StateSubscription<boolean>;
     const mounter = createMounter('cs', component, {
