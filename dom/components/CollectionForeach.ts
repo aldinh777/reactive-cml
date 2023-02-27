@@ -1,11 +1,5 @@
 import { isList } from '@aldinh777/reactive-utils/validator';
-import {
-    ListViewMapped,
-    StateCollection,
-    OperationHandler,
-    StateList
-} from '@aldinh777/reactive/collection';
-import { Subscription } from '@aldinh777/reactive/helper/subscription-helper';
+import { ListViewMapped } from '@aldinh777/reactive/collection';
 import { mount } from '..';
 import { Properties } from '../../common/types';
 import { readAlias, propAlias } from '../../common/prop-util';
@@ -66,35 +60,32 @@ export default async function CollectionForeach(
         );
         return submounter;
     });
-    let updateSubscription: Subscription<StateList, OperationHandler<number, Promise<MounterData>>>;
-    let insertSubscription: Subscription<StateList, OperationHandler<number, Promise<MounterData>>>;
-    let deleteSubscription: Subscription<StateList, OperationHandler<number, Promise<MounterData>>>;
     const mounter = createMounter('lc', component, {
         preventDismount: () => true,
         async onMount() {
             for await (const submounter of submounters.raw) {
                 mounter.mount(submounter.rendered);
             }
-            updateSubscription = submounters.onUpdate(
+            const updateSubscription = submounters.onUpdate(
                 async (index, next, previous: Promise<MounterData>) => {
                     removeSubmounter(mounter, await previous);
                     appendSubmounter(mounter, await next, await submounters.get(index + 1));
                 }
             );
-            insertSubscription = submounters.onInsert(async (index, inserted) => {
+            const insertSubscription = submounters.onInsert(async (index, inserted) => {
                 appendSubmounter(mounter, await inserted, await submounters.get(index + 1));
             });
-            deleteSubscription = submounters.onDelete(async (_, deleted) => {
+            const deleteSubscription = submounters.onDelete(async (_, deleted) => {
                 removeSubmounter(mounter, await deleted);
             });
-        },
-        async onDismount() {
-            for await (const submounter of submounters.raw) {
-                submounter.dismount();
-            }
-            updateSubscription?.unsub?.();
-            insertSubscription?.unsub?.();
-            deleteSubscription?.unsub?.();
+            return async () => {
+                for await (const submounter of submounters.raw) {
+                    submounter.dismount();
+                }
+                updateSubscription?.unsub?.();
+                insertSubscription?.unsub?.();
+                deleteSubscription?.unsub?.();
+            };
         }
     });
     return mounter.rendered;

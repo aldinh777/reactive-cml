@@ -4,8 +4,7 @@ import { remove, _doc, _text } from './dom-util';
 
 interface MounterOptions {
     preventDismount?(): boolean;
-    onMount?(): any;
-    onDismount?(): any;
+    onMount?(): void | Function | Promise<void | Function>;
 }
 
 export interface MounterData {
@@ -69,7 +68,7 @@ export function createMounter(
             }
         }
     };
-    component.onMount = () => {
+    component.onMount = async () => {
         const elementStart = _doc.querySelector(`[${NAMESPACE_START}="${COMPONENT_ID}"]`);
         const elementEnd = _doc.querySelector(`[${NAMESPACE_END}="${COMPONENT_ID}"]`);
         const parentNode = elementEnd?.parentNode;
@@ -82,14 +81,16 @@ export function createMounter(
         parentNode.replaceChild(replaceMarkerEnd, elementEnd);
         mounter.marker.start = replaceMarkerStart;
         mounter.marker.end = replaceMarkerEnd;
-        options.onMount?.();
-    };
-    component.onDismount = () => {
-        if (!options.preventDismount?.()) {
-            mounter.dismount?.();
-        }
-        dismount = null;
-        options.onDismount?.();
+        const onDismount = await options.onMount?.();
+        return async () => {
+            if (onDismount) {
+                await onDismount();
+            }
+            if (!options.preventDismount?.()) {
+                mounter.dismount?.();
+            }
+            dismount = null;
+        };
     };
     return mounter;
 }

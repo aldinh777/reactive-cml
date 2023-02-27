@@ -1,4 +1,4 @@
-import { State, StateSubscription } from '@aldinh777/reactive';
+import { State } from '@aldinh777/reactive';
 import { isState } from '@aldinh777/reactive-utils/validator';
 import { has } from '@aldinh777/toolbox/object/validate';
 import { Properties } from '../../common/types';
@@ -43,23 +43,20 @@ export default async function StateIf(
     const { children, params, _super } = component;
     const state = getState(props, params);
     const elements = await render(children, params, _super);
-    let subscription: StateSubscription<boolean>;
     const mounter = createMounter('cs', component, {
         preventDismount: () => !state.getValue(),
         onMount() {
             if (state.getValue()) {
                 mounter.mount(elements);
             }
-            subscription = state.onChange((active) => {
+            const subscription = state.onChange((active) => {
                 if (active) {
                     mounter.mount(elements);
                 } else {
                     mounter.dismount();
                 }
             });
-        },
-        onDismount() {
-            subscription?.unsub?.();
+            return () => subscription.unsub();
         }
     });
     return mounter.rendered;

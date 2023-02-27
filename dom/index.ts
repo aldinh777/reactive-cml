@@ -40,7 +40,8 @@ export function toDom(element: RenderedElement): DomBindingOutput {
     return [domElement, dismounters];
 }
 
-const isElement = (elem: any): elem is RenderedElement => has(elem, 'tag', 'props', 'events', 'children');
+const isElement = (elem: any): elem is RenderedElement =>
+    has(elem, 'tag', 'props', 'events', 'children');
 
 export function mount(parent: Node, components: RenderedResult[], before?: Node): () => void {
     const dismounters: (() => void)[] = [];
@@ -70,10 +71,10 @@ export function mount(parent: Node, components: RenderedResult[], before?: Node)
             const dismount = mount(nextParent, item.items, isEqualParent ? before : undefined);
             dismounters.push(dismount);
             if (item?.component?.onMount) {
-                item.component.onMount();
-            }
-            if (item?.component?.onDismount) {
-                dismounters.push(item.component.onDismount);
+                const onDismount = item.component.onMount();
+                if (typeof onDismount === 'function') {
+                    dismounters.push(onDismount);
+                }
             }
         }
     }

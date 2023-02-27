@@ -36,7 +36,6 @@ export interface Component {
     extracts?: PropAlias[];
     children?: FlatResult[];
     onMount?(): any;
-    onDismount?(): any;
     slotname?: string;
     _super?: Component;
 }

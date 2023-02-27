@@ -1,6 +1,4 @@
 import { isMap } from '@aldinh777/reactive-utils/validator';
-import { StateCollection, OperationHandler } from '@aldinh777/reactive/collection';
-import { Subscription } from '@aldinh777/reactive/helper/subscription-helper';
 import { Properties } from '../../common/types';
 import { PropAlias, readAlias, propAlias } from '../../common/prop-util';
 import { render } from '../../core/render';
@@ -23,24 +21,18 @@ export default async function CollectionDestruct(
             `'${props.obj}' are not a valid StateCollection in 'collect:obj' property of 'destruct' element`
         );
     }
-    let updateSubscription: Subscription<
-        StateCollection<string, unknown, Map<string, unknown>>,
-        OperationHandler<string, unknown>
-    >;
     const mounter = createMounter('dc', component, {
         async onMount() {
             const destructParams = propAlias(params, propnames, obj.raw);
             const elements = render(children, destructParams, _super);
             mounter.mount(await elements);
-            updateSubscription = obj.onUpdate(async () => {
+            const updateSubscription = obj.onUpdate(async () => {
                 const destructParams = propAlias(params, propnames, obj.raw);
                 const newElements = await render(children, destructParams, _super);
                 mounter.dismount();
                 mounter.mount(newElements);
             });
-        },
-        onDismount() {
-            updateSubscription?.unsub?.();
+            return () => updateSubscription.unsub();
         }
     });
     return mounter.rendered;

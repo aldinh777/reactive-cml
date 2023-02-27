@@ -1,4 +1,3 @@
-import { StateSubscription } from '@aldinh777/reactive';
 import { isState } from '@aldinh777/reactive-utils/validator';
 import { Properties } from '../../common/types';
 import { PropAlias, propAlias, readAlias } from '../../common/prop-util';
@@ -40,7 +39,6 @@ export default async function StateForeach(
             `'${props.list}' are not a valid State in 'state:list' property of 'foreach' element`
         );
     }
-    let subscription: StateSubscription<any[]>;
     const mounter = createMounter('ls', component, {
         async onMount() {
             const elements = await createFlatListElement(
@@ -50,14 +48,12 @@ export default async function StateForeach(
                 component
             );
             mounter.mount(elements);
-            subscription = list.onChange(async (items) => {
+            const subscription = list.onChange(async (items) => {
                 const newElements = await createFlatListElement(alias, extracts, items, component);
                 mounter.dismount();
                 mounter.mount(newElements);
             });
-        },
-        onDismount() {
-            subscription?.unsub?.();
+            return () => subscription.unsub();
         }
     });
     return mounter.rendered;
