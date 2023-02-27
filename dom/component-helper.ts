@@ -45,7 +45,7 @@ export function createMounter(
     const COMPONENT_ID = generateRandomId(8);
     const NAMESPACE_START = `data-${markerID}x`;
     const NAMESPACE_END = `data-${markerID}z`;
-    let dismount: () => any;
+    let dismount: Function;
     const mounter: MounterData = {
         marker: {},
         rendered: [
