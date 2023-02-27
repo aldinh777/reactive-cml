@@ -13,8 +13,8 @@ export interface MounterData {
         end?: Node;
     };
     rendered: [start: RenderedElement, end: RenderedElement, component: RenderedComponent];
-    mount(components: RenderedResult[]): void;
-    dismount(): void;
+    mount(components: RenderedResult[]): Promise<void>;
+    dismount(): Promise<void>;
 }
 
 const CHARACTERS = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789';
@@ -53,12 +53,12 @@ export function createMounter(
             { tag: 'span', props: { [NAMESPACE_END]: COMPONENT_ID }, events: {}, children: [] },
             { items: [], component }
         ],
-        mount(components: RenderedResult[]) {
+        async mount(components: RenderedResult[]) {
             const endMarker = mounter.marker.end;
             const parent = endMarker?.parentNode;
-            dismount = mount(parent, components, endMarker);
+            dismount = await mount(parent, components, endMarker);
         },
-        dismount() {
+        async dismount() {
             dismount?.();
             const { start, end } = mounter.marker;
             const parent = end?.parentNode;
@@ -87,7 +87,7 @@ export function createMounter(
                 await onDismount();
             }
             if (!options.preventDismount?.()) {
-                mounter.dismount?.();
+                await mounter.dismount();
             }
             dismount = null;
         };

@@ -35,7 +35,7 @@ export interface Component {
     params?: Properties;
     extracts?: PropAlias[];
     children?: FlatResult[];
-    onMount?(): any;
+    onMount?(): void | Function | Promise<void | Function>;
     slotname?: string;
     _super?: Component;
 }

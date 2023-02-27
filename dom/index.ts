@@ -43,8 +43,12 @@ export function toDom(element: RenderedElement): DomBindingOutput {
 const isElement = (elem: any): elem is RenderedElement =>
     has(elem, 'tag', 'props', 'events', 'children');
 
-export function mount(parent: Node, components: RenderedResult[], before?: Node): () => void {
-    const dismounters: (() => void)[] = [];
+export async function mount(
+    parent: Node,
+    components: RenderedResult[],
+    before?: Node
+): Promise<Function> {
+    const dismounters: Function[] = [];
     for (const item of components) {
         if (typeof item === 'string') {
             append(parent, [_text(item)], before);
@@ -68,11 +72,15 @@ export function mount(parent: Node, components: RenderedResult[], before?: Node)
             if (!isEqualParent) {
                 append(parent, [nextParent], before);
             }
-            const dismount = mount(nextParent, item.items, isEqualParent ? before : undefined);
+            const dismount = await mount(
+                nextParent,
+                item.items,
+                isEqualParent ? before : undefined
+            );
             dismounters.push(dismount);
             if (item?.component?.onMount) {
-                const onDismount = item.component.onMount();
-                if (typeof onDismount === 'function') {
+                const onDismount = await item.component.onMount();
+                if (onDismount) {
                     dismounters.push(onDismount);
                 }
             }
