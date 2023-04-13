@@ -1,14 +1,4 @@
-import {
-    COMPONENT_CHILDREN,
-    COMPONENT_SLOT,
-    COMPONENT_COMPONENT,
-    COMPONENT_BASIC_IF,
-    COMPONENT_BASIC_DESTRUCT,
-    COMPONENT_BASIC_FOREACH,
-    PROP_CONTROL_LIST,
-    PROP_CONTROL_OBJECT,
-    PROP_CONTROL_VALUE
-} from '../common/constants';
+import { PROP_CONTROL_LIST, PROP_CONTROL_OBJECT, PROP_CONTROL_VALUE } from '../common/constants';
 
 export const BINDER_STATE = 'state';
 export const BINDER_COLLECTION = 'collect';
@@ -24,15 +14,6 @@ export const COMPONENT_STATE_DESTRUCT = 'StateDestruct';
 export const COMPONENT_STATE_FOREACH = 'StateForeach';
 export const COMPONENT_COLLECTION_DESTRUCT = 'CollectionDestruct';
 export const COMPONENT_COLLECTION_FOREACH = 'CollectionForeach';
-
-export const BASIC_COMPONENT_SET = [
-    COMPONENT_CHILDREN,
-    COMPONENT_SLOT,
-    COMPONENT_COMPONENT,
-    COMPONENT_BASIC_IF,
-    COMPONENT_BASIC_DESTRUCT,
-    COMPONENT_BASIC_FOREACH
-];
 
 export const DOM_COMPONENT_SET = [
     COMPONENT_STATE_IF,
