@@ -39,9 +39,10 @@ export default function extractRelatives(
         excludes: string[];
         includes: string[];
         existingImports: string[];
+        forceJSExtension: boolean;
     }
 ): [string, string][] {
-    const { dependencies, exts, excludes, includes, existingImports } = opts;
+    const { dependencies, exts, excludes, includes, existingImports, forceJSExtension } = opts;
     const result: [string, string][] = [];
     const currentDir = dirname(filename);
     includes.unshift(currentDir);
@@ -59,7 +60,7 @@ export default function extractRelatives(
         if (depResult) {
             const path = relative(currentDir, depResult);
             const from = posixifyPath(path);
-            result.push([from, dep]);
+            result.push([forceJSExtension ? from.replace(/\.\w+$/, '.js') : from, dep]);
             continue;
         }
         throw CompileError.unresolvedDependency(dep, filename);

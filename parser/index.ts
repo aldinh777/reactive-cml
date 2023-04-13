@@ -16,6 +16,7 @@ export interface RCMLParserOptions {
         extensions?: string[];
         excludes?: string[];
         includes?: string[];
+        forceJSExtension?: boolean;
     };
     cmlPreprocessors: Preprocessor;
 }
@@ -89,7 +90,7 @@ export function parseReactiveCML(source: string, options?: RCMLParserOptions): s
 
     /** Recursively check related file to import */
     if (relativeImports) {
-        const { filename, extensions, excludes, includes } = relativeImports;
+        const { filename, extensions, excludes, includes, forceJSExtension } = relativeImports;
         const currentImports: string[] = autoImports
             .map((imp) => imp[1])
             .filter((m) => typeof m === 'string') as string[];
@@ -101,7 +102,8 @@ export function parseReactiveCML(source: string, options?: RCMLParserOptions): s
             exts: extensions || ['.rc', '.js'],
             excludes: excludes || [],
             includes: includes || [],
-            existingImports: currentImports
+            existingImports: currentImports,
+            forceJSExtension: forceJSExtension || false
         });
         addImport(...relativeDependencies);
     }
