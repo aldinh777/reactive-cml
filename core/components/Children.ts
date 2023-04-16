@@ -1,9 +1,9 @@
 import { Properties } from '../types';
 import { readAlias, propAlias } from '../prop-util';
-import { render } from '../../core/render';
-import { Component, RenderedResult } from '../../core/types';
+import { render } from '../render';
+import { Component, RenderedResult } from '../types';
 
-export default async function Children(
+export = async function Children(
     props: Properties = {},
     component: Component = {}
 ): Promise<RenderedResult[] | void> {
@@ -24,4 +24,4 @@ export default async function Children(
             ? output
             : render(component.children, component.params, component._super);
     }
-}
+};

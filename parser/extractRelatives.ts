@@ -31,7 +31,7 @@ function recursiveFindRelative(
     return '';
 }
 
-export default function extractRelatives(
+export function extractRelatives(
     filename: string,
     opts: {
         dependencies: string[];
@@ -39,10 +39,11 @@ export default function extractRelatives(
         excludes: string[];
         includes: string[];
         existingImports: string[];
-        forceJSExtension: boolean;
+        forceJSImportExtension: boolean;
     }
 ): [string, string][] {
-    const { dependencies, exts, excludes, includes, existingImports, forceJSExtension } = opts;
+    const { dependencies, exts, excludes, includes, existingImports, forceJSImportExtension } =
+        opts;
     const result: [string, string][] = [];
     const currentDir = dirname(filename);
     includes.unshift(currentDir);
@@ -60,13 +61,13 @@ export default function extractRelatives(
         if (depResult) {
             const path = relative(currentDir, depResult);
             const from = posixifyPath(path);
-            result.push([forceJSExtension ? from.replace(/\.\w+$/, '.js') : from, dep]);
+            result.push([forceJSImportExtension ? from.replace(/\.\w+$/, '.js') : from, dep]);
             continue;
         }
         throw CompileError.unresolvedDependency(dep, filename);
     }
     return result;
-}
+};
 
 function posixifyPath(path: string) {
     return (path[0] === '.' ? path : './' + path).split(sep).join(posix.sep);

@@ -4,7 +4,7 @@ import { isInvalidIdentifier } from '../util';
 import { Identifiers } from '../types';
 import { COMPONENT_COMPONENT, TAG_COMPONENT } from '../constants';
 
-export default function (item: CMLObject, [dep]: Identifiers): CMLObject {
+export = function (item: CMLObject, [dep]: Identifiers): CMLObject {
     const { tag } = item;
     if (tag === TAG_COMPONENT) {
         item.tag = COMPONENT_COMPONENT;
@@ -16,4 +16,4 @@ export default function (item: CMLObject, [dep]: Identifiers): CMLObject {
         dep.push(tag);
     }
     return item;
-}
+};

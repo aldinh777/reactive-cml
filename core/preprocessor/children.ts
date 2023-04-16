@@ -9,7 +9,7 @@ import {
     TAG_CHILDREN
 } from '../constants';
 
-export default function (item: CMLObject, [dep, par]: Identifiers): CMLObject {
+export = function (item: CMLObject, [dep, par]: Identifiers): CMLObject {
     const { tag, props } = item;
     if (tag === TAG_CHILDREN) {
         item.tag = COMPONENT_CHILDREN;
@@ -26,4 +26,4 @@ export default function (item: CMLObject, [dep, par]: Identifiers): CMLObject {
         }
     }
     return item;
-}
+};

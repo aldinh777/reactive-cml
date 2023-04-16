@@ -1,9 +1,9 @@
 import { has } from '@aldinh777/toolbox/object/validate';
 import { Properties } from '../types';
-import { render } from '../../core/render';
-import { Component, RenderedResult } from '../../core/types';
+import { render } from '../render';
+import { Component, RenderedResult } from '../types';
 
-export default async function If(
+export = async function If(
     props: Properties = {},
     component: Component = {}
 ): Promise<RenderedResult[] | void> {
@@ -25,4 +25,4 @@ export default async function If(
             return render(children, params, _super);
         }
     }
-}
+};

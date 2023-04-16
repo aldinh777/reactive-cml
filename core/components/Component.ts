@@ -1,8 +1,8 @@
 import { Properties } from '../types';
-import { render } from '../../core/render';
-import { RenderedResult, Component } from '../../core/types';
+import { render } from '../render';
+import { RenderedResult, Component } from '../types';
 
-export default async function Component(
+export = async function Component(
     _props: Properties = {},
     component: Component = {}
 ): Promise<RenderedResult[] | void> {

@@ -1,9 +1,9 @@
 import { parseCML } from '@aldinh777/cml-parser';
-import { ImportFormat, Preprocessor } from '../common/types';
-import extractImports from './extractImports';
-import extractParams from './extractParams';
-import extractRelatives from './extractRelatives';
-import domPreprocessor from '../dom/preprocess';
+import { ImportFormat, Preprocessor } from '../core/types';
+import { extractImports } from './extractImports';
+import { extractParams } from './extractParams';
+import { extractRelatives } from './extractRelatives';
+import basePreprocessor from '../core/preprocess';
 
 type ImportType = 'import' | 'require';
 
@@ -16,7 +16,7 @@ export interface RCMLParserOptions {
         extensions?: string[];
         excludes?: string[];
         includes?: string[];
-        forceJSExtension?: boolean;
+        forceJSImportExtension?: boolean;
     };
     cmlPreprocessors: Preprocessor;
 }
@@ -42,7 +42,7 @@ export function parseReactiveCML(source: string, options?: RCMLParserOptions): s
     const trimCML = !(options?.trimCML === false);
     const autoImportsOpt = options?.autoImports || [];
     const relativeImports = options?.relativeImports;
-    const cmlPreprocessor = options?.cmlPreprocessors || domPreprocessor();
+    const cmlPreprocessor = options?.cmlPreprocessors || basePreprocessor();
 
     /** Spliting [imports, script, cml] respectively */
     const [importIndex, imports] = extractImports(source);
@@ -90,7 +90,8 @@ export function parseReactiveCML(source: string, options?: RCMLParserOptions): s
 
     /** Recursively check related file to import */
     if (relativeImports) {
-        const { filename, extensions, excludes, includes, forceJSExtension } = relativeImports;
+        const { filename, extensions, excludes, includes, forceJSImportExtension } =
+            relativeImports;
         const currentImports: string[] = autoImports
             .map((imp) => imp[1])
             .filter((m) => typeof m === 'string') as string[];
@@ -103,7 +104,7 @@ export function parseReactiveCML(source: string, options?: RCMLParserOptions): s
             excludes: excludes || [],
             includes: includes || [],
             existingImports: currentImports,
-            forceJSExtension: forceJSExtension || false
+            forceJSImportExtension: forceJSImportExtension || false
         });
         addImport(...relativeDependencies);
     }
@@ -111,7 +112,7 @@ export function parseReactiveCML(source: string, options?: RCMLParserOptions): s
     /** Parsing CML */
     const outputScript = cmlPreprocessor.buildScript(cmlTree, [dependencies, params], addImport);
     const importScript = stringifyImports(mode, autoImports);
-    const exportScript = '\n' + (mode === 'require' ? 'module.exports = ' : 'export default ');
+    const exportScript = '\n' + (mode === 'require' ? 'module.exports = ' : 'export = ');
     const resultScript = `async function(props={}, component={}, dispatch=()=>{}) {\n${script.trim()}\n${outputScript}\n}`;
     return importScript + exportScript + resultScript;
 }

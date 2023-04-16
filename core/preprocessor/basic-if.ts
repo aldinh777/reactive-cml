@@ -1,11 +1,11 @@
 import { CMLObject } from '@aldinh777/cml-parser';
 import CompileError from '../../error/CompileError';
 import { COMPONENT_BASIC_IF } from '../constants';
-import { isInvalidIdentifier } from '../../common/util';
-import { Identifiers } from '../../common/types';
-import { TAG_IF, TAG_UNLESS, PROP_CONTROL_VALUE } from '../../common/constants';
+import { isInvalidIdentifier } from '../util';
+import { Identifiers } from '../types';
+import { TAG_IF, TAG_UNLESS, PROP_CONTROL_VALUE } from '../constants';
 
-export default function (item: CMLObject, [dep, par]: Identifiers): CMLObject {
+export = function (item: CMLObject, [dep, par]: Identifiers): CMLObject {
     const { tag, props } = item;
     if (tag === TAG_IF || tag === TAG_UNLESS) {
         if (tag === TAG_UNLESS) {
@@ -23,4 +23,4 @@ export default function (item: CMLObject, [dep, par]: Identifiers): CMLObject {
         par.push(valueName);
     }
     return item;
-}
+};

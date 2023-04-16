@@ -1,7 +1,6 @@
 import { CMLObject, CMLTree } from '@aldinh777/cml-parser';
-import { extractTextProps } from '../common/util';
-import { Properties, FlatText } from '../common/types';
-import { FlatElement, FlatResult } from './types';
+import { extractTextProps } from './util';
+import { FlatElement, Properties, FlatText, FlatResult } from './types';
 
 function processComponent(node: CMLObject): FlatElement {
     const { tag, props, children } = node;

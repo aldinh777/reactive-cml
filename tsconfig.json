@@ -3,12 +3,11 @@
         "declaration": true,
         "module": "CommonJS",
         "target": "ES6",
-        "moduleResolution": "node"
+        "moduleResolution": "node",
+        "esModuleInterop": true
     },
     "include": [
-        "common",
         "core",
-        "dom",
         "error",
         "parser"
     ]

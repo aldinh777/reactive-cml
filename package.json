@@ -1,22 +1,20 @@
 {
   "name": "@aldinh777/reactive-cml",
   "version": "0.19.4",
-  "description": "Adding Reactivity to CML",
-  "main": "core/index.js",
+  "description": "Adding script to CML",
+  "main": "parser/index.js",
   "scripts": {
     "build": "tsc"
   },
   "author": "aldinh777",
   "license": "ISC",
   "devDependencies": {
-    "@aldinh777/reactive": "^0.28.9",
-    "@aldinh777/reactive-utils": "^0.1.16",
-    "@aldinh777/toolbox": "^1.2.0",
     "@types/node": "^18.11.18",
     "typescript": "^4.9.4",
     "vite": "^4.0.4"
   },
   "dependencies": {
-    "@aldinh777/cml-parser": "^0.5.3"
+    "@aldinh777/cml-parser": "^0.5.3",
+    "@aldinh777/toolbox": "^1.2.1"
   }
 }

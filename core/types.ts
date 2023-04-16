@@ -1,8 +1,8 @@
-import { State } from '@aldinh777/reactive';
-import { FlatText, Properties } from '../common/types';
-import { PropAlias } from '../common/prop-util';
+import { CMLObject, CMLTree } from '@aldinh777/cml-parser';
+import { PropAlias } from './prop-util';
 
-export type RenderedElementChildren = RenderedElement | State | string;
+// Rendered things
+export type RenderedElementChildren = RenderedElement | [any];
 export type FlatResult = string | FlatText | FlatElement;
 export type FlatElement = [
     tag: string,
@@ -10,7 +10,7 @@ export type FlatElement = [
     events: Properties<string>,
     children: FlatResult[]
 ];
-export type RenderedResult = RenderedComponent | RenderedElement | State | string;
+export type RenderedResult = RenderedComponent | RenderedElement | [any] | string;
 export type EventDispatcher = (name: string, ...args: any[]) => any;
 export type ReactiveComponent = (
     props: Properties,
@@ -39,3 +39,24 @@ export interface Component {
     slotname?: string;
     _super?: Component;
 }
+
+// Preprocessors things
+export interface Properties<T = unknown> {
+    [key: string]: T;
+}
+
+export interface Preprocessor {
+    buildScript(
+        cmlRoot: CMLTree,
+        identifiers: Identifiers,
+        addImport: (item: ImportFormat) => any
+    ): string;
+    relativeBlacklist?: string[];
+    preprocessors?: TreePreprocessor[];
+}
+
+export type FlatText = [name: string];
+export type ImportFormat = [from: string, imports: string | string[], isComponent?: boolean];
+
+export type Identifiers = [dependencies: string[], params: string[], blacklist?: Set<string>];
+export type TreePreprocessor = (node: CMLObject, ids: Identifiers, isRoot: boolean) => CMLObject;

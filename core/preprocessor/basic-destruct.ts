@@ -1,11 +1,11 @@
 import { CMLObject } from '@aldinh777/cml-parser';
 import CompileError from '../../error/CompileError';
 import { COMPONENT_BASIC_DESTRUCT } from '../constants';
-import { isInvalidIdentifier } from '../../common/util';
-import { Identifiers } from '../../common/types';
-import { TAG_DESTRUCT, PROP_CONTROL_OBJECT } from '../../common/constants';
+import { isInvalidIdentifier } from '../util';
+import { Identifiers } from '../types';
+import { TAG_DESTRUCT, PROP_CONTROL_OBJECT } from '../constants';
 
-export default function (item: CMLObject, [dep, par]: Identifiers): CMLObject {
+export = function (item: CMLObject, [dep, par]: Identifiers): CMLObject {
     const { tag, props } = item;
     if (tag === TAG_DESTRUCT) {
         const obj = props[PROP_CONTROL_OBJECT];
@@ -20,4 +20,4 @@ export default function (item: CMLObject, [dep, par]: Identifiers): CMLObject {
         par.push(obj);
     }
     return item;
-}
+};

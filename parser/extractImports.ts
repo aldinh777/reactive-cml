@@ -3,7 +3,7 @@ export type ImportsResult = [query: string, from: string];
 type ImportFlag = 'start' | 'from' | 'find';
 type ModeFlag = 'none' | 'import' | 'require';
 
-export default function extractImports(source: string): [number, ImportsResult[]] {
+export function extractImports(source: string): [number, ImportsResult[]] {
     let sourceImportEndIndex: number = 0;
     let importResults: ImportsResult[] = [];
     let importFlag: ImportFlag = 'start';
@@ -93,4 +93,4 @@ export default function extractImports(source: string): [number, ImportsResult[]
         }
     }
     return [sourceImportEndIndex, importResults];
-}
+};

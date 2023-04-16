@@ -1,9 +1,9 @@
 import { Properties } from '../types';
 import { propAlias } from '../prop-util';
-import { render } from '../../core/render';
-import { Component, RenderedResult } from '../../core/types';
+import { render } from '../render';
+import { Component, RenderedResult } from '../types';
 
-export default async function Slot(
+export = async function Slot(
     props: Properties = {},
     component: Component = {}
 ): Promise<RenderedResult[] | void> {
@@ -14,4 +14,4 @@ export default async function Slot(
             return render(children, nextParams, _super);
         }
     }
-}
+};

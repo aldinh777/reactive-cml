@@ -3,7 +3,7 @@ import CompileError from '../../error/CompileError';
 import { isInvalidIdentifier } from '../util';
 import { Identifiers } from '../types';
 
-export default function (item: CMLObject, [, par]: Identifiers) {
+export = function (item: CMLObject, [, par]: Identifiers) {
     const { tag, props } = item;
     for (const key in props) {
         const match = key.match(/(on|bind):(.+)/);
@@ -23,4 +23,4 @@ export default function (item: CMLObject, [, par]: Identifiers) {
         par.push(param);
     }
     return item;
-}
+};

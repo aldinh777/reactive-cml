@@ -1,7 +1,6 @@
-import { isState } from '@aldinh777/reactive-utils/validator';
 import { has } from '@aldinh777/toolbox/object/validate';
-import { FlatText, Properties } from '../common/types';
-import { readAlias } from '../common/prop-util';
+import { FlatText, Properties } from './types';
+import { readAlias } from './prop-util';
 import {
     FlatResult,
     Component,
@@ -54,12 +53,7 @@ export async function render(
         if (typeof item === 'string') {
             renderResult.push(item);
         } else if (isProp(item)) {
-            const param = params[item[0]] as any;
-            if (isState(param)) {
-                renderResult.push(param);
-            } else {
-                renderResult.push(String(param));
-            }
+            renderResult.push(item);
         } else {
             const [tag, props, events, children] = item;
             const [componentProps, componentEvents] = processProperties(params, props, events);

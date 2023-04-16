@@ -1,9 +1,9 @@
 import { Properties } from '../types';
 import { PropAlias, readAlias, propAlias } from '../prop-util';
-import { render } from '../../core/render';
-import { Component, RenderedResult } from '../../core/types';
+import { render } from '../render';
+import { Component, RenderedResult } from '../types';
 
-export default async function Foreach(
+export = async function Foreach(
     props: Properties = {},
     component: Component = {}
 ): Promise<RenderedResult[] | void> {
@@ -23,4 +23,4 @@ export default async function Foreach(
         result.push(...(await render(children, localParams, _super)));
     }
     return result;
-}
+};

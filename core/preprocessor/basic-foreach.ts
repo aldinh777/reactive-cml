@@ -1,11 +1,11 @@
 import { CMLObject } from '@aldinh777/cml-parser';
 import CompileError from '../../error/CompileError';
 import { COMPONENT_BASIC_FOREACH, PROP_CONTROL_AS } from '../constants';
-import { isInvalidIdentifier } from '../../common/util';
-import { Identifiers } from '../../common/types';
-import { TAG_FOREACH, PROP_CONTROL_LIST } from '../../common/constants';
+import { isInvalidIdentifier } from '../util';
+import { Identifiers } from '../types';
+import { TAG_FOREACH, PROP_CONTROL_LIST } from '../constants';
 
-export default function (item: CMLObject, [dep, par, bl]: Identifiers): CMLObject {
+export = function (item: CMLObject, [dep, par, bl]: Identifiers): CMLObject {
     const { tag, props } = item;
     if (tag === TAG_FOREACH) {
         const localItem = props[PROP_CONTROL_AS];
@@ -22,4 +22,4 @@ export default function (item: CMLObject, [dep, par, bl]: Identifiers): CMLObjec
         par.push(list);
     }
     return item;
-}
+};

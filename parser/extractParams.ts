@@ -1,6 +1,6 @@
 import { CMLObject, CMLTree } from '@aldinh777/cml-parser';
-import { extractTextProps } from '../common/util';
-import { Identifiers, TreePreprocessor } from '../common/types';
+import { extractTextProps } from '../core/util';
+import { Identifiers, TreePreprocessor } from '../core/types';
 
 function undupe<T>(array: T[]): T[] {
     return Array.from(new Set(array));
@@ -19,7 +19,7 @@ function preprocessCML(
     return processed;
 }
 
-export default function extractParams(
+export function extractParams(
     items: CMLTree,
     preprocessors: TreePreprocessor[],
     blacklist: Set<string> = new Set()
@@ -44,4 +44,4 @@ export default function extractParams(
     dep = undupe(dep);
     par = undupe(par).filter((param) => !blacklist.has(param));
     return [dep, par];
-}
+};

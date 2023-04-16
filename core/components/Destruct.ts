@@ -1,9 +1,9 @@
 import { Properties } from '../types';
 import { PropAlias, readAlias, propAlias } from '../prop-util';
-import { render } from '../../core/render';
-import { Component, RenderedResult } from '../../core/types';
+import { render } from '../render';
+import { Component, RenderedResult } from '../types';
 
-export default async function Destruct(
+export = async function Destruct(
     props: Properties = {},
     component: Component = {}
 ): Promise<RenderedResult[] | void> {
@@ -15,4 +15,4 @@ export default async function Destruct(
     const propnames: PropAlias[] = readAlias(props.extract);
     const localparams = propAlias(params, propnames, obj);
     return render(children, localparams, _super);
-}
+};
