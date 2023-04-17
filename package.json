@@ -1,6 +1,6 @@
 {
   "name": "@aldinh777/reactive-cml",
-  "version": "0.19.4",
+  "version": "0.20.0",
   "description": "Adding script to CML",
   "main": "parser/index.js",
   "scripts": {
