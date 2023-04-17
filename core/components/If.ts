@@ -1,11 +1,11 @@
 import { has } from '@aldinh777/toolbox/object/validate';
 import { Properties } from '../types';
 import { render } from '../render';
-import { Component, RenderedResult } from '../types';
+import { Context, RenderedResult } from '../types';
 
 export = async function If(
     props: Properties = {},
-    component: Component = {}
+    component: Context = {}
 ): Promise<RenderedResult[] | void> {
     if (typeof props.value !== 'string') {
         return;

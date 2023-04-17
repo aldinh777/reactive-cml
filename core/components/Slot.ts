@@ -1,11 +1,11 @@
 import { Properties } from '../types';
 import { propAlias } from '../prop-util';
 import { render } from '../render';
-import { Component, RenderedResult } from '../types';
+import { Context, RenderedResult } from '../types';
 
 export = async function Slot(
     props: Properties = {},
-    component: Component = {}
+    component: Context = {}
 ): Promise<RenderedResult[] | void> {
     if (component._super) {
         const { children, extracts, params, _super } = component;

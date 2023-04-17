@@ -3,7 +3,7 @@ import { FlatText, Properties } from './types';
 import { readAlias } from './prop-util';
 import {
     FlatResult,
-    Component,
+    Context,
     RenderedResult,
     ReactiveComponent,
     RenderedElementChildren,
@@ -45,7 +45,7 @@ const isElementChildren = (item: RenderedResult): item is RenderedElementChildre
 export async function render(
     tree: FlatResult[],
     params: Properties,
-    component: Component,
+    component: Context,
     isRoot: boolean = false
 ): Promise<RenderedResult[]> {
     const renderResult: RenderedResult[] = [];
@@ -53,13 +53,14 @@ export async function render(
         if (typeof item === 'string') {
             renderResult.push(item);
         } else if (isProp(item)) {
-            renderResult.push(item);
+            const propname = item[0];
+            renderResult.push([params[propname]]);
         } else {
             const [tag, props, events, children] = item;
             const [componentProps, componentEvents] = processProperties(params, props, events);
             const extracts = typeof props.extract === 'string' ? readAlias(props.extract) : [];
             if (tag[0].match(/[A-Z]/)) {
-                const componentContext: Component = {
+                const componentContext: Context = {
                     children,
                     params,
                     extracts: component?.extracts?.concat(extracts) || [],

@@ -14,7 +14,7 @@ export type RenderedResult = RenderedComponent | RenderedElement | [any] | strin
 export type EventDispatcher = (name: string, ...args: any[]) => any;
 export type ReactiveComponent = (
     props: Properties,
-    component?: Component,
+    component?: Context,
     dispatch?: EventDispatcher
 ) => Promise<RenderedResult[] | void>;
 
@@ -28,17 +28,21 @@ export interface RenderedElement {
 export interface RenderedComponent {
     items: RenderedResult[];
     root?: RenderedElement;
-    component?: Component;
+    component?: Context;
 }
 
-export interface Component {
+export interface Context extends Properties {
     params?: Properties;
     extracts?: PropAlias[];
     children?: FlatResult[];
-    onMount?(): void | Function | Promise<void | Function>;
     slotname?: string;
-    _super?: Component;
+    _super?: Context;
+    preMount?(): ComponentEvent;
+    onMount?(): ComponentEvent;
+    onDismount?(): ComponentEvent;
 }
+
+export type ComponentEvent = () => void | Function | Promise<void | Function>;
 
 // Preprocessors things
 export interface Properties<T = unknown> {

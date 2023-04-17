@@ -1,11 +1,11 @@
 import { Properties } from '../types';
 import { PropAlias, readAlias, propAlias } from '../prop-util';
 import { render } from '../render';
-import { Component, RenderedResult } from '../types';
+import { Context, RenderedResult } from '../types';
 
 export = async function Foreach(
     props: Properties = {},
-    component: Component = {}
+    component: Context = {}
 ): Promise<RenderedResult[] | void> {
     if (typeof props.list !== 'string') {
         return;
